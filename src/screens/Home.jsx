@@ -1,0 +1,119 @@
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import Button from '../components/Button';
+import Card from '../components/Card';
+import { useGame } from '../contexts/GameContext';
+
+const Home = () => {
+  const navigate = useNavigate();
+  const { words } = useGame();
+
+  const menuItems = [
+    {
+      title: 'Add Words',
+      icon: '➕',
+      description: 'Add new words to your vocabulary',
+      path: '/add-word',
+      variant: 'primary'
+    },
+    {
+      title: 'Play Match Game',
+      icon: '🎮',
+      description: 'Match words with their meanings',
+      path: '/game',
+      variant: 'success',
+      disabled: words.length < 4
+    },
+    {
+      title: 'My Words',
+      icon: '📚',
+      description: `${words.length} words in your collection`,
+      path: '/words',
+      variant: 'secondary'
+    },
+    {
+      title: 'Statistics',
+      icon: '📊',
+      description: 'View your progress and stats',
+      path: '/stats',
+      variant: 'secondary'
+    }
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="space-y-8"
+    >
+      {/* Welcome Card */}
+      <Card glassEffect className="text-center">
+        <motion.div
+          initial={{ scale: 0.9 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+        >
+          <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            Welcome to Recalla! 🎓
+          </h2>
+          <p className="text-lg text-slate-600">
+            Learn and remember words through fun interactive games
+          </p>
+        </motion.div>
+      </Card>
+
+      {/* Menu Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {menuItems.map((item, index) => (
+          <motion.div
+            key={item.path}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 * (index + 1) }}
+          >
+            <Card
+              onClick={!item.disabled ? () => navigate(item.path) : undefined}
+              className={`
+                ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}
+                hover:shadow-xl transition-shadow
+              `}
+              pressable={!item.disabled}
+              hoverable={!item.disabled}
+            >
+              <div className="flex items-center gap-4">
+                <div className="text-5xl">{item.icon}</div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-slate-900 mb-1">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-slate-500">
+                    {item.description}
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+
+      {words.length < 4 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="text-center"
+        >
+          <Card className="bg-amber-50 border-amber-200">
+            <p className="text-amber-800">
+              💡 Add at least 4 words to unlock the Match Game!
+            </p>
+          </Card>
+        </motion.div>
+      )}
+    </motion.div>
+  );
+};
+
+export default Home;

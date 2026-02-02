@@ -26,3 +26,6 @@ build/
 tmp/
 temp/
 *.tmp
+
+# Old version backup
+old_version/
