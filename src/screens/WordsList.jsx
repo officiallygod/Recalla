@@ -32,8 +32,8 @@ const WordsList = () => {
       </Button>
 
       <Card glassEffect>
-        <h2 className="text-3xl font-bold text-slate-900">My Words</h2>
-        <p className="text-slate-600 mt-2">
+        <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100">My Words</h2>
+        <p className="text-slate-600 dark:text-slate-300 mt-2">
           {words.length} {words.length === 1 ? 'word' : 'words'} in your collection
         </p>
       </Card>
@@ -42,10 +42,10 @@ const WordsList = () => {
       {words.length === 0 ? (
         <Card className="text-center py-12">
           <div className="text-6xl mb-4">📚</div>
-          <h3 className="text-xl font-semibold text-slate-700 mb-2">
+          <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">
             No words yet
           </h3>
-          <p className="text-slate-500 mb-6">
+          <p className="text-slate-500 dark:text-slate-400 mb-6">
             Start adding words to build your vocabulary
           </p>
           <Button onClick={() => navigate('/add-word')} icon="➕">
@@ -66,13 +66,13 @@ const WordsList = () => {
                 <Card hoverable className="group">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-xl font-bold text-primary-600 mb-1 truncate">
+                      <h3 className="text-xl font-bold text-primary-600 dark:text-primary-400 mb-1 truncate">
                         {word.word}
                       </h3>
-                      <p className="text-slate-600 text-sm">
+                      <p className="text-slate-600 dark:text-slate-300 text-sm">
                         {word.meaning}
                       </p>
-                      <div className="flex gap-4 mt-2 text-xs text-slate-500">
+                      <div className="flex gap-4 mt-2 text-xs text-slate-500 dark:text-slate-400">
                         <span className="flex items-center gap-1">
                           ✅ <span className="font-semibold">{word.correct}</span>
                         </span>
@@ -85,7 +85,7 @@ const WordsList = () => {
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       onClick={() => handleDelete(word.id)}
-                      className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl transition-colors font-semibold opacity-0 group-hover:opacity-100"
+                      className="px-4 py-2 bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 rounded-xl transition-colors font-semibold opacity-0 group-hover:opacity-100"
                     >
                       🗑️
                     </motion.button>

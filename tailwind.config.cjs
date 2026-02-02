@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -19,10 +20,22 @@ module.exports = {
           800: '#3730a3',
           900: '#312e81',
         },
+        game: {
+          success: '#10b981',
+          warning: '#f59e0b',
+          error: '#ef4444',
+          info: '#3b82f6',
+        },
       },
       animation: {
         'ripple': 'ripple 600ms linear',
         'press': 'press 150ms ease-out',
+        'float': 'float 3s ease-in-out infinite',
+        'bounce-slow': 'bounce 2s infinite',
+        'pulse-slow': 'pulse 3s ease-in-out infinite',
+        'wiggle': 'wiggle 1s ease-in-out infinite',
+        'particle': 'particle 1s ease-out forwards',
+        'confetti': 'confetti 2s ease-out forwards',
       },
       keyframes: {
         ripple: {
@@ -33,6 +46,22 @@ module.exports = {
           '0%': { transform: 'scale(1)' },
           '50%': { transform: 'scale(0.95)' },
           '100%': { transform: 'scale(1)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-20px)' },
+        },
+        wiggle: {
+          '0%, 100%': { transform: 'rotate(-3deg)' },
+          '50%': { transform: 'rotate(3deg)' },
+        },
+        particle: {
+          '0%': { transform: 'translate(0, 0) scale(1)', opacity: '1' },
+          '100%': { transform: 'translate(var(--tx), var(--ty)) scale(0)', opacity: '0' },
+        },
+        confetti: {
+          '0%': { transform: 'translateY(0) rotate(0deg)', opacity: '1' },
+          '100%': { transform: 'translateY(100vh) rotate(720deg)', opacity: '0' },
         },
       },
     },

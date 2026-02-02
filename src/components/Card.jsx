@@ -16,10 +16,10 @@ const Card = ({
       whileTap={pressable ? { scale: 0.98 } : {}}
       className={`
         rounded-2xl p-6 transition-all duration-200
-        ${glassEffect ? 'glass' : 'bg-white'}
+        ${glassEffect ? 'glass' : 'bg-white dark:bg-slate-800'}
         ${onClick ? 'cursor-pointer' : ''}
-        shadow-lg shadow-slate-200/50
-        border border-slate-100
+        shadow-lg shadow-slate-200/50 dark:shadow-slate-900/50
+        border border-slate-100 dark:border-slate-700
         ${className}
       `}
     >
