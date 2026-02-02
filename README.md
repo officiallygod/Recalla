@@ -62,6 +62,14 @@ To preview the production build:
 npm run preview
 ```
 
+## 🌐 Automatic Deployment
+
+This project includes a GitHub Actions workflow that automatically builds and deploys the app to GitHub Pages when you push to the `main` branch.
+
+**Live Demo:** [https://officiallygod.github.io/Recalla/](https://officiallygod.github.io/Recalla/)
+
+For detailed setup instructions, see [GITHUB_ACTIONS_GUIDE.md](GITHUB_ACTIONS_GUIDE.md)
+
 ## 🎮 How to Use
 
 1. **Add Words**: Click "Add Words" and enter words with their meanings

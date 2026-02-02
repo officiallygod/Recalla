@@ -9,7 +9,35 @@ npm run build       # Build for production
 npm run preview     # Preview production build
 ```
 
-## Deploy to Vercel (Recommended)
+## Deploy to GitHub Pages (Recommended - Automated)
+
+**This repository includes a GitHub Actions workflow for automatic deployment!**
+
+### Quick Setup (3 steps):
+
+1. **Enable GitHub Pages:**
+   - Go to Settings → Pages
+   - Set Source to "GitHub Actions"
+   
+2. **Push to main branch:**
+   ```bash
+   git push origin main
+   ```
+
+3. **Access your app:**
+   - Wait 2-3 minutes for the workflow to complete
+   - Visit: `https://officiallygod.github.io/Recalla/`
+
+**For detailed instructions and troubleshooting, see [GITHUB_ACTIONS_GUIDE.md](GITHUB_ACTIONS_GUIDE.md)**
+
+The workflow automatically:
+- ✅ Installs dependencies
+- ✅ Builds your app
+- ✅ Deploys to GitHub Pages
+- ✅ Runs on every push to main
+- ✅ Can be triggered manually from Actions tab
+
+## Deploy to Vercel (Alternative)
 
 1. Push your code to GitHub
 2. Go to [vercel.com](https://vercel.com) and sign up
@@ -32,7 +60,9 @@ That's it! Vercel will:
    - Publish directory: `dist`
 5. Click "Deploy site"
 
-## Deploy to GitHub Pages
+## Deploy to GitHub Pages (Manual Method)
+
+If you prefer manual deployment instead of automated GitHub Actions:
 
 1. Install the gh-pages package:
 ```bash
