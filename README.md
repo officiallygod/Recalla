@@ -75,7 +75,7 @@ Works on all modern browsers:
 - **Points**: Earned for every action (adding words, correct matches)
 - **Coins**: Bonus currency for achievements
 - **Levels**: Unlock higher levels every 1000 points
-- **Combo Multiplier**: Up to 5x bonus for consecutive correct matches
+- **Combo Multiplier**: Additional 50 points per combo level for consecutive correct matches
 
 ### Progress Tracking
 - Total games played

@@ -461,7 +461,8 @@ function checkLevelUp() {
 // Animations
 function createParticles(emojis, count) {
     const container = document.getElementById('particle-container');
-    const emojiArray = emojis.split('');
+    // Split emojis properly (they may be multi-character)
+    const emojiArray = Array.from(emojis);
     
     for (let i = 0; i < count; i++) {
         const particle = document.createElement('div');
