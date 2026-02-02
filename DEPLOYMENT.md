@@ -1,17 +1,26 @@
 # Deployment Guide for Recalla PWA
 
-## Quick Start (Local)
+## Development
 
-Simply open `index.html` in any modern web browser. No build process or dependencies required!
+```bash
+npm install          # Install dependencies
+npm run dev         # Start development server (http://localhost:5173)
+npm run build       # Build for production
+npm run preview     # Preview production build
+```
 
-## Deploy to GitHub Pages
+## Deploy to Vercel (Recommended)
 
-1. Go to your repository settings
-2. Navigate to "Pages" section
-3. Select the branch containing your code (e.g., `main` or `copilot/add-word-learning-pwa`)
-4. Select root directory `/`
-5. Click "Save"
-6. Your app will be available at: `https://yourusername.github.io/Recalla/`
+1. Push your code to GitHub
+2. Go to [vercel.com](https://vercel.com) and sign up
+3. Click "New Project" and import your repository
+4. Vercel will auto-detect Vite - just click "Deploy"
+
+That's it! Vercel will:
+- Build your app automatically
+- Provide HTTPS
+- Enable PWA features
+- Give you a live URL
 
 ## Deploy to Netlify
 
@@ -19,86 +28,161 @@ Simply open `index.html` in any modern web browser. No build process or dependen
 2. Click "New site from Git"
 3. Connect your GitHub repository
 4. Build settings:
-   - Build command: (leave empty)
-   - Publish directory: `/` (root)
+   - Build command: `npm run build`
+   - Publish directory: `dist`
 5. Click "Deploy site"
 
-## Deploy to Vercel
+## Deploy to GitHub Pages
 
-1. Sign up at [vercel.com](https://vercel.com)
-2. Click "New Project"
-3. Import your GitHub repository
-4. Build settings:
-   - Framework Preset: Other
-   - Build Command: (leave empty)
-   - Output Directory: (leave empty)
-5. Click "Deploy"
+1. Install the gh-pages package:
+```bash
+npm install --save-dev gh-pages
+```
+
+2. Add to `package.json`:
+```json
+{
+  "homepage": "https://yourusername.github.io/Recalla",
+  "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
+  }
+}
+```
+
+3. Update `vite.config.js`:
+```js
+export default defineConfig({
+  base: '/Recalla/',
+  // ... rest of config
+})
+```
+
+4. Deploy:
+```bash
+npm run deploy
+```
+
+## Deploy to Cloudflare Pages
+
+1. Sign up at [pages.cloudflare.com](https://pages.cloudflare.com)
+2. Connect your GitHub repository
+3. Build settings:
+   - Build command: `npm run build`
+   - Build output directory: `dist`
+   - Node version: 18 or higher
+4. Deploy
 
 ## Deploy to Any Static Host
 
-Since this is a static PWA with no backend, you can deploy to any static hosting service:
-
-- **Cloudflare Pages**
-- **Firebase Hosting**
-- **AWS S3 + CloudFront**
-- **Azure Static Web Apps**
-- **Surge.sh**
-
-Just upload all the files to the root directory of your hosting service.
-
-## Install as PWA
-
-Once deployed, users can install the app:
-
-### On Desktop (Chrome/Edge):
-1. Open the deployed website
-2. Click the install icon in the address bar (⊕)
-3. Click "Install"
-
-### On Mobile (Android):
-1. Open the website in Chrome
-2. Tap the menu (⋮)
-3. Tap "Install app" or "Add to Home screen"
-
-### On iOS:
-1. Open the website in Safari
-2. Tap the Share button
-3. Tap "Add to Home Screen"
-
-## Requirements
-
-- No server-side requirements
-- No build process
-- No dependencies to install
-- Works entirely in the browser
-
-## Testing Locally
-
-You can test the PWA features locally using:
-
+Build the app:
 ```bash
-# Python 3
-python3 -m http.server 8080
-
-# Python 2
-python -m SimpleHTTPServer 8080
-
-# Node.js (with npx)
-npx http-server -p 8080
-
-# PHP
-php -S localhost:8080
+npm run build
 ```
 
-Then open `http://localhost:8080` in your browser.
+Upload the contents of the `dist/` folder to your hosting:
+- AWS S3 + CloudFront
+- Firebase Hosting
+- Azure Static Web Apps
+- DigitalOcean App Platform
+- Railway
+- Render
+
+## Environment Variables
+
+If you add environment variables later (for API keys, etc.), create a `.env` file:
+
+```
+VITE_API_URL=your_api_url
+VITE_API_KEY=your_api_key
+```
+
+Access in code:
+```js
+const apiUrl = import.meta.env.VITE_API_URL
+```
 
 ## HTTPS Requirement
 
-PWA features (service worker, installation) require HTTPS in production. All the hosting services listed above provide HTTPS automatically.
+PWA features (service worker, installation) require HTTPS in production. All hosting services listed above provide HTTPS automatically.
 
-## Browser Cache
+## Testing Production Build Locally
 
-If you update the app, users may need to:
-1. Hard refresh (Ctrl+Shift+R or Cmd+Shift+R)
-2. Clear cache and reload
-3. Or update the `CACHE_NAME` in `sw.js` to force cache update
+```bash
+npm run build
+npm run preview
+```
+
+Open `http://localhost:4173` to test the production build locally.
+
+## Custom Domain
+
+Most hosting providers allow custom domains:
+
+1. **Vercel**: Project Settings → Domains → Add
+2. **Netlify**: Site Settings → Domain Management → Add custom domain
+3. **Cloudflare**: Configure in Pages settings
+
+## Performance Tips
+
+1. **Image Optimization**: Use WebP format for images
+2. **Code Splitting**: Vite handles this automatically
+3. **Lazy Loading**: Use React.lazy() for route components
+4. **Bundle Analysis**: Add `rollup-plugin-visualizer`
+
+## Troubleshooting
+
+### Build fails
+- Ensure Node.js version is 18+
+- Clear cache: `rm -rf node_modules dist && npm install`
+- Check for TypeScript errors if using TS
+
+### PWA not working
+- Must be served over HTTPS (except localhost)
+- Check service worker registration in DevTools
+- Clear browser cache and reload
+
+### Routing issues (404 on refresh)
+Add a `_redirects` file (Netlify) or `vercel.json` (Vercel):
+
+**Netlify** (`public/_redirects`):
+```
+/*    /index.html   200
+```
+
+**Vercel** (`vercel.json`):
+```json
+{
+  "rewrites": [{ "source": "/(.*)", "destination": "/" }]
+}
+```
+
+## Cache Busting
+
+Vite automatically adds content hashes to filenames for cache busting. When you deploy a new version:
+
+1. Users will automatically get the latest version
+2. Service worker will update in the background
+3. No manual cache clearing needed
+
+## Monitoring
+
+Consider adding:
+- Google Analytics
+- Sentry for error tracking
+- Web Vitals monitoring
+
+## Updates
+
+To update dependencies:
+```bash
+npm update
+npm audit fix
+```
+
+For major version updates:
+```bash
+npx npm-check-updates -u
+npm install
+```
+
