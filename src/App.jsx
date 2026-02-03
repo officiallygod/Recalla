@@ -4,6 +4,7 @@ import { GameProvider } from './contexts/GameContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import Layout from './components/Layout';
 import Home from './screens/Home';
+import Welcome from './screens/Welcome';
 import AddWord from './screens/AddWord';
 import WordsList from './screens/WordsList';
 import Game from './screens/Game';
@@ -13,10 +14,11 @@ function App() {
   return (
     <ThemeProvider>
       <GameProvider>
-        <Router>
+        <Router basename="/Recalla">
           <Layout>
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/welcome" element={<Welcome />} />
               <Route path="/add-word" element={<AddWord />} />
               <Route path="/words" element={<WordsList />} />
               <Route path="/game" element={<Game />} />

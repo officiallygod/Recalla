@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../components/Button';
 import Card from '../components/Card';
@@ -7,9 +7,11 @@ import { useGame } from '../contexts/GameContext';
 
 const AddWord = () => {
   const navigate = useNavigate();
-  const { addWord, words } = useGame();
+  const location = useLocation();
+  const { addWord, words, topics } = useGame();
   const [word, setWord] = useState('');
   const [meaning, setMeaning] = useState('');
+  const [selectedTopic, setSelectedTopic] = useState(location.state?.topicId || null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState('');
 
@@ -29,7 +31,7 @@ const AddWord = () => {
     }
 
     // Add word
-    addWord(word.trim(), meaning.trim());
+    addWord(word.trim(), meaning.trim(), selectedTopic);
 
     // Show success animation
     setShowSuccess(true);
@@ -66,6 +68,27 @@ const AddWord = () => {
       {/* Form */}
       <Card>
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Topic Selection */}
+          {topics.length > 0 && (
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                Topic (Optional)
+              </label>
+              <select
+                value={selectedTopic || ''}
+                onChange={(e) => setSelectedTopic(e.target.value ? parseInt(e.target.value) : null)}
+                className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 focus:border-primary-500 focus:outline-none transition-colors bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+              >
+                <option value="">No Topic (General)</option>
+                {topics.map(topic => (
+                  <option key={topic.id} value={topic.id}>
+                    {topic.emoji} {topic.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* Word Input */}
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">

@@ -12,11 +12,13 @@ export const useGame = () => {
 
 const STORAGE_KEYS = {
   WORDS: 'recalla_words',
-  USER_DATA: 'recalla_user_data'
+  USER_DATA: 'recalla_user_data',
+  TOPICS: 'recalla_topics'
 };
 
 export const GameProvider = ({ children }) => {
   const [words, setWords] = useState([]);
+  const [topics, setTopics] = useState([]);
   const [userData, setUserData] = useState({
     points: 0,
     coins: 0,
@@ -30,12 +32,16 @@ export const GameProvider = ({ children }) => {
   useEffect(() => {
     const storedWords = localStorage.getItem(STORAGE_KEYS.WORDS);
     const storedUserData = localStorage.getItem(STORAGE_KEYS.USER_DATA);
+    const storedTopics = localStorage.getItem(STORAGE_KEYS.TOPICS);
 
     if (storedWords) {
       setWords(JSON.parse(storedWords));
     }
     if (storedUserData) {
       setUserData(JSON.parse(storedUserData));
+    }
+    if (storedTopics) {
+      setTopics(JSON.parse(storedTopics));
     }
   }, []);
 
@@ -48,11 +54,18 @@ export const GameProvider = ({ children }) => {
     localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
   }, [userData]);
 
-  const addWord = (word, meaning) => {
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.TOPICS, JSON.stringify(topics));
+  }, [topics]);
+
+  // Add a word to the vocabulary, optionally associated with a topic
+  // topicId: The ID of the topic to associate this word with, or null for general words
+  const addWord = (word, meaning, topicId = null) => {
     const newWord = {
       id: Date.now(),
       word,
       meaning,
+      topicId,
       correct: 0,
       wrong: 0,
       lastPracticed: null
@@ -128,8 +141,81 @@ export const GameProvider = ({ children }) => {
     }));
   };
 
+  // Topic management functions
+  const addTopic = (name, emoji = '📚') => {
+    const newTopic = {
+      id: Date.now(),
+      name,
+      emoji,
+      createdAt: Date.now()
+    };
+    setTopics(prev => [...prev, newTopic]);
+    return newTopic;
+  };
+
+  const updateTopic = (id, updates) => {
+    setTopics(prev => prev.map(t => 
+      t.id === id ? { ...t, ...updates } : t
+    ));
+  };
+
+  const deleteTopic = (id) => {
+    setTopics(prev => prev.filter(t => t.id !== id));
+    // Also delete all words in this topic
+    setWords(prev => prev.filter(w => w.topicId !== id));
+  };
+
+  const exportTopic = (topicId) => {
+    const topic = topics.find(t => t.id === topicId);
+    const topicWords = words.filter(w => w.topicId === topicId);
+    
+    if (!topic) return null;
+    
+    return {
+      topic,
+      words: topicWords,
+      exportedAt: Date.now(),
+      version: '1.0'
+    };
+  };
+
+  const importTopic = (data) => {
+    try {
+      if (!data.topic || !data.words || !Array.isArray(data.words)) {
+        throw new Error('Invalid topic data format');
+      }
+
+      // Create new IDs to avoid conflicts
+      const newTopicId = Date.now();
+      const newTopic = {
+        ...data.topic,
+        id: newTopicId,
+        createdAt: Date.now()
+      };
+
+      // Import words with new IDs and updated topicId
+      const newWords = data.words.map((word, index) => ({
+        ...word,
+        id: Date.now() + index + 1,
+        topicId: newTopicId
+      }));
+
+      setTopics(prev => [...prev, newTopic]);
+      setWords(prev => [...prev, ...newWords]);
+
+      return { success: true, topic: newTopic };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  const getWordsByTopic = (topicId) => {
+    return words.filter(w => w.topicId === topicId);
+  };
+
   const value = {
     words,
+    topics,
     userData,
     addWord,
     deleteWord,
@@ -137,7 +223,13 @@ export const GameProvider = ({ children }) => {
     awardPoints,
     recordMatch,
     incrementGamesPlayed,
-    checkLevelUp
+    checkLevelUp,
+    addTopic,
+    updateTopic,
+    deleteTopic,
+    exportTopic,
+    importTopic,
+    getWordsByTopic
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

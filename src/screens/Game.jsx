@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../components/Button';
 import Card from '../components/Card';
@@ -8,7 +8,11 @@ import { useGame } from '../contexts/GameContext';
 
 const Game = () => {
   const navigate = useNavigate();
-  const { words, updateWordStats, awardPoints, recordMatch, incrementGamesPlayed } = useGame();
+  const location = useLocation();
+  const { words, topics, updateWordStats, awardPoints, recordMatch, incrementGamesPlayed, getWordsByTopic } = useGame();
+  const [selectedTopic, setSelectedTopic] = useState(location.state?.topicId || null);
+  
+  const gameWords = selectedTopic ? getWordsByTopic(selectedTopic) : words;
   
   const [gameCards, setGameCards] = useState([]);
   const [selectedCards, setSelectedCards] = useState([]);
@@ -22,13 +26,13 @@ const Game = () => {
   const [particles, setParticles] = useState([]);
 
   useEffect(() => {
-    if (words.length < 4) {
+    if (gameWords.length < 4) {
       navigate('/');
       return;
     }
     incrementGamesPlayed();
     startNewRound();
-  }, []);
+  }, [selectedTopic, gameWords.length]);
 
   const createParticles = (x, y, isCorrect) => {
     const colors = isCorrect 
@@ -52,10 +56,10 @@ const Game = () => {
 
   const startNewRound = () => {
     // Select 4 words, prioritizing those with more errors
-    const sortedWords = [...words].sort((a, b) => {
+    const sortedWords = [...gameWords].sort((a, b) => {
       return (b.wrong - b.correct) - (a.wrong - a.correct);
     });
-    const roundWords = sortedWords.slice(0, Math.min(4, words.length));
+    const roundWords = sortedWords.slice(0, Math.min(4, gameWords.length));
 
     // Create cards
     const cards = [];
@@ -178,18 +182,40 @@ const Game = () => {
       </AnimatePresence>
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => navigate('/')}
-          icon="←"
-        >
-          End Game
-        </Button>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => navigate('/')}
+            icon="←"
+          >
+            End Game
+          </Button>
+          {topics.length > 0 && (
+            <select
+              value={selectedTopic || ''}
+              onChange={(e) => {
+                setSelectedTopic(e.target.value ? parseInt(e.target.value) : null);
+                setRound(1);
+                setScore(0);
+                setCombo(0);
+                setTimeout(() => startNewRound(), 0);
+              }}
+              className="px-3 py-2 rounded-xl border-2 border-slate-200 dark:border-slate-600 focus:border-primary-500 focus:outline-none transition-colors bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 text-sm"
+            >
+              <option value="">All Topics</option>
+              {topics.map(topic => (
+                <option key={topic.id} value={topic.id}>
+                  {topic.emoji} {topic.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
 
         {/* Game Stats */}
-        <div className="flex gap-4">
+        <div className="flex gap-2 sm:gap-4">
           <motion.div
             animate={{ scale: [1, 1.1, 1] }}
             transition={{ duration: 0.5 }}
@@ -248,7 +274,7 @@ const Game = () => {
       </AnimatePresence>
 
       {/* Game Board */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         <AnimatePresence>
           {gameCards.map((card, index) => {
             const selected = isCardSelected(index);
@@ -269,7 +295,7 @@ const Game = () => {
                 <Card
                   onClick={(e) => handleCardClick(index, e)}
                   className={`
-                    min-h-[120px] flex items-center justify-center text-center
+                    min-h-[100px] sm:min-h-[120px] flex items-center justify-center text-center
                     transition-all duration-300
                     ${selected ? 'bg-gradient-to-br from-primary-500 to-purple-600 text-white shadow-2xl scale-105 ring-4 ring-primary-300 dark:ring-primary-600' : ''}
                     ${matched ? 'pointer-events-none' : 'cursor-pointer hover:shadow-2xl'}
@@ -278,7 +304,7 @@ const Game = () => {
                   hoverable={!matched}
                 >
                   <motion.p 
-                    className={`font-semibold text-lg px-4 ${selected ? 'text-white' : 'text-slate-800 dark:text-slate-200'}`}
+                    className={`font-semibold text-base sm:text-lg px-4 ${selected ? 'text-white' : 'text-slate-800 dark:text-slate-200'}`}
                     animate={selected ? { scale: [1, 1.1, 1] } : {}}
                     transition={{ duration: 0.3 }}
                   >
