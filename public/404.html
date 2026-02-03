@@ -7,7 +7,7 @@
     <script>
       // GitHub Pages SPA redirect for 404 handling
       // Store the path and redirect to index.html
-      sessionStorage.redirect = location.href;
+      sessionStorage.setItem('redirect', location.href);
     </script>
     <meta http-equiv="refresh" content="0;URL='/Recalla/'">
   </head>
