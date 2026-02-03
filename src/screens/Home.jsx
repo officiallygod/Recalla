@@ -11,6 +11,13 @@ const Home = () => {
 
   const menuItems = [
     {
+      title: 'Topics',
+      icon: '🎯',
+      description: 'Manage your learning topics',
+      path: '/welcome',
+      variant: 'primary'
+    },
+    {
       title: 'Add Words',
       icon: '➕',
       description: 'Add new words to your vocabulary',

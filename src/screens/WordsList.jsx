@@ -1,5 +1,5 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../components/Button';
 import Card from '../components/Card';
@@ -7,7 +7,23 @@ import { useGame } from '../contexts/GameContext';
 
 const WordsList = () => {
   const navigate = useNavigate();
-  const { words, deleteWord } = useGame();
+  const location = useLocation();
+  const { words, topics, deleteWord, getWordsByTopic } = useGame();
+  const [selectedTopic, setSelectedTopic] = useState(location.state?.topicId || null);
+
+  useEffect(() => {
+    if (location.state?.topicId) {
+      setSelectedTopic(location.state.topicId);
+    }
+  }, [location.state?.topicId]);
+
+  const displayWords = selectedTopic 
+    ? getWordsByTopic(selectedTopic)
+    : words;
+
+  const currentTopic = selectedTopic 
+    ? topics.find(t => t.id === selectedTopic)
+    : null;
 
   const handleDelete = (id) => {
     if (window.confirm('Are you sure you want to delete this word?')) {
@@ -32,14 +48,35 @@ const WordsList = () => {
       </Button>
 
       <Card glassEffect>
-        <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100">My Words</h2>
-        <p className="text-slate-600 dark:text-slate-300 mt-2">
-          {words.length} {words.length === 1 ? 'word' : 'words'} in your collection
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+              {currentTopic ? `${currentTopic.emoji} ${currentTopic.name}` : 'My Words'}
+            </h2>
+            <p className="text-slate-600 dark:text-slate-300 mt-2">
+              {displayWords.length} {displayWords.length === 1 ? 'word' : 'words'} 
+              {currentTopic ? ' in this topic' : ' in your collection'}
+            </p>
+          </div>
+          {topics.length > 0 && (
+            <select
+              value={selectedTopic || ''}
+              onChange={(e) => setSelectedTopic(e.target.value ? parseInt(e.target.value) : null)}
+              className="px-4 py-2 rounded-xl border-2 border-slate-200 dark:border-slate-600 focus:border-primary-500 focus:outline-none transition-colors bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+            >
+              <option value="">All Topics</option>
+              {topics.map(topic => (
+                <option key={topic.id} value={topic.id}>
+                  {topic.emoji} {topic.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
       </Card>
 
       {/* Words List */}
-      {words.length === 0 ? (
+      {displayWords.length === 0 ? (
         <Card className="text-center py-12">
           <div className="text-6xl mb-4">📚</div>
           <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">
@@ -55,7 +92,7 @@ const WordsList = () => {
       ) : (
         <div className="space-y-3">
           <AnimatePresence>
-            {words.map((word, index) => (
+            {displayWords.map((word, index) => (
               <motion.div
                 key={word.id}
                 initial={{ opacity: 0, x: -20 }}
