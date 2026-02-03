@@ -8,7 +8,7 @@ const Layout = ({ children }) => {
   const { isDark, toggleTheme } = useTheme();
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ minHeight: '100dvh' }}>
+    <div className="min-h-screen-mobile flex flex-col">
       {/* Header */}
       <motion.header 
         initial={{ y: -100 }}
