@@ -3,10 +3,12 @@
   "short_name": "Recalla",
   "description": "A fun and interactive word recall game to help you learn new languages with gamification",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#667eea",
-  "theme_color": "#4A90E2",
-  "orientation": "portrait",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "categories": ["education", "games"],
   "icons": [
     {
       "src": "icon-192.png",
@@ -21,12 +23,12 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["education", "games"],
   "screenshots": [
     {
       "src": "screenshot.png",
       "sizes": "1280x720",
-      "type": "image/png"
+      "type": "image/png",
+      "form_factor": "wide"
     }
   ]
 }

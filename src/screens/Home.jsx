@@ -53,17 +53,17 @@ const Home = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="space-y-8"
+      className="space-y-6 sm:space-y-8 pb-4"
     >
       {/* Welcome Card */}
-      <Card glassEffect className="text-center">
+      <Card glassEffect className="text-center p-6 sm:p-8">
         <motion.div
           initial={{ scale: 0.9 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
         >
           <motion.h2 
-            className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary-600 via-purple-600 to-pink-600 dark:from-primary-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent"
+            className="text-3xl sm:text-4xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-primary-600 via-purple-600 to-pink-600 dark:from-primary-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent"
             animate={{ 
               backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
             }}
@@ -71,14 +71,14 @@ const Home = () => {
           >
             Welcome to Recalla! 🎓
           </motion.h2>
-          <p className="text-lg text-slate-600 dark:text-slate-300">
+          <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300">
             Learn and remember words through fun interactive games
           </p>
         </motion.div>
       </Card>
 
       {/* Menu Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-5 gap-3 sm:gap-4 justify-items-center">
         {menuItems.map((item, index) => (
           <motion.div
             key={item.path}
@@ -86,19 +86,20 @@ const Home = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 * (index + 1) }}
             whileHover={{ scale: item.disabled ? 1 : 1.02 }}
+            className="w-full max-w-md"
           >
             <Card
               onClick={!item.disabled ? () => navigate(item.path) : undefined}
               className={`
                 ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}
-                hover:shadow-xl transition-shadow
+                hover:shadow-xl transition-shadow min-h-[100px]
               `}
               pressable={!item.disabled}
               hoverable={!item.disabled}
             >
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3 sm:gap-4 p-2 justify-center sm:justify-start">
                 <motion.div 
-                  className="text-5xl"
+                  className="text-4xl sm:text-5xl flex-shrink-0"
                   animate={{ 
                     rotate: [0, 5, -5, 0],
                     scale: [1, 1.1, 1]
@@ -111,8 +112,8 @@ const Home = () => {
                 >
                   {item.icon}
                 </motion.div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-1">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 mb-1 truncate">
                     {item.title}
                   </h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400">
