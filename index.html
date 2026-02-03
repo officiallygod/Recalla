@@ -7,6 +7,25 @@
     <meta name="description" content="Recalla - A modern word recall game to learn new languages with gamification" />
     <link rel="icon" type="image/png" href="/icon-192.png" />
     <title>Recalla - Word Recall Game</title>
+    <!-- GitHub Pages SPA redirect handler -->
+    <script>
+      (function() {
+        var redirect = sessionStorage.getItem('redirect');
+        sessionStorage.removeItem('redirect');
+        if (redirect && redirect !== location.href) {
+          // Validate that the redirect URL is from the same origin
+          try {
+            var redirectUrl = new URL(redirect);
+            var currentUrl = new URL(location.href);
+            if (redirectUrl.origin === currentUrl.origin && redirectUrl.pathname.startsWith('/Recalla/')) {
+              history.replaceState(null, null, redirect);
+            }
+          } catch (e) {
+            // Invalid URL, ignore
+          }
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
