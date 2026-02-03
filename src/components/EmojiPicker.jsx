@@ -91,7 +91,7 @@ const EmojiPicker = ({ selectedEmoji, onSelect, className = '' }) => {
 
             {/* Emoji Grid */}
             <div className="p-3 max-h-64 overflow-y-auto">
-              <div className="grid grid-cols-8 gap-1">
+              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-1">
                 {EMOJI_CATEGORIES[activeCategory].map((emoji, index) => (
                   <motion.button
                     key={index}

@@ -78,7 +78,7 @@ const Home = () => {
       </Card>
 
       {/* Menu Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-5 gap-4">
         {menuItems.map((item, index) => (
           <motion.div
             key={item.path}

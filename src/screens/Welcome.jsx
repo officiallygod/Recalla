@@ -252,7 +252,7 @@ const Welcome = () => {
           </p>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5 4k:grid-cols-6 gap-4">
           {topics.map((topic, index) => {
             const stats = getTopicStats(topic.id);
             const isEditing = editingTopic === topic.id;
@@ -316,6 +316,17 @@ const Welcome = () => {
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
+                      {stats.count >= 4 && (
+                        <Button
+                          size="sm"
+                          variant="success"
+                          onClick={() => navigate('/game', { state: { topicId: topic.id } })}
+                          icon="🎮"
+                          fullWidth
+                        >
+                          Play
+                        </Button>
+                      )}
                       <Button
                         size="sm"
                         variant="secondary"
@@ -325,16 +336,32 @@ const Welcome = () => {
                       >
                         Export
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => handleDeleteTopic(topic.id)}
-                        icon="🗑️"
-                        fullWidth
-                      >
-                        Delete
-                      </Button>
+                      {stats.count < 4 && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => handleDeleteTopic(topic.id)}
+                          icon="🗑️"
+                          fullWidth
+                        >
+                          Delete
+                        </Button>
+                      )}
                     </div>
+
+                    {stats.count >= 4 && (
+                      <div className="grid grid-cols-1 gap-2">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => handleDeleteTopic(topic.id)}
+                          icon="🗑️"
+                          fullWidth
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </Card>
               </motion.div>
