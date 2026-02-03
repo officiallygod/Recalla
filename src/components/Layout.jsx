@@ -8,15 +8,15 @@ const Layout = ({ children }) => {
   const { isDark, toggleTheme } = useTheme();
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ minHeight: '100dvh' }}>
       {/* Header */}
       <motion.header 
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        className="glass-dark sticky top-0 z-50 border-b border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl"
+        className="glass-dark sticky top-0 z-50 border-b border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl safe-area-top"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 safe-area-x">
+          <div className="flex items-center justify-between h-16 min-h-[64px]">
             {/* Logo */}
             <motion.div
               whileHover={{ scale: 1.05 }}
@@ -63,7 +63,7 @@ const Layout = ({ children }) => {
       </motion.header>
 
       {/* Main Content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 safe-area-x safe-area-bottom">
         {children}
       </main>
     </div>
