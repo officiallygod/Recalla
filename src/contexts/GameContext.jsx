@@ -58,6 +58,8 @@ export const GameProvider = ({ children }) => {
     localStorage.setItem(STORAGE_KEYS.TOPICS, JSON.stringify(topics));
   }, [topics]);
 
+  // Add a word to the vocabulary, optionally associated with a topic
+  // topicId: The ID of the topic to associate this word with, or null for general words
   const addWord = (word, meaning, topicId = null) => {
     const newWord = {
       id: Date.now(),

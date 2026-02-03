@@ -32,7 +32,7 @@ const Game = () => {
     }
     incrementGamesPlayed();
     startNewRound();
-  }, [selectedTopic]);
+  }, [selectedTopic, gameWords.length]);
 
   const createParticles = (x, y, isCorrect) => {
     const colors = isCorrect 
@@ -200,6 +200,7 @@ const Game = () => {
                 setRound(1);
                 setScore(0);
                 setCombo(0);
+                setTimeout(() => startNewRound(), 0);
               }}
               className="px-3 py-2 rounded-xl border-2 border-slate-200 dark:border-slate-600 focus:border-primary-500 focus:outline-none transition-colors bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 text-sm"
             >

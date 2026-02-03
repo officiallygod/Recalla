@@ -14,7 +14,7 @@ function App() {
   return (
     <ThemeProvider>
       <GameProvider>
-        <Router>
+        <Router basename="/Recalla">
           <Layout>
             <Routes>
               <Route path="/" element={<Home />} />

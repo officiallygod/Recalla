@@ -99,6 +99,7 @@ const EmojiPicker = ({ selectedEmoji, onSelect, className = '' }) => {
                     onClick={() => handleEmojiSelect(emoji)}
                     whileHover={{ scale: 1.2 }}
                     whileTap={{ scale: 0.9 }}
+                    aria-label={`Select emoji: ${emoji}`}
                     className={`
                       text-2xl p-2 rounded-lg transition-all
                       hover:bg-primary-100 dark:hover:bg-primary-900/30

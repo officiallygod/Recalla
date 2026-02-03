@@ -43,6 +43,7 @@ const Welcome = () => {
     setNewTopicName('');
     setNewTopicEmoji('📚');
     setShowAddTopic(false);
+    setError('');
   };
 
   const handleUpdateTopic = (topicId, name, emoji) => {
