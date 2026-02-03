@@ -78,7 +78,7 @@ const Home = () => {
       </Card>
 
       {/* Menu Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-5 gap-3 sm:gap-4 justify-items-center">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 justify-items-center">
         {menuItems.map((item, index) => (
           <motion.div
             key={item.path}
@@ -97,7 +97,7 @@ const Home = () => {
               pressable={!item.disabled}
               hoverable={!item.disabled}
             >
-              <div className="flex items-center gap-3 sm:gap-4 p-2 justify-center sm:justify-start">
+              <div className="flex items-center gap-4 sm:gap-5 p-3 justify-center sm:justify-start">
                 <motion.div 
                   className="text-4xl sm:text-5xl flex-shrink-0"
                   animate={{ 
