@@ -16,7 +16,7 @@ const Game = () => {
   // If no topic is selected, use words that have a topicId (ensuring words are grouped by topic)
   const gameWords = selectedTopic 
     ? getWordsByTopic(selectedTopic) 
-    : words.filter(w => w.topicId !== null);
+    : words.filter(w => w.topicId != null);
   
   const [gameCards, setGameCards] = useState([]);
   const [selectedCards, setSelectedCards] = useState([]);
