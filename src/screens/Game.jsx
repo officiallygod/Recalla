@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../components/Button';
 import Card from '../components/Card';
+import Confetti from '../components/Confetti';
 import { useGame } from '../contexts/GameContext';
 
 const Game = () => {
@@ -17,6 +18,8 @@ const Game = () => {
   const [combo, setCombo] = useState(0);
   const [message, setMessage] = useState('');
   const [isChecking, setIsChecking] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [particles, setParticles] = useState([]);
 
   useEffect(() => {
     if (words.length < 4) {
@@ -26,6 +29,26 @@ const Game = () => {
     incrementGamesPlayed();
     startNewRound();
   }, []);
+
+  const createParticles = (x, y, isCorrect) => {
+    const colors = isCorrect 
+      ? ['#10b981', '#34d399', '#6ee7b7'] 
+      : ['#ef4444', '#f87171', '#fca5a5'];
+    
+    const newParticles = Array.from({ length: 12 }, (_, i) => ({
+      id: Date.now() + i,
+      x,
+      y,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      angle: (Math.PI * 2 * i) / 12,
+      velocity: 2 + Math.random() * 2,
+    }));
+
+    setParticles(prev => [...prev, ...newParticles]);
+    setTimeout(() => {
+      setParticles(prev => prev.filter(p => !newParticles.find(np => np.id === p.id)));
+    }, 1000);
+  };
 
   const startNewRound = () => {
     // Select 4 words, prioritizing those with more errors
@@ -46,24 +69,28 @@ const Game = () => {
     setGameCards(shuffled);
     setSelectedCards([]);
     setMatchedPairs([]);
-    setMessage('Match words with their meanings!');
+    setMessage('Match words with their meanings! ✨');
   };
 
-  const handleCardClick = (index) => {
+  const handleCardClick = (index, event) => {
     if (isChecking || selectedCards.length >= 2 || selectedCards.includes(index) || matchedPairs.includes(gameCards[index].pairId)) {
       return;
     }
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
 
     const newSelected = [...selectedCards, index];
     setSelectedCards(newSelected);
 
     if (newSelected.length === 2) {
       setIsChecking(true);
-      setTimeout(() => checkMatch(newSelected), 500);
+      setTimeout(() => checkMatch(newSelected, x, y), 500);
     }
   };
 
-  const checkMatch = (selected) => {
+  const checkMatch = (selected, x, y) => {
     const [first, second] = selected;
     const card1 = gameCards[first];
     const card2 = gameCards[second];
@@ -78,25 +105,31 @@ const Game = () => {
       setScore(prev => prev + points);
       awardPoints(points, 10 + (newCombo * 5));
       
-      setMessage(`🎉 Perfect Match! +${points} points! 🔥${newCombo}`);
+      setMessage(`🎉 Perfect Match! +${points} points! ${newCombo > 1 ? `🔥x${newCombo}` : ''}`);
+      createParticles(x, y, true);
       
       updateWordStats(card1.id, true);
       recordMatch(true);
 
       // Check if round complete
       if (matchedPairs.length + 1 === gameCards.length / 2) {
+        setShowConfetti(true);
         setTimeout(() => {
           const bonus = newCombo * 100;
           awardPoints(bonus, 50);
           setMessage(`🏆 Round ${round} Complete! Bonus: +${bonus} points!`);
           setRound(prev => prev + 1);
-          setTimeout(() => startNewRound(), 2000);
+          setTimeout(() => {
+            setShowConfetti(false);
+            startNewRound();
+          }, 2000);
         }, 1000);
       }
     } else {
       // Wrong match
       setCombo(0);
-      setMessage('❌ Try again!');
+      setMessage('❌ Try again! Keep matching!');
+      createParticles(x, y, false);
       updateWordStats(card1.id, false);
       updateWordStats(card2.id, false);
       recordMatch(false);
@@ -117,6 +150,33 @@ const Game = () => {
       animate={{ opacity: 1 }}
       className="max-w-5xl mx-auto space-y-6"
     >
+      <Confetti trigger={showConfetti} />
+      
+      {/* Particles */}
+      <AnimatePresence>
+        {particles.map(particle => (
+          <motion.div
+            key={particle.id}
+            initial={{
+              x: particle.x,
+              y: particle.y,
+              scale: 1,
+              opacity: 1,
+            }}
+            animate={{
+              x: particle.x + Math.cos(particle.angle) * particle.velocity * 100,
+              y: particle.y + Math.sin(particle.angle) * particle.velocity * 100,
+              scale: 0,
+              opacity: 0,
+            }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1, ease: 'easeOut' }}
+            className="fixed w-3 h-3 rounded-full pointer-events-none z-40"
+            style={{ backgroundColor: particle.color }}
+          />
+        ))}
+      </AnimatePresence>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <Button
@@ -130,24 +190,45 @@ const Game = () => {
 
         {/* Game Stats */}
         <div className="flex gap-4">
-          <Card className="px-4 py-2">
-            <div className="text-center">
-              <div className="text-xs text-slate-500">Round</div>
-              <div className="text-lg font-bold text-primary-600">{round}</div>
-            </div>
-          </Card>
-          <Card className="px-4 py-2">
-            <div className="text-center">
-              <div className="text-xs text-slate-500">Score</div>
-              <div className="text-lg font-bold text-primary-600">{score}</div>
-            </div>
-          </Card>
-          <Card className="px-4 py-2">
-            <div className="text-center">
-              <div className="text-xs text-slate-500">Combo</div>
-              <div className="text-lg font-bold text-orange-600">{combo}🔥</div>
-            </div>
-          </Card>
+          <motion.div
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{ duration: 0.5 }}
+            key={round}
+          >
+            <Card className="px-4 py-2">
+              <div className="text-center">
+                <div className="text-xs text-slate-500 dark:text-slate-400">Round</div>
+                <div className="text-lg font-bold text-primary-600 dark:text-primary-400">{round}</div>
+              </div>
+            </Card>
+          </motion.div>
+          <motion.div
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{ duration: 0.5 }}
+            key={score}
+          >
+            <Card className="px-4 py-2">
+              <div className="text-center">
+                <div className="text-xs text-slate-500 dark:text-slate-400">Score</div>
+                <div className="text-lg font-bold text-primary-600 dark:text-primary-400">{score}</div>
+              </div>
+            </Card>
+          </motion.div>
+          <motion.div
+            animate={{ 
+              scale: combo > 0 ? [1, 1.2, 1] : 1,
+              rotate: combo > 0 ? [0, -10, 10, 0] : 0
+            }}
+            transition={{ duration: 0.5 }}
+            key={combo}
+          >
+            <Card className="px-4 py-2">
+              <div className="text-center">
+                <div className="text-xs text-slate-500 dark:text-slate-400">Combo</div>
+                <div className="text-lg font-bold text-orange-600 dark:text-orange-400">{combo}🔥</div>
+              </div>
+            </Card>
+          </motion.div>
         </div>
       </div>
 
@@ -155,12 +236,13 @@ const Game = () => {
       <AnimatePresence mode="wait">
         <motion.div
           key={message}
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, scale: 0.8, y: -20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.8, y: 20 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
         >
           <Card glassEffect className="text-center">
-            <p className="text-lg font-semibold text-slate-800">{message}</p>
+            <p className="text-lg font-semibold text-slate-800 dark:text-slate-200">{message}</p>
           </Card>
         </motion.div>
       </AnimatePresence>
@@ -175,28 +257,33 @@ const Game = () => {
             return (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, scale: 0.8, rotateY: -180 }}
                 animate={{ 
                   opacity: matched ? 0 : 1, 
                   scale: matched ? 0.5 : 1,
-                  rotateY: matched ? 180 : 0
+                  rotateY: 0
                 }}
                 exit={{ opacity: 0, scale: 0 }}
                 transition={{ duration: 0.3 }}
               >
                 <Card
-                  onClick={() => handleCardClick(index)}
+                  onClick={(e) => handleCardClick(index, e)}
                   className={`
                     min-h-[120px] flex items-center justify-center text-center
-                    ${selected ? 'bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-xl scale-105' : ''}
-                    ${matched ? 'pointer-events-none' : 'cursor-pointer'}
+                    transition-all duration-300
+                    ${selected ? 'bg-gradient-to-br from-primary-500 to-purple-600 text-white shadow-2xl scale-105 ring-4 ring-primary-300 dark:ring-primary-600' : ''}
+                    ${matched ? 'pointer-events-none' : 'cursor-pointer hover:shadow-2xl'}
                   `}
                   pressable={!matched}
                   hoverable={!matched}
                 >
-                  <p className={`font-semibold text-lg px-4 ${selected ? 'text-white' : 'text-slate-800'}`}>
+                  <motion.p 
+                    className={`font-semibold text-lg px-4 ${selected ? 'text-white' : 'text-slate-800 dark:text-slate-200'}`}
+                    animate={selected ? { scale: [1, 1.1, 1] } : {}}
+                    transition={{ duration: 0.3 }}
+                  >
                     {card.value}
-                  </p>
+                  </motion.p>
                 </Card>
               </motion.div>
             );

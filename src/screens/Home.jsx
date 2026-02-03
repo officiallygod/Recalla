@@ -55,10 +55,16 @@ const Home = () => {
           animate={{ scale: 1 }}
           transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
         >
-          <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <motion.h2 
+            className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary-600 via-purple-600 to-pink-600 dark:from-primary-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent"
+            animate={{ 
+              backgroundPosition: ['0% 50%', '100% 50%', '0% 50%']
+            }}
+            transition={{ duration: 5, repeat: Infinity }}
+          >
             Welcome to Recalla! 🎓
-          </h2>
-          <p className="text-lg text-slate-600">
+          </motion.h2>
+          <p className="text-lg text-slate-600 dark:text-slate-300">
             Learn and remember words through fun interactive games
           </p>
         </motion.div>
@@ -72,6 +78,7 @@ const Home = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 * (index + 1) }}
+            whileHover={{ scale: item.disabled ? 1 : 1.02 }}
           >
             <Card
               onClick={!item.disabled ? () => navigate(item.path) : undefined}
@@ -83,12 +90,25 @@ const Home = () => {
               hoverable={!item.disabled}
             >
               <div className="flex items-center gap-4">
-                <div className="text-5xl">{item.icon}</div>
+                <motion.div 
+                  className="text-5xl"
+                  animate={{ 
+                    rotate: [0, 5, -5, 0],
+                    scale: [1, 1.1, 1]
+                  }}
+                  transition={{ 
+                    duration: 2, 
+                    repeat: Infinity,
+                    repeatDelay: 1
+                  }}
+                >
+                  {item.icon}
+                </motion.div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-slate-900 mb-1">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-1">
                     {item.title}
                   </h3>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
                     {item.description}
                   </p>
                 </div>
@@ -105,8 +125,8 @@ const Home = () => {
           transition={{ delay: 0.5 }}
           className="text-center"
         >
-          <Card className="bg-amber-50 border-amber-200">
-            <p className="text-amber-800">
+          <Card className="bg-amber-50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-700">
+            <p className="text-amber-800 dark:text-amber-200">
               💡 Add at least 4 words to unlock the Match Game!
             </p>
           </Card>
