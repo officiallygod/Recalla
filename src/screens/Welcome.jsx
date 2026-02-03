@@ -253,7 +253,7 @@ const Welcome = () => {
           </p>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5 4k:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
           {topics.map((topic, index) => {
             const stats = getTopicStats(topic.id);
             const isEditing = editingTopic === topic.id;
@@ -266,7 +266,7 @@ const Welcome = () => {
                 transition={{ delay: index * 0.05 }}
               >
                 <Card hoverable className="h-full">
-                  <div className="space-y-4">
+                  <div className="space-y-5">
                     {/* Topic Header */}
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-3 flex-1 min-w-0">

@@ -12,7 +12,11 @@ const Game = () => {
   const { words, topics, updateWordStats, awardPoints, recordMatch, incrementGamesPlayed, getWordsByTopic } = useGame();
   const [selectedTopic, setSelectedTopic] = useState(location.state?.topicId || null);
   
-  const gameWords = selectedTopic ? getWordsByTopic(selectedTopic) : words;
+  // Get words for the game - if a topic is selected, use only that topic's words
+  // If no topic is selected, use words that have a topicId (ensuring words are grouped by topic)
+  const gameWords = selectedTopic 
+    ? getWordsByTopic(selectedTopic) 
+    : words.filter(w => w.topicId !== null);
   
   const [gameCards, setGameCards] = useState([]);
   const [selectedCards, setSelectedCards] = useState([]);
@@ -274,7 +278,7 @@ const Game = () => {
       </AnimatePresence>
 
       {/* Game Board */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
         <AnimatePresence>
           {gameCards.map((card, index) => {
             const selected = isCardSelected(index);
@@ -295,7 +299,7 @@ const Game = () => {
                 <Card
                   onClick={(e) => handleCardClick(index, e)}
                   className={`
-                    min-h-[100px] sm:min-h-[120px] flex items-center justify-center text-center
+                    min-h-[120px] sm:min-h-[140px] flex items-center justify-center text-center p-4
                     transition-all duration-300
                     ${selected ? 'bg-gradient-to-br from-primary-500 to-purple-600 text-white shadow-2xl scale-105 ring-4 ring-primary-300 dark:ring-primary-600' : ''}
                     ${matched ? 'pointer-events-none' : 'cursor-pointer hover:shadow-2xl'}
