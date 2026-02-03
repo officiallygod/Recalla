@@ -78,7 +78,7 @@ const Home = () => {
       </Card>
 
       {/* Menu Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-5 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-5 gap-3 sm:gap-4 justify-items-center">
         {menuItems.map((item, index) => (
           <motion.div
             key={item.path}
@@ -86,6 +86,7 @@ const Home = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 * (index + 1) }}
             whileHover={{ scale: item.disabled ? 1 : 1.02 }}
+            className="w-full max-w-md"
           >
             <Card
               onClick={!item.disabled ? () => navigate(item.path) : undefined}
@@ -96,7 +97,7 @@ const Home = () => {
               pressable={!item.disabled}
               hoverable={!item.disabled}
             >
-              <div className="flex items-center gap-3 sm:gap-4 p-2">
+              <div className="flex items-center gap-3 sm:gap-4 p-2 justify-center sm:justify-start">
                 <motion.div 
                   className="text-4xl sm:text-5xl flex-shrink-0"
                   animate={{ 
