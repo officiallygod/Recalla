@@ -35,7 +35,14 @@ export const GameProvider = ({ children }) => {
     const storedTopics = localStorage.getItem(STORAGE_KEYS.TOPICS);
 
     if (storedWords) {
-      setWords(JSON.parse(storedWords));
+      const parsedWords = JSON.parse(storedWords);
+      // Migrate existing words to include new fields
+      const migratedWords = parsedWords.map(word => ({
+        ...word,
+        masteryScore: word.masteryScore ?? 0,
+        consecutiveCorrect: word.consecutiveCorrect ?? 0
+      }));
+      setWords(migratedWords);
     }
     if (storedUserData) {
       setUserData(JSON.parse(storedUserData));
