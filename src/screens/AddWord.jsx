@@ -16,11 +16,12 @@ const AddWord = () => {
   const [error, setError] = useState('');
 
   // Redirect to topics page if no topic is selected
+  const topicIdFromState = location.state?.topicId;
   useEffect(() => {
-    if (!location.state?.topicId) {
+    if (!topicIdFromState) {
       navigate('/welcome', { replace: true });
     }
-  }, [location.state, navigate]);
+  }, [topicIdFromState, navigate]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -76,16 +77,19 @@ const AddWord = () => {
       <Card>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Topic Display */}
-          {selectedTopic && topics.length > 0 && (
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-                Topic
-              </label>
-              <div className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
-                {topics.find(t => t.id === selectedTopic)?.emoji} {topics.find(t => t.id === selectedTopic)?.name}
+          {selectedTopic && topics.length > 0 && (() => {
+            const currentTopic = topics.find(t => t.id === selectedTopic);
+            return currentTopic ? (
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  Topic
+                </label>
+                <div className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                  {currentTopic.emoji} {currentTopic.name}
+                </div>
               </div>
-            </div>
-          )}
+            ) : null;
+          })()}
 
           {/* Word Input */}
           <div className="space-y-2">
