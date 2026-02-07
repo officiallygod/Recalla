@@ -17,10 +17,10 @@ const AddWord = () => {
 
   // Redirect to topics page if no topic is selected
   useEffect(() => {
-    if (!selectedTopic) {
+    if (!location.state?.topicId) {
       navigate('/welcome', { replace: true });
     }
-  }, [selectedTopic, navigate]);
+  }, [location.state, navigate]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
