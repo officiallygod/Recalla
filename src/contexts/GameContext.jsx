@@ -68,7 +68,9 @@ export const GameProvider = ({ children }) => {
       topicId,
       correct: 0,
       wrong: 0,
-      lastPracticed: null
+      lastPracticed: null,
+      masteryScore: 0, // 0-100, higher = better mastery
+      consecutiveCorrect: 0 // Track consecutive correct answers
     };
     
     setWords(prev => [...prev, newWord]);
@@ -90,11 +92,29 @@ export const GameProvider = ({ children }) => {
   const updateWordStats = (id, isCorrect) => {
     setWords(prev => prev.map(w => {
       if (w.id === id) {
+        const newConsecutiveCorrect = isCorrect ? (w.consecutiveCorrect || 0) + 1 : 0;
+        const totalAttempts = (w.correct || 0) + (w.wrong || 0) + 1;
+        const correctCount = isCorrect ? (w.correct || 0) + 1 : (w.correct || 0);
+        
+        // Calculate mastery score (0-100)
+        // Based on: accuracy (60%), consecutive correct (30%), total practice (10%)
+        const accuracy = totalAttempts > 0 ? (correctCount / totalAttempts) : 0;
+        const consecutiveBonus = Math.min(newConsecutiveCorrect / 5, 1); // Max bonus at 5 consecutive
+        const practiceBonus = Math.min(totalAttempts / 20, 1); // Max bonus at 20 attempts
+        
+        const masteryScore = Math.round(
+          (accuracy * 60) + 
+          (consecutiveBonus * 30) + 
+          (practiceBonus * 10)
+        );
+        
         return {
           ...w,
           correct: isCorrect ? w.correct + 1 : w.correct,
           wrong: !isCorrect ? w.wrong + 1 : w.wrong,
-          lastPracticed: Date.now()
+          lastPracticed: Date.now(),
+          consecutiveCorrect: newConsecutiveCorrect,
+          masteryScore: masteryScore
         };
       }
       return w;

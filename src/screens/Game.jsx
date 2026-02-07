@@ -28,6 +28,8 @@ const Game = () => {
   const [isChecking, setIsChecking] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [particles, setParticles] = useState([]);
+  const [availableWords, setAvailableWords] = useState([]); // Pool of words not currently shown
+  const [activeWordIds, setActiveWordIds] = useState([]); // Words currently on screen
 
   useEffect(() => {
     if (gameWords.length < 4) {
@@ -58,16 +60,117 @@ const Game = () => {
     }, 1000);
   };
 
-  const startNewRound = () => {
-    // Select 4 words, prioritizing those with more errors
-    const sortedWords = [...gameWords].sort((a, b) => {
-      return (b.wrong - b.correct) - (a.wrong - a.correct);
+  // Replace matched cards with new words from the pool
+  const replaceMatchedCards = (matchedPairId) => {
+    if (availableWords.length === 0) {
+      return; // No more words to add
+    }
+    
+    // Select a new word based on mastery (prioritize less mastered words)
+    const wordsWithWeights = availableWords.map(word => {
+      const masteryScore = word.masteryScore || 0;
+      const weight = Math.max(10, 100 - masteryScore);
+      return { word, weight };
     });
-    const roundWords = sortedWords.slice(0, Math.min(4, gameWords.length));
+    
+    // Weighted random selection
+    const totalWeight = wordsWithWeights.reduce((sum, w) => sum + w.weight, 0);
+    let random = Math.random() * totalWeight;
+    let selectedWord = wordsWithWeights[0].word;
+    
+    for (const { word, weight } of wordsWithWeights) {
+      random -= weight;
+      if (random <= 0) {
+        selectedWord = word;
+        break;
+      }
+    }
+    
+    // Add delay (500-1500ms) for randomness so user can't predict
+    const delay = 500 + Math.random() * 1000;
+    
+    setTimeout(() => {
+      setGameCards(prev => {
+        // Find indices of matched cards
+        const matchedIndices = [];
+        prev.forEach((card, idx) => {
+          if (card.pairId === matchedPairId) {
+            matchedIndices.push(idx);
+          }
+        });
+        
+        if (matchedIndices.length !== 2) return prev;
+        
+        // Create new cards for the selected word
+        const newPairId = Math.max(...prev.map(c => c.pairId)) + 1;
+        const newCards = [
+          { type: 'word', value: selectedWord.word, id: selectedWord.id, pairId: newPairId },
+          { type: 'meaning', value: selectedWord.meaning, id: selectedWord.id, pairId: newPairId }
+        ];
+        
+        // Shuffle the new cards to avoid obvious pairing
+        const shuffledNewCards = newCards.sort(() => Math.random() - 0.5);
+        
+        // Replace matched cards with new ones
+        const updated = [...prev];
+        updated[matchedIndices[0]] = shuffledNewCards[0];
+        updated[matchedIndices[1]] = shuffledNewCards[1];
+        
+        return updated;
+      });
+      
+      // Update available words and active words
+      setAvailableWords(prev => prev.filter(w => w.id !== selectedWord.id));
+      setActiveWordIds(prev => [...prev, selectedWord.id]);
+    }, delay);
+  };
+
+  const startNewRound = () => {
+    // Select words based on mastery score - prioritize less mastered words
+    // Use weighted random selection to ensure variety
+    const wordsWithWeights = gameWords.map(word => {
+      const masteryScore = word.masteryScore || 0;
+      // Lower mastery = higher weight (inverse relationship)
+      // Words with 0 mastery get weight 100, words with 100 mastery get weight 10
+      const weight = Math.max(10, 100 - masteryScore);
+      
+      // Boost weight for words not practiced recently or never practiced
+      const timeSinceLastPractice = word.lastPracticed 
+        ? (Date.now() - word.lastPracticed) / (1000 * 60 * 60) // hours
+        : 1000; // Never practiced = very high priority
+      
+      const timeBoost = Math.min(timeSinceLastPractice / 24, 2); // Max 2x boost after 2 days
+      
+      return {
+        word,
+        weight: weight * (1 + timeBoost)
+      };
+    });
+    
+    // Sort by weight (higher weight = higher priority)
+    const sortedByPriority = wordsWithWeights.sort((a, b) => b.weight - a.weight);
+    
+    // Take top candidates (more than we need for variety)
+    const candidatePool = sortedByPriority.slice(0, Math.min(12, gameWords.length));
+    
+    // Randomly select 4 from the candidate pool for variety
+    const selectedWords = [];
+    const poolCopy = [...candidatePool];
+    
+    for (let i = 0; i < Math.min(4, poolCopy.length); i++) {
+      const randomIndex = Math.floor(Math.random() * poolCopy.length);
+      selectedWords.push(poolCopy[randomIndex].word);
+      poolCopy.splice(randomIndex, 1);
+    }
+    
+    // Store available words (those not currently shown)
+    const currentWordIds = selectedWords.map(w => w.id);
+    setActiveWordIds(currentWordIds);
+    setAvailableWords(gameWords.filter(w => !currentWordIds.includes(w.id)));
 
     // Create cards
     const cards = [];
-    roundWords.forEach((word, index) => {
+    selectedWords.forEach((word, index) => {
       cards.push({ type: 'word', value: word.word, id: word.id, pairId: index });
       cards.push({ type: 'meaning', value: word.meaning, id: word.id, pairId: index });
     });
@@ -119,19 +222,33 @@ const Game = () => {
       updateWordStats(card1.id, true);
       recordMatch(true);
 
-      // Check if round complete
-      if (matchedPairs.length + 1 === gameCards.length / 2) {
-        setShowConfetti(true);
-        setTimeout(() => {
-          const bonus = newCombo * 100;
-          awardPoints(bonus, 50);
-          setMessage(`🏆 Round ${round} Complete! Bonus: +${bonus} points!`);
-          setRound(prev => prev + 1);
+      // Check if round complete (all current pairs matched)
+      const totalPairs = gameCards.length / 2;
+      if (matchedPairs.length + 1 === totalPairs) {
+        // If there are more words available, replace cards instead of ending round
+        if (availableWords.length > 0) {
+          setMessage('🎯 Keep going! New words incoming...');
+          // Replace the matched pair with a new word
+          replaceMatchedCards(card1.pairId);
+        } else {
+          // No more words, complete the round
+          setShowConfetti(true);
           setTimeout(() => {
-            setShowConfetti(false);
-            startNewRound();
-          }, 2000);
-        }, 1000);
+            const bonus = newCombo * 100;
+            awardPoints(bonus, 50);
+            setMessage(`🏆 Round ${round} Complete! Bonus: +${bonus} points!`);
+            setRound(prev => prev + 1);
+            setTimeout(() => {
+              setShowConfetti(false);
+              startNewRound();
+            }, 2000);
+          }, 1000);
+        }
+      } else {
+        // Not all pairs matched yet, replace this pair if words available
+        if (availableWords.length > 0) {
+          replaceMatchedCards(card1.pairId);
+        }
       }
     } else {
       // Wrong match
@@ -279,14 +396,15 @@ const Game = () => {
 
       {/* Game Board */}
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-        <AnimatePresence>
+        <AnimatePresence mode="popLayout">
           {gameCards.map((card, index) => {
             const selected = isCardSelected(index);
             const matched = isCardMatched(card);
 
             return (
               <motion.div
-                key={index}
+                key={`${card.id}-${card.type}-${card.pairId}`}
+                layout
                 initial={{ opacity: 0, scale: 0.8, rotateY: -180 }}
                 animate={{ 
                   opacity: matched ? 0 : 1, 
