@@ -105,9 +105,12 @@ export const GameProvider = ({ children }) => {
         
         // Calculate mastery score (0-100)
         // Based on: accuracy (60%), consecutive correct (30%), total practice (10%)
+        const MASTERY_CONSECUTIVE_THRESHOLD = 5; // Max consecutive correct for full bonus
+        const MASTERY_PRACTICE_THRESHOLD = 20; // Total attempts needed for full practice bonus
+        
         const accuracy = totalAttempts > 0 ? (correctCount / totalAttempts) : 0;
-        const consecutiveBonus = Math.min(newConsecutiveCorrect / 5, 1); // Max bonus at 5 consecutive
-        const practiceBonus = Math.min(totalAttempts / 20, 1); // Max bonus at 20 attempts
+        const consecutiveBonus = Math.min(newConsecutiveCorrect / MASTERY_CONSECUTIVE_THRESHOLD, 1);
+        const practiceBonus = Math.min(totalAttempts / MASTERY_PRACTICE_THRESHOLD, 1);
         
         const masteryScore = Math.round(
           (accuracy * 60) + 

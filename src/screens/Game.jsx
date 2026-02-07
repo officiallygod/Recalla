@@ -73,6 +73,11 @@ const Game = () => {
       return { word, weight };
     });
     
+    // Guard against empty available words
+    if (wordsWithWeights.length === 0) {
+      return;
+    }
+    
     // Weighted random selection
     const totalWeight = wordsWithWeights.reduce((sum, w) => sum + w.weight, 0);
     let random = Math.random() * totalWeight;
@@ -87,7 +92,9 @@ const Game = () => {
     }
     
     // Add delay (500-1500ms) for randomness so user can't predict
-    const delay = 500 + Math.random() * 1000;
+    const MIN_DELAY_MS = 500;
+    const MAX_DELAY_MS = 1500;
+    const delay = MIN_DELAY_MS + Math.random() * (MAX_DELAY_MS - MIN_DELAY_MS);
     
     setTimeout(() => {
       setGameCards(prev => {
@@ -126,6 +133,10 @@ const Game = () => {
   };
 
   const startNewRound = () => {
+    // Constants for word selection algorithm
+    const CANDIDATE_POOL_SIZE = 12; // Select from top 12 candidates for variety while maintaining focus on weak words
+    const CARDS_PER_ROUND = 4; // Number of word pairs to show
+    
     // Select words based on mastery score - prioritize less mastered words
     // Use weighted random selection to ensure variety
     const wordsWithWeights = gameWords.map(word => {
@@ -151,13 +162,13 @@ const Game = () => {
     const sortedByPriority = wordsWithWeights.sort((a, b) => b.weight - a.weight);
     
     // Take top candidates (more than we need for variety)
-    const candidatePool = sortedByPriority.slice(0, Math.min(12, gameWords.length));
+    const candidatePool = sortedByPriority.slice(0, Math.min(CANDIDATE_POOL_SIZE, gameWords.length));
     
     // Randomly select 4 from the candidate pool for variety
     const selectedWords = [];
     const poolCopy = [...candidatePool];
     
-    for (let i = 0; i < Math.min(4, poolCopy.length); i++) {
+    for (let i = 0; i < Math.min(CARDS_PER_ROUND, poolCopy.length); i++) {
       const randomIndex = Math.floor(Math.random() * poolCopy.length);
       selectedWords.push(poolCopy[randomIndex].word);
       poolCopy.splice(randomIndex, 1);
