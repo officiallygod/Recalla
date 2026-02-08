@@ -82,11 +82,11 @@ export const GameProvider = ({ children }) => {
     
     setWords(prev => [...prev, newWord]);
     
-    // Award points
+    // Award points - Reduced rewards to make progression harder
     setUserData(prev => ({
       ...prev,
-      points: prev.points + 10,
-      coins: prev.coins + 5
+      points: prev.points + 5,
+      coins: prev.coins + 2
     }));
 
     return newWord;
@@ -143,7 +143,8 @@ export const GameProvider = ({ children }) => {
   };
 
   const checkLevelUp = () => {
-    const pointsPerLevel = 1000;
+    // Increased threshold to make leveling harder
+    const pointsPerLevel = 2500;
     const newLevel = Math.floor(userData.points / pointsPerLevel) + 1;
     
     if (newLevel > userData.level) {
