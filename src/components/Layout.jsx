@@ -23,7 +23,7 @@ const Layout = ({ children }) => {
 
             {/* Stats and Theme Toggle */}
             <div className="flex items-center gap-2 sm:gap-4">
-              <StatItem icon={<Star className="w-4 h-4" />} value={userData.points} label="Points" />
+              <StatItem icon={<Star className="w-4 h-4" fill="currentColor" />} value={userData.points} label="Points" />
               <StatItem icon={<Coins className="w-4 h-4" />} value={userData.coins} label="Coins" />
               <StatItem icon={<Trophy className="w-4 h-4" />} value={userData.level} label="Level" />
               
