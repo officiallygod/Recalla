@@ -253,9 +253,11 @@ const Game = () => {
       setCombo(newCombo);
       
       // Harder rewards: Reduced points and coins significantly
+      // Keep coin rewards very small (< 10) as per requirements
       const points = 50 + (newCombo * 25);
+      const coinReward = Math.min(1 + Math.floor(newCombo / 3), 5); // Max 5 coins per match
       setScore(prev => prev + points);
-      awardPoints(points, 3 + (newCombo * 2), round);
+      awardPoints(points, coinReward, round);
       
       setMessage(`🎉 Perfect Match! +${points} points! ${newCombo > 1 ? `🔥x${newCombo}` : ''}`);
       createParticles(x, y, true);
@@ -279,8 +281,10 @@ const Game = () => {
           const currentRound = round; // Capture current round before async operations
           setTimeout(() => {
             // Harder round completion bonus
+            // Keep coin bonus very small (< 10) as per requirements
             const bonus = newCombo * 50;
-            awardPoints(bonus, 20, currentRound);
+            const coinBonus = Math.min(5 + Math.floor(newCombo / 2), 9); // Max 9 coins for round
+            awardPoints(bonus, coinBonus, currentRound);
             setMessage(`🏆 Round ${currentRound} Complete! Bonus: +${bonus} points!`);
             setRound(prev => prev + 1);
             setTimer(timerDuration); // Reset timer for next round
