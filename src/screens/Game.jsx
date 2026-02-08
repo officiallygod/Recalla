@@ -171,7 +171,7 @@ const Game = () => {
 
   const startNewRound = () => {
     // Constants for word selection algorithm
-    const CARDS_PER_ROUND = 8; // Number of word pairs to show (8 pairs = 16 cards, 4 rows in 4-col layout)
+    const CARDS_PER_ROUND = 8; // Number of word pairs to show (8 pairs = 16 cards total)
     
     // Use AI-powered word selection
     const selectedWords = selectWordsForSession(gameWords, CARDS_PER_ROUND, {
