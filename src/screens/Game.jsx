@@ -46,7 +46,7 @@ const Game = () => {
   };
 
   useEffect(() => {
-    if (gameWords.length < 4) {
+    if (gameWords.length < 8) {
       navigate('/');
       return;
     }
@@ -73,7 +73,6 @@ const Game = () => {
     
     return () => clearInterval(interval);
   }, [timer, isTimerActive]);
-
 
   const createParticles = (x, y, isCorrect) => {
     const colors = isCorrect 
@@ -143,9 +142,10 @@ const Game = () => {
           
           // Create new cards for the selected word
           const newPairId = Math.max(...prev.map(c => c.pairId)) + 1;
+          const timestamp = Date.now();
           const newCards = [
-            { type: 'word', value: selectedWord.word, id: selectedWord.id, pairId: newPairId },
-            { type: 'meaning', value: selectedWord.meaning, id: selectedWord.id, pairId: newPairId }
+            { type: 'word', value: selectedWord.word, id: selectedWord.id, pairId: newPairId, cardId: `${timestamp}-${newPairId}-word` },
+            { type: 'meaning', value: selectedWord.meaning, id: selectedWord.id, pairId: newPairId, cardId: `${timestamp}-${newPairId}-meaning` }
           ];
           
           // Shuffle new cards using Fisher-Yates
@@ -171,7 +171,7 @@ const Game = () => {
 
   const startNewRound = () => {
     // Constants for word selection algorithm
-    const CARDS_PER_ROUND = 4; // Number of word pairs to show
+    const CARDS_PER_ROUND = 8; // Number of word pairs to show (8 pairs = 16 cards, 4 per column in 4-col layout)
     
     // Use AI-powered word selection
     const selectedWords = selectWordsForSession(gameWords, CARDS_PER_ROUND, {
@@ -194,8 +194,8 @@ const Game = () => {
     // Create cards
     const cards = [];
     selectedWords.forEach((word, index) => {
-      cards.push({ type: 'word', value: word.word, id: word.id, pairId: index });
-      cards.push({ type: 'meaning', value: word.meaning, id: word.id, pairId: index });
+      cards.push({ type: 'word', value: word.word, id: word.id, pairId: index, cardId: `${Date.now()}-${index}-word` });
+      cards.push({ type: 'meaning', value: word.meaning, id: word.id, pairId: index, cardId: `${Date.now()}-${index}-meaning` });
     });
 
     // Shuffle cards using Fisher-Yates
@@ -251,7 +251,7 @@ const Game = () => {
       // Harder rewards: Reduced points and coins significantly
       const points = 50 + (newCombo * 25);
       setScore(prev => prev + points);
-      awardPoints(points, 3 + (newCombo * 2));
+      awardPoints(points, 3 + (newCombo * 2), round);
       
       setMessage(`🎉 Perfect Match! +${points} points! ${newCombo > 1 ? `🔥x${newCombo}` : ''}`);
       createParticles(x, y, true);
@@ -303,6 +303,7 @@ const Game = () => {
       recordMatch(false);
     }
 
+    // Faster reset for snappy gameplay and combo scoring
     setTimeout(() => {
       setSelectedCards([]);
       setIsChecking(false);
@@ -451,50 +452,46 @@ const Game = () => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Game Board */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-        <AnimatePresence mode="popLayout">
-          {gameCards.map((card, index) => {
-            const selected = isCardSelected(index);
-            const matched = isCardMatched(card);
+      {/* Game Board - Fixed 4 column layout (2 on mobile) with no layout shifts */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+        {gameCards.map((card, index) => {
+          const selected = isCardSelected(index);
+          const matched = isCardMatched(card);
 
-            return (
-              <motion.div
-                key={`${card.id}-${card.type}-${card.pairId}`}
-                layout
-                initial={{ opacity: 0, scale: 0.9, rotateY: -90 }}
-                animate={{ 
-                  opacity: matched ? 0 : 1, 
-                  scale: matched ? 0.8 : 1,
-                  rotateY: 0
-                }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.2 }}
-                className={selected ? 'border-shine' : ''}
+          return (
+            <div
+              key={card.cardId}
+              className={`
+                min-h-[120px] sm:min-h-[140px]
+                ${selected ? 'border-shine' : ''}
+                ${matched ? 'opacity-0 pointer-events-none' : 'opacity-100'}
+                transition-opacity duration-200
+              `}
+              style={{ 
+                // Reserve space even when invisible to prevent layout shifts
+                visibility: matched ? 'hidden' : 'visible'
+              }}
+            >
+              <Card
+                onClick={(e) => handleCardClick(index, e)}
+                className={`
+                  h-full flex items-center justify-center text-center p-4
+                  transition-all duration-200
+                  ${selected ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-2xl scale-105' : ''}
+                  ${matched ? '' : 'cursor-pointer hover:shadow-2xl'}
+                `}
+                pressable={!matched}
+                hoverable={!matched}
               >
-                <Card
-                  onClick={(e) => handleCardClick(index, e)}
-                  className={`
-                    min-h-[120px] sm:min-h-[140px] flex items-center justify-center text-center p-4
-                    transition-all duration-200
-                    ${selected ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white scale-105' : ''}
-                    ${matched ? 'pointer-events-none' : 'cursor-pointer hover:scale-102'}
-                  `}
-                  pressable={!matched}
-                  hoverable={!matched}
+                <p 
+                  className={`font-semibold text-base sm:text-lg px-4 ${selected ? 'text-white' : 'text-slate-800 dark:text-slate-200'}`}
                 >
-                  <motion.p 
-                    className={`font-semibold text-base sm:text-lg px-4 ${selected ? 'text-white' : 'text-slate-800 dark:text-slate-200'}`}
-                    animate={selected ? { scale: [1, 1.05, 1] } : {}}
-                    transition={{ duration: 0.2 }}
-                  >
-                    {card.value}
-                  </motion.p>
-                </Card>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
+                  {card.value}
+                </p>
+              </Card>
+            </div>
+          );
+        })}
       </div>
     </motion.div>
   );

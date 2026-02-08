@@ -27,6 +27,7 @@ export const GameProvider = ({ children }) => {
     correctMatches: 0,
     wrongMatches: 0
   });
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -50,20 +51,27 @@ export const GameProvider = ({ children }) => {
     if (storedTopics) {
       setTopics(JSON.parse(storedTopics));
     }
+    setIsInitialized(true);
   }, []);
 
-  // Save data to localStorage whenever it changes
+  // Save data to localStorage whenever it changes (but not on initial mount)
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.WORDS, JSON.stringify(words));
-  }, [words]);
+    if (isInitialized) {
+      localStorage.setItem(STORAGE_KEYS.WORDS, JSON.stringify(words));
+    }
+  }, [words, isInitialized]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
-  }, [userData]);
+    if (isInitialized) {
+      localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
+    }
+  }, [userData, isInitialized]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.TOPICS, JSON.stringify(topics));
-  }, [topics]);
+    if (isInitialized) {
+      localStorage.setItem(STORAGE_KEYS.TOPICS, JSON.stringify(topics));
+    }
+  }, [topics, isInitialized]);
 
   // Add a word to the vocabulary, optionally associated with a topic
   // topicId: The ID of the topic to associate this word with, or null for general words

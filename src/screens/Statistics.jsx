@@ -180,7 +180,7 @@ const Statistics = () => {
             onClick={() => navigate('/game')}
             size="lg"
             icon="🎮"
-            disabled={words.length < 4}
+            disabled={words.length < 8}
           >
             Practice Now
           </Button>
