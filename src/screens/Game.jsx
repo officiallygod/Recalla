@@ -237,14 +237,13 @@ const Game = () => {
         }
       }
     } else {
-      // Wrong match - only update stats for the words if they were actually being tested
-      // Don't update stats for random clicks, only when attempting a real match
+      // Wrong match - In a matching game format, we cannot determine which word
+      // the user was attempting to match, so updating stats for either word would
+      // produce inaccurate metrics. Only correct matches update word stats.
       setCombo(0);
       setMessage('❌ Try again! Keep matching!');
       createParticles(x, y, false);
       recordMatch(false);
-      // Note: We don't update word stats here because the user wasn't specifically
-      // being tested on either word - they just clicked two unrelated cards
     }
 
     setTimeout(() => {
