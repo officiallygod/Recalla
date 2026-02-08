@@ -275,7 +275,7 @@ const Game = () => {
           setTimeout(() => {
             // Harder round completion bonus
             const bonus = newCombo * 50;
-            awardPoints(bonus, 20);
+            awardPoints(bonus, 20, round);
             setMessage(`🏆 Round ${round} Complete! Bonus: +${bonus} points!`);
             setRound(prev => prev + 1);
             setTimer(30); // Reset timer for next round
@@ -459,7 +459,7 @@ const Game = () => {
 
             return (
               <motion.div
-                key={`${card.id}-${card.type}-${card.pairId}-${index}`}
+                key={`${card.id}-${card.type}-${card.pairId}`}
                 layout
                 initial={{ opacity: 0, scale: 0.9, rotateY: -90 }}
                 animate={{ 
