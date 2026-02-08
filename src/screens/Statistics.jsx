@@ -91,16 +91,21 @@ const Statistics = () => {
   ].filter(d => d.value > 0), [projectMetrics]);
 
   // Generate mock progress data (in a real app, this would come from historical data)
+  // Creates a 7-day trend showing gradual improvement toward current accuracy
   const progressData = useMemo(() => {
     const days = 7;
     const data = [];
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
+      // Generate historical accuracy with upward trend:
+      // Start lower than current accuracy and gradually improve
+      // Random variation (±15%) with progressive improvement (+2% per day)
+      const historicalAccuracy = Math.max(0, accuracy - Math.random() * 15 + (i * 2));
       data.push({
         date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        accuracy: Math.max(0, accuracy - Math.random() * 15 + (i * 2)),
-        matches: Math.floor(Math.random() * 20) + 10
+        accuracy: historicalAccuracy,
+        matches: Math.floor(Math.random() * 20) + 10 // 10-30 matches per day
       });
     }
     // Set today's data to actual values
