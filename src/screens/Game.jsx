@@ -379,7 +379,7 @@ const Game = () => {
 
           return (
             <div
-              key={`${card.id}-${card.type}-${card.pairId}`}
+              key={`card-${index}-${card.id}-${card.type}-${card.pairId}`}
               className={`
                 min-h-[120px] sm:min-h-[140px]
                 ${selected ? 'border-shine' : ''}
