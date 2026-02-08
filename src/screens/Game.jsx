@@ -233,8 +233,7 @@ const Game = () => {
 
     if (newSelected.length === 2) {
       setIsChecking(true);
-      // Reduced delay for faster gameplay and combo scoring
-      setTimeout(() => checkMatch(newSelected, x, y), 300);
+      setTimeout(() => checkMatch(newSelected, x, y), 300); // Faster check (was 500ms)
     }
   };
 
@@ -244,7 +243,7 @@ const Game = () => {
     const card2 = gameCards[second];
 
     if (card1.pairId === card2.pairId) {
-      // Correct match
+      // Correct match - both cards share the same word ID, update once
       setMatchedPairs(prev => [...prev, card1.pairId]);
       const newCombo = combo + 1;
       setCombo(newCombo);
@@ -257,6 +256,7 @@ const Game = () => {
       setMessage(`🎉 Perfect Match! +${points} points! ${newCombo > 1 ? `🔥x${newCombo}` : ''}`);
       createParticles(x, y, true);
       
+      // Update stats once for the matched word
       updateWordStats(card1.id, true);
       recordMatch(true);
 
@@ -271,17 +271,21 @@ const Game = () => {
         } else {
           // No more words, complete the round
           setShowConfetti(true);
+          setIsTimerActive(false); // Pause timer during celebration
+          const currentRound = round; // Capture current round before async operations
           setTimeout(() => {
             // Harder round completion bonus
             const bonus = newCombo * 50;
-            awardPoints(bonus, 20, round);
-            setMessage(`🏆 Round ${round} Complete! Bonus: +${bonus} points!`);
+            awardPoints(bonus, 20, currentRound);
+            setMessage(`🏆 Round ${currentRound} Complete! Bonus: +${bonus} points!`);
             setRound(prev => prev + 1);
+            setTimer(30); // Reset timer for next round
             setTimeout(() => {
               setShowConfetti(false);
+              setIsTimerActive(true); // Resume timer for next round
               startNewRound();
-            }, 2000);
-          }, 1000);
+            }, 1000); // Faster transition (was 2000ms)
+          }, 500); // Faster confetti (was 1000ms)
         }
       } else {
         // Not all pairs matched yet, replace this pair if words available
@@ -290,12 +294,12 @@ const Game = () => {
         }
       }
     } else {
-      // Wrong match
+      // Wrong match - In a matching game format, we cannot determine which word
+      // the user was attempting to match, so updating stats for either word would
+      // produce inaccurate metrics. Only correct matches update word stats.
       setCombo(0);
       setMessage('❌ Try again! Keep matching!');
       createParticles(x, y, false);
-      updateWordStats(card1.id, false);
-      updateWordStats(card2.id, false);
       recordMatch(false);
     }
 
@@ -303,7 +307,7 @@ const Game = () => {
     setTimeout(() => {
       setSelectedCards([]);
       setIsChecking(false);
-    }, 600);
+    }, 600); // Faster reset (was 1000ms)
   };
 
   const isCardSelected = (index) => selectedCards.includes(index);
@@ -378,8 +382,8 @@ const Game = () => {
         {/* Game Stats */}
         <div className="flex gap-2 sm:gap-4">
           <motion.div
-            animate={{ scale: [1, 1.1, 1] }}
-            transition={{ duration: 0.5 }}
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 0.3 }}
             key={round}
           >
             <Card className="px-4 py-2">
@@ -390,8 +394,8 @@ const Game = () => {
             </Card>
           </motion.div>
           <motion.div
-            animate={{ scale: [1, 1.1, 1] }}
-            transition={{ duration: 0.5 }}
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 0.3 }}
             key={score}
           >
             <Card className="px-4 py-2">
@@ -403,10 +407,9 @@ const Game = () => {
           </motion.div>
           <motion.div
             animate={{ 
-              scale: combo > 0 ? [1, 1.2, 1] : 1,
-              rotate: combo > 0 ? [0, -10, 10, 0] : 0
+              scale: combo > 0 ? [1, 1.1, 1] : 1,
             }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.3 }}
             key={combo}
           >
             <Card className="px-4 py-2">
@@ -474,7 +477,7 @@ const Game = () => {
                 className={`
                   h-full flex items-center justify-center text-center p-4
                   transition-all duration-200
-                  ${selected ? 'bg-gradient-to-br from-primary-500 to-purple-600 text-white shadow-2xl scale-105' : ''}
+                  ${selected ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-2xl scale-105' : ''}
                   ${matched ? '' : 'cursor-pointer hover:shadow-2xl'}
                 `}
                 pressable={!matched}

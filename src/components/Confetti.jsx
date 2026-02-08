@@ -8,12 +8,12 @@ const Confetti = ({ trigger, duration = 1000 }) => {
   useEffect(() => {
     if (trigger) {
       // Generate confetti pieces
-      const colors = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6'];
+      const colors = ['#6366f1', '#8b5cf6', '#a78bfa', '#c4b5fd', '#10b981', '#3b82f6'];
       const newPieces = Array.from({ length: 50 }, (_, i) => ({
         id: i,
         color: colors[Math.floor(Math.random() * colors.length)],
         left: Math.random() * 100,
-        delay: Math.random() * 0.5,
+        delay: Math.random() * 0.3,
         size: Math.random() * 10 + 5,
         rotation: Math.random() * 720 - 360,
       }));

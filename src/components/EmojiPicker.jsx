@@ -66,7 +66,7 @@ const EmojiPicker = ({ selectedEmoji, onSelect, className = '' }) => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute top-full left-0 right-0 mt-2 z-50 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden"
+            className="absolute top-full left-0 right-0 mt-2 z-50 bg-white dark:bg-slate-800 rounded-xl border-2 border-slate-200 dark:border-slate-700 overflow-hidden"
             style={{ maxWidth: '100%' }}
           >
             {/* Category Tabs */}
