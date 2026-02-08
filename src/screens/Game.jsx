@@ -5,6 +5,7 @@ import Button from '../components/Button';
 import Card from '../components/Card';
 import Confetti from '../components/Confetti';
 import { useGame } from '../contexts/GameContext';
+import { selectWordsForSession, estimateDifficulty } from '../utils/aiWordSelector';
 
 const Game = () => {
   const navigate = useNavigate();
@@ -66,30 +67,17 @@ const Game = () => {
       return; // No more words to add
     }
     
-    // Select a new word based on mastery (prioritize less mastered words)
-    const wordsWithWeights = availableWords.map(word => {
-      const masteryScore = word.masteryScore || 0;
-      const weight = Math.max(10, 100 - masteryScore);
-      return { word, weight };
+    // Use AI selector to choose the next word with highest priority
+    const selectedWords = selectWordsForSession(availableWords, 1, {
+      balanceChallenge: false, // Just get the highest priority word
+      includeNew: true,
     });
     
-    // Guard against empty available words
-    if (wordsWithWeights.length === 0) {
+    if (selectedWords.length === 0) {
       return;
     }
     
-    // Weighted random selection
-    const totalWeight = wordsWithWeights.reduce((sum, w) => sum + w.weight, 0);
-    let random = Math.random() * totalWeight;
-    let selectedWord = wordsWithWeights[0].word;
-    
-    for (const { word, weight } of wordsWithWeights) {
-      random -= weight;
-      if (random <= 0) {
-        selectedWord = word;
-        break;
-      }
-    }
+    const selectedWord = selectedWords[0];
     
     // Add delay (500-1500ms) for randomness so user can't predict
     const MIN_DELAY_MS = 500;
@@ -134,44 +122,18 @@ const Game = () => {
 
   const startNewRound = () => {
     // Constants for word selection algorithm
-    const CANDIDATE_POOL_SIZE = 12; // Select from top 12 candidates for variety while maintaining focus on weak words
     const CARDS_PER_ROUND = 4; // Number of word pairs to show
     
-    // Select words based on mastery score - prioritize less mastered words
-    // Use weighted random selection to ensure variety
-    const wordsWithWeights = gameWords.map(word => {
-      const masteryScore = word.masteryScore || 0;
-      // Lower mastery = higher weight (inverse relationship)
-      // Words with 0 mastery get weight 100, words with 100 mastery get weight 10
-      const weight = Math.max(10, 100 - masteryScore);
-      
-      // Boost weight for words not practiced recently or never practiced
-      const timeSinceLastPractice = word.lastPracticed 
-        ? (Date.now() - word.lastPracticed) / (1000 * 60 * 60) // hours
-        : 1000; // Never practiced = very high priority
-      
-      const timeBoost = Math.min(timeSinceLastPractice / 24, 2); // Max 2x boost after 2 days
-      
-      return {
-        word,
-        weight: weight * (1 + timeBoost)
-      };
+    // Use AI-powered word selection
+    const selectedWords = selectWordsForSession(gameWords, CARDS_PER_ROUND, {
+      includeNew: true,
+      balanceChallenge: true, // Mix difficult and easier words for better learning
+      maxDifficulty: 100,
     });
     
-    // Sort by weight (higher weight = higher priority)
-    const sortedByPriority = wordsWithWeights.sort((a, b) => b.weight - a.weight);
-    
-    // Take top candidates (more than we need for variety)
-    const candidatePool = sortedByPriority.slice(0, Math.min(CANDIDATE_POOL_SIZE, gameWords.length));
-    
-    // Randomly select 4 from the candidate pool for variety
-    const selectedWords = [];
-    const poolCopy = [...candidatePool];
-    
-    for (let i = 0; i < Math.min(CARDS_PER_ROUND, poolCopy.length); i++) {
-      const randomIndex = Math.floor(Math.random() * poolCopy.length);
-      selectedWords.push(poolCopy[randomIndex].word);
-      poolCopy.splice(randomIndex, 1);
+    if (selectedWords.length === 0) {
+      navigate('/');
+      return;
     }
     
     // Store available words (those not currently shown)

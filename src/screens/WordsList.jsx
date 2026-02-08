@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { useGame } from '../contexts/GameContext';
+import { getWordInsights } from '../utils/aiWordSelector';
 
 const WordsList = () => {
   const navigate = useNavigate();
@@ -92,44 +93,65 @@ const WordsList = () => {
       ) : (
         <div className="space-y-3">
           <AnimatePresence>
-            {displayWords.map((word, index) => (
-              <motion.div
-                key={word.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <Card hoverable className="group">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-xl font-bold text-primary-600 dark:text-primary-400 mb-1 truncate">
-                        {word.word}
-                      </h3>
-                      <p className="text-slate-600 dark:text-slate-300 text-sm">
-                        {word.meaning}
-                      </p>
-                      <div className="flex gap-4 mt-2 text-xs text-slate-500 dark:text-slate-400">
-                        <span className="flex items-center gap-1">
-                          ✅ <span className="font-semibold">{word.correct}</span>
-                        </span>
-                        <span className="flex items-center gap-1">
-                          ❌ <span className="font-semibold">{word.wrong}</span>
-                        </span>
+            {displayWords.map((word, index) => {
+              const insights = getWordInsights(word);
+              return (
+                <motion.div
+                  key={word.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <Card hoverable className="group">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-lg">{insights.emoji}</span>
+                          <h3 className="text-xl font-bold text-primary-600 dark:text-primary-400 truncate">
+                            {word.word}
+                          </h3>
+                          <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                            {insights.status}
+                          </span>
+                        </div>
+                        <p className="text-slate-600 dark:text-slate-300 text-sm mb-2">
+                          {word.meaning}
+                        </p>
+                        <div className="flex gap-4 items-center text-xs">
+                          <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
+                            <span>Mastery:</span>
+                            <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full"
+                                style={{ width: `${word.masteryScore || 0}%` }}
+                              />
+                            </div>
+                            <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+                              {word.masteryScore || 0}%
+                            </span>
+                          </div>
+                          <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
+                            ✅ <span className="font-semibold text-emerald-600 dark:text-emerald-400">{word.correct}</span>
+                          </span>
+                          <span className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
+                            ❌ <span className="font-semibold text-rose-600 dark:text-rose-400">{word.wrong}</span>
+                          </span>
+                        </div>
                       </div>
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => handleDelete(word.id)}
+                        className="px-4 py-2 bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 rounded-xl transition-colors font-semibold opacity-0 group-hover:opacity-100"
+                      >
+                        🗑️
+                      </motion.button>
                     </div>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => handleDelete(word.id)}
-                      className="px-4 py-2 bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 rounded-xl transition-colors font-semibold opacity-0 group-hover:opacity-100"
-                    >
-                      🗑️
-                    </motion.button>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
+                  </Card>
+                </motion.div>
+              );
+            })}
           </AnimatePresence>
         </div>
       )}
