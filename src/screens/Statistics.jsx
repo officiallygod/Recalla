@@ -7,6 +7,12 @@ import Card from '../components/Card';
 import { useGame } from '../contexts/GameContext';
 import { getWordInsights, estimateDifficulty } from '../utils/aiWordSelector';
 
+// Constants for mock data generation
+const ACCURACY_VARIANCE = 15; // ±15% random variation in historical accuracy
+const ACCURACY_DAILY_IMPROVEMENT = 2; // +2% accuracy improvement per day
+const MASTERY_VARIANCE = 10; // ±10% random variation in historical mastery
+const MASTERY_DAILY_IMPROVEMENT = 1.5; // +1.5% mastery improvement per day
+
 const Statistics = () => {
   const navigate = useNavigate();
   const { words, topics, userData } = useGame();
@@ -106,11 +112,9 @@ const Statistics = () => {
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
-      // Generate historical accuracy with upward trend:
-      // Start lower than current accuracy and gradually improve
-      // Random variation (±15%) with progressive improvement (+2% per day)
-      const historicalAccuracy = Math.max(0, accuracy - Math.random() * 15 + (i * 2));
-      const historicalMastery = Math.max(0, projectMetrics.avgMastery - Math.random() * 10 + (i * 1.5));
+      // Generate historical data with upward trend using defined constants
+      const historicalAccuracy = Math.max(0, accuracy - Math.random() * ACCURACY_VARIANCE + (i * ACCURACY_DAILY_IMPROVEMENT));
+      const historicalMastery = Math.max(0, projectMetrics.avgMastery - Math.random() * MASTERY_VARIANCE + (i * MASTERY_DAILY_IMPROVEMENT));
       data.push({
         date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         accuracy: historicalAccuracy,

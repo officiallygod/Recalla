@@ -7,6 +7,13 @@ import Card from '../components/Card';
 import { useGame } from '../contexts/GameContext';
 import { getWordInsights, estimateDifficulty } from '../utils/aiWordSelector';
 
+// Constants for mock data generation and game requirements
+const ACCURACY_VARIANCE = 15; // ±15% random variation in historical accuracy
+const ACCURACY_DAILY_IMPROVEMENT = 2; // +2% accuracy improvement per day
+const MASTERY_VARIANCE = 10; // ±10% random variation in historical mastery
+const MASTERY_DAILY_IMPROVEMENT = 1.5; // +1.5% mastery improvement per day
+const MINIMUM_PRACTICE_WORDS = 8; // Minimum words required to practice a topic
+
 const TopicDetails = () => {
   const navigate = useNavigate();
   const { topicId } = useParams();
@@ -97,11 +104,11 @@ const TopicDetails = () => {
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
-      const historicalAccuracy = Math.max(0, topicMetrics.accuracy - Math.random() * 15 + (i * 2));
+      const historicalAccuracy = Math.max(0, topicMetrics.accuracy - Math.random() * ACCURACY_VARIANCE + (i * ACCURACY_DAILY_IMPROVEMENT));
       data.push({
         date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         accuracy: historicalAccuracy,
-        mastery: Math.max(0, topicMetrics.avgMastery - Math.random() * 10 + (i * 1.5))
+        mastery: Math.max(0, topicMetrics.avgMastery - Math.random() * MASTERY_VARIANCE + (i * MASTERY_DAILY_IMPROVEMENT))
       });
     }
     // Set today's data to actual values
@@ -292,7 +299,7 @@ const TopicDetails = () => {
           onClick={() => navigate('/game', { state: { topicId: parseInt(topicId) } })}
           size="lg"
           icon="🎮"
-          disabled={topicWords.length < 8}
+          disabled={topicWords.length < MINIMUM_PRACTICE_WORDS}
         >
           Practice This Topic
         </Button>
