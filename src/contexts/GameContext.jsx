@@ -82,11 +82,11 @@ export const GameProvider = ({ children }) => {
     
     setWords(prev => [...prev, newWord]);
     
-    // Award points - Reduced rewards to make progression harder
+    // Award minimal points - No coins for adding words
     setUserData(prev => ({
       ...prev,
       points: prev.points + 5,
-      coins: prev.coins + 2
+      coins: prev.coins + 0
     }));
 
     return newWord;
@@ -131,11 +131,14 @@ export const GameProvider = ({ children }) => {
     }));
   };
 
-  const awardPoints = (points, coins) => {
+  const awardPoints = (points, coins, roundNumber = 0) => {
+    // Only give coins after 50 rounds
+    const shouldAwardCoins = roundNumber >= 50;
+    
     setUserData(prev => ({
       ...prev,
       points: prev.points + points,
-      coins: prev.coins + coins
+      coins: prev.coins + (shouldAwardCoins ? coins : 0)
     }));
     
     // Check level up
