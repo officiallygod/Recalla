@@ -68,7 +68,7 @@ const Game = () => {
       return; // No more words to add
     }
     
-    // Use functional state update to get the most current shownWordIds
+    // Get current shown words and filter for unseen words
     setShownWordIds(currentShownIds => {
       // Filter out words that have already been shown in this session
       const shownSet = new Set(currentShownIds);
@@ -114,8 +114,8 @@ const Game = () => {
             { type: 'meaning', value: selectedWord.meaning, id: selectedWord.id, pairId: newPairId }
           ];
           
-          // Shuffle the new cards to avoid obvious pairing
-          const shuffledNewCards = newCards.sort(() => Math.random() - 0.5);
+          // Shuffle using simple random swap for 2 elements
+          const shuffledNewCards = Math.random() < 0.5 ? newCards : [newCards[1], newCards[0]];
           
           // Replace matched cards with new ones
           const updated = [...prev];
