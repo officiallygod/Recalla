@@ -292,7 +292,6 @@ export const germanVocabulary = {
     { word: "Epoche", meaning: "epoch" },
     { word: "Erbe", meaning: "heir/heritage" },
     { word: "Erdgeschoss", meaning: "ground floor" },
-    { word: "Ereignung", meaning: "event" },
     { word: "erfahren", meaning: "experienced" },
     { word: "erfinden", meaning: "to invent" },
     { word: "Erfindung", meaning: "invention" },
@@ -1008,6 +1007,7 @@ export const germanVocabulary = {
     { word: "Inspektion", meaning: "inspection" },
     { word: "inspizieren", meaning: "to inspect" },
     { word: "Inspiration", meaning: "inspiration" },
+    { word: "Instinkt", meaning: "instinct" },
   ]
 };
 

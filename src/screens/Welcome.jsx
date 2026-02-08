@@ -31,6 +31,17 @@ const Welcome = () => {
 
   // Check if user has German-related topics or words
   useEffect(() => {
+    // Only check if suggestion is not already shown or dismissed
+    const germanTopicExists = topics.some(t => 
+      t.name === germanVocabulary.topic.name
+    );
+    
+    // Skip if library already imported
+    if (germanTopicExists) {
+      setShowGermanSuggestion(false);
+      return;
+    }
+    
     const hasGermanTopic = topics.some(t => 
       t.name.toLowerCase().includes('german') || 
       t.name.toLowerCase().includes('deutsch') ||
@@ -41,13 +52,11 @@ const Welcome = () => {
       w.word && /[äöüßÄÖÜ]/.test(w.word)
     );
     
-    const germanTopicExists = topics.some(t => 
-      t.name === germanVocabulary.topic.name
-    );
-    
     // Show suggestion if user has German content but hasn't imported the pre-built library
-    setShowGermanSuggestion((hasGermanTopic || hasGermanWords) && !germanTopicExists);
-  }, [topics, words]);
+    if ((hasGermanTopic || hasGermanWords) && !showGermanSuggestion) {
+      setShowGermanSuggestion(true);
+    }
+  }, [topics, words, showGermanSuggestion]);
 
   const handleImportGermanLibrary = async () => {
     setIsImportingGerman(true);
