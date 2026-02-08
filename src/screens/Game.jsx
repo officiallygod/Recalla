@@ -68,65 +68,71 @@ const Game = () => {
       return; // No more words to add
     }
     
-    // Filter out words that have already been shown in this session
-    const unseenWords = availableWords.filter(w => !shownWordIds.includes(w.id));
-    
-    if (unseenWords.length === 0) {
-      return; // All available words have been shown
-    }
-    
-    // Use AI selector to choose the next word with highest priority
-    const selectedWords = selectWordsForSession(unseenWords, 1, {
-      balanceChallenge: false, // Just get the highest priority word
-      includeNew: true,
-    });
-    
-    if (selectedWords.length === 0) {
-      return;
-    }
-    
-    const selectedWord = selectedWords[0];
-    
-    // Add delay (500-1500ms) for randomness so user can't predict
-    const MIN_DELAY_MS = 500;
-    const MAX_DELAY_MS = 1500;
-    const delay = MIN_DELAY_MS + Math.random() * (MAX_DELAY_MS - MIN_DELAY_MS);
-    
-    setTimeout(() => {
-      setGameCards(prev => {
-        // Find indices of matched cards
-        const matchedIndices = [];
-        prev.forEach((card, idx) => {
-          if (card.pairId === matchedPairId) {
-            matchedIndices.push(idx);
-          }
-        });
-        
-        if (matchedIndices.length !== 2) return prev;
-        
-        // Create new cards for the selected word
-        const newPairId = Math.max(...prev.map(c => c.pairId)) + 1;
-        const newCards = [
-          { type: 'word', value: selectedWord.word, id: selectedWord.id, pairId: newPairId },
-          { type: 'meaning', value: selectedWord.meaning, id: selectedWord.id, pairId: newPairId }
-        ];
-        
-        // Shuffle the new cards to avoid obvious pairing
-        const shuffledNewCards = newCards.sort(() => Math.random() - 0.5);
-        
-        // Replace matched cards with new ones
-        const updated = [...prev];
-        updated[matchedIndices[0]] = shuffledNewCards[0];
-        updated[matchedIndices[1]] = shuffledNewCards[1];
-        
-        return updated;
+    // Use functional state update to get the most current shownWordIds
+    setShownWordIds(currentShownIds => {
+      // Filter out words that have already been shown in this session
+      const shownSet = new Set(currentShownIds);
+      const unseenWords = availableWords.filter(w => !shownSet.has(w.id));
+      
+      if (unseenWords.length === 0) {
+        return currentShownIds; // All available words have been shown
+      }
+      
+      // Use AI selector to choose the next word with highest priority
+      const selectedWords = selectWordsForSession(unseenWords, 1, {
+        balanceChallenge: false, // Just get the highest priority word
+        includeNew: true,
       });
       
-      // Update available words, active words, and mark as shown
-      setAvailableWords(prev => prev.filter(w => w.id !== selectedWord.id));
-      setActiveWordIds(prev => [...prev, selectedWord.id]);
-      setShownWordIds(prev => [...prev, selectedWord.id]);
-    }, delay);
+      if (selectedWords.length === 0) {
+        return currentShownIds;
+      }
+      
+      const selectedWord = selectedWords[0];
+      
+      // Add delay (500-1500ms) for randomness so user can't predict
+      const MIN_DELAY_MS = 500;
+      const MAX_DELAY_MS = 1500;
+      const delay = MIN_DELAY_MS + Math.random() * (MAX_DELAY_MS - MIN_DELAY_MS);
+      
+      setTimeout(() => {
+        setGameCards(prev => {
+          // Find indices of matched cards
+          const matchedIndices = [];
+          prev.forEach((card, idx) => {
+            if (card.pairId === matchedPairId) {
+              matchedIndices.push(idx);
+            }
+          });
+          
+          if (matchedIndices.length !== 2) return prev;
+          
+          // Create new cards for the selected word
+          const newPairId = Math.max(...prev.map(c => c.pairId)) + 1;
+          const newCards = [
+            { type: 'word', value: selectedWord.word, id: selectedWord.id, pairId: newPairId },
+            { type: 'meaning', value: selectedWord.meaning, id: selectedWord.id, pairId: newPairId }
+          ];
+          
+          // Shuffle the new cards to avoid obvious pairing
+          const shuffledNewCards = newCards.sort(() => Math.random() - 0.5);
+          
+          // Replace matched cards with new ones
+          const updated = [...prev];
+          updated[matchedIndices[0]] = shuffledNewCards[0];
+          updated[matchedIndices[1]] = shuffledNewCards[1];
+          
+          return updated;
+        });
+        
+        // Update available words and active words
+        setAvailableWords(prev => prev.filter(w => w.id !== selectedWord.id));
+        setActiveWordIds(prev => [...prev, selectedWord.id]);
+      }, delay);
+      
+      // Immediately mark word as shown to prevent duplicate selection in rapid matches
+      return [...currentShownIds, selectedWord.id];
+    });
   };
 
   const startNewRound = () => {
