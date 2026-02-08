@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useGame } from '../contexts/GameContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { StarIcon, CoinIcon, TrophyIcon, SunIcon, MoonIcon } from './Icons';
+import { Star, Coins, Trophy, Sun, Moon } from 'lucide-react';
 
 const Layout = ({ children }) => {
   const { userData } = useGame();
@@ -38,17 +38,17 @@ const Layout = ({ children }) => {
             {/* Stats and Theme Toggle */}
             <div className="flex items-center gap-2 sm:gap-3">
               <StatItem 
-                icon={<StarIcon className="w-5 h-5 text-yellow-500" filled />} 
+                icon={<Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />} 
                 value={userData.points} 
                 label="Points" 
               />
               <StatItem 
-                icon={<CoinIcon className="w-5 h-5" />} 
+                icon={<Coins className="w-5 h-5 text-amber-500" />} 
                 value={userData.coins} 
                 label="Coins" 
               />
               <StatItem 
-                icon={<TrophyIcon className="w-5 h-5 text-amber-500" />} 
+                icon={<Trophy className="w-5 h-5 text-amber-600" />} 
                 value={userData.level} 
                 label="Level" 
               />
@@ -66,7 +66,7 @@ const Layout = ({ children }) => {
                   animate={{ rotate: isDark ? 180 : 0 }}
                   transition={{ duration: 0.5 }}
                 >
-                  {isDark ? <MoonIcon className="w-5 h-5" /> : <SunIcon className="w-5 h-5" />}
+                  {isDark ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
                 </motion.div>
               </motion.button>
             </div>

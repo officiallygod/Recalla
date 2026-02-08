@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { useGame } from '../contexts/GameContext';
-import { TargetIcon, GameControllerIcon, BooksIcon, ChartBarsIcon } from '../components/Icons';
+import { Target, Gamepad2, BookOpen, BarChart3 } from 'lucide-react';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -13,14 +13,14 @@ const Home = () => {
   const menuItems = [
     {
       title: 'Topics',
-      icon: <TargetIcon className="w-16 h-16" />,
+      icon: <Target className="w-16 h-16 text-red-500" />,
       description: 'Manage your learning topics',
       path: '/welcome',
       variant: 'primary'
     },
     {
       title: 'Play Match Game',
-      icon: <GameControllerIcon className="w-16 h-16" />,
+      icon: <Gamepad2 className="w-16 h-16 text-indigo-500" />,
       description: 'Match words with their meanings',
       path: '/game',
       variant: 'success',
@@ -28,14 +28,14 @@ const Home = () => {
     },
     {
       title: 'My Words',
-      icon: <BooksIcon className="w-16 h-16" />,
+      icon: <BookOpen className="w-16 h-16 text-blue-500" />,
       description: `${words.length} words in your collection`,
       path: '/words',
       variant: 'secondary'
     },
     {
       title: 'Statistics',
-      icon: <ChartBarsIcon className="w-16 h-16" />,
+      icon: <BarChart3 className="w-16 h-16 text-purple-500" />,
       description: 'View your progress and stats',
       path: '/stats',
       variant: 'secondary'
