@@ -132,7 +132,7 @@ export const GameProvider = ({ children }) => {
   };
 
   const awardPoints = (points, coins, roundNumber = 0) => {
-    // Only give coins after 50 rounds
+    // Only give coins starting at round 50 and beyond
     const shouldAwardCoins = roundNumber >= 50;
     
     setUserData(prev => ({
