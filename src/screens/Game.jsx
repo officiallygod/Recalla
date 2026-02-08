@@ -34,6 +34,16 @@ const Game = () => {
   const [timer, setTimer] = useState(30); // 30-second timer
   const [isTimerActive, setIsTimerActive] = useState(false);
 
+  // Fisher-Yates shuffle for proper randomization
+  const shuffleArray = (array) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
   useEffect(() => {
     if (gameWords.length < 4) {
       navigate('/');
@@ -46,11 +56,12 @@ const Game = () => {
     setIsTimerActive(true);
   }, [selectedTopic, gameWords.length]);
 
-  // Timer effect - count down from 30 seconds
+  // Timer effect - count down from 30 seconds, auto-resets
   useEffect(() => {
     if (!isTimerActive) return;
     
     if (timer <= 0) {
+      // Timer expired - reset to 30 and continue (never stop the user)
       setTimer(30);
       return;
     }
@@ -131,8 +142,8 @@ const Game = () => {
         // Get list of all possible positions
         const allPositions = Array.from({ length: updated.length }, (_, i) => i);
         
-        // Shuffle positions completely
-        const shuffledPositions = allPositions.sort(() => Math.random() - 0.5);
+        // Shuffle positions completely using Fisher-Yates
+        const shuffledPositions = shuffleArray(allPositions);
         
         // Take two random positions (different from matched positions if possible)
         let newPositions = [];
@@ -147,8 +158,8 @@ const Game = () => {
           newPositions = matchedIndices;
         }
         
-        // Shuffle new cards
-        const shuffledNewCards = newCards.sort(() => Math.random() - 0.5);
+        // Shuffle new cards using Fisher-Yates
+        const shuffledNewCards = shuffleArray(newCards);
         
         // Place cards at random positions
         updated[newPositions[0]] = shuffledNewCards[0];
@@ -191,8 +202,8 @@ const Game = () => {
       cards.push({ type: 'meaning', value: word.meaning, id: word.id, pairId: index });
     });
 
-    // Shuffle cards
-    const shuffled = cards.sort(() => Math.random() - 0.5);
+    // Shuffle cards using Fisher-Yates
+    const shuffled = shuffleArray(cards);
     setGameCards(shuffled);
     setSelectedCards([]);
     setMatchedPairs([]);
@@ -266,6 +277,7 @@ const Game = () => {
         } else {
           // No more words, complete the round
           setShowConfetti(true);
+          setIsTimerActive(false); // Pause timer during celebration
           setTimeout(() => {
             // Minimal round completion bonus
             const bonus = newCombo * 15;
@@ -275,6 +287,7 @@ const Game = () => {
             setTimer(30); // Reset timer for next round
             setTimeout(() => {
               setShowConfetti(false);
+              setIsTimerActive(true); // Resume timer for next round
               startNewRound();
             }, 1000); // Faster transition (was 2000ms)
           }, 500); // Faster confetti (was 1000ms)
