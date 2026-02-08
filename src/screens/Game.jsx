@@ -171,7 +171,7 @@ const Game = () => {
 
   const startNewRound = () => {
     // Constants for word selection algorithm
-    const CARDS_PER_ROUND = 8; // Number of word pairs to show (8 pairs = 16 cards, 4 per column in 4-col layout)
+    const CARDS_PER_ROUND = 8; // Number of word pairs to show (8 pairs = 16 cards, 4 rows in 4-col layout)
     
     // Use AI-powered word selection
     const selectedWords = selectWordsForSession(gameWords, CARDS_PER_ROUND, {
@@ -452,8 +452,8 @@ const Game = () => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Game Board - Fixed 4 column layout (2 on mobile) with no layout shifts */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+      {/* Game Board - Responsive column layout (2 on mobile, 3 on tablet, 4 on desktop) with no layout shifts */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
         {gameCards.map((card, index) => {
           const selected = isCardSelected(index);
           const matched = isCardMatched(card);
