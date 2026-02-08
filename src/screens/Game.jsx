@@ -397,7 +397,6 @@ const Game = () => {
                     transition-all duration-300
                     ${selected ? 'bg-gradient-to-br from-primary-500 to-purple-600 text-white shadow-2xl scale-105' : ''}
                     ${matched ? 'pointer-events-none' : 'cursor-pointer hover:shadow-2xl'}
-                    ${selected ? 'border-shine-inner' : ''}
                   `}
                   pressable={!matched}
                   hoverable={!matched}
