@@ -10,6 +10,10 @@ const Statistics = () => {
   const navigate = useNavigate();
   const { words, userData } = useGame();
 
+  // Threshold constants for word filtering
+  const MASTERY_THRESHOLD = 60; // Words below this mastery score need practice
+  const DIFFICULTY_THRESHOLD = 40; // Words above this difficulty need practice
+
   const total = userData.correctMatches + userData.wrongMatches;
   const accuracy = total > 0 ? Math.round((userData.correctMatches / total) * 100) : 0;
 
@@ -22,7 +26,7 @@ const Statistics = () => {
 
   // Sort by priority (highest difficulty and lowest mastery first)
   const needPractice = wordsWithInsights
-    .filter(w => w.masteryScore < 60 || w.difficulty > 40)
+    .filter(w => w.masteryScore < MASTERY_THRESHOLD || w.difficulty > DIFFICULTY_THRESHOLD)
     .sort((a, b) => {
       // Prioritize by difficulty first, then by mastery
       const diffDiff = b.difficulty - a.difficulty;
@@ -131,11 +135,11 @@ const Statistics = () => {
                         <div className="w-16 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                           <div 
                             className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full transition-all"
-                            style={{ width: `${word.masteryScore}%` }}
+                            style={{ width: `${word.masteryScore || 0}%` }}
                           />
                         </div>
                         <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                          {word.masteryScore}%
+                          {word.masteryScore || 0}%
                         </span>
                       </div>
                     </div>
@@ -145,11 +149,11 @@ const Statistics = () => {
                         <div className="w-16 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                           <div 
                             className="h-full bg-gradient-to-r from-rose-500 to-orange-600 rounded-full transition-all"
-                            style={{ width: `${word.difficulty}%` }}
+                            style={{ width: `${word.difficulty || 0}%` }}
                           />
                         </div>
                         <span className="text-xs font-semibold text-rose-600 dark:text-rose-400">
-                          {word.difficulty}%
+                          {word.difficulty || 0}%
                         </span>
                       </div>
                     </div>

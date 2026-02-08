@@ -76,12 +76,14 @@ export const estimateDifficulty = (word) => {
   }
   
   const errorRate = (word.wrong || 0) / totalAttempts;
-  const consecutiveFails = word.consecutiveCorrect === 0 && word.wrong > 0 ? 1 : 0;
+  
+  // Check for recent failures (if currently on a wrong streak)
+  const recentFailureBoost = (word.consecutiveCorrect === 0 && (word.wrong || 0) > 0) ? 30 : 0;
   
   // Difficulty factors:
   // 1. Error rate (70% weight)
-  // 2. Recent failures (30% weight)
-  const difficulty = (errorRate * 70) + (consecutiveFails * 30);
+  // 2. Recent failures (30% boost)
+  const difficulty = (errorRate * 70) + recentFailureBoost;
   
   return Math.round(Math.max(0, Math.min(100, difficulty)));
 };
@@ -126,7 +128,6 @@ export const calculatePriority = (word) => {
   const retention = calculateRetention(word);
   const difficulty = estimateDifficulty(word);
   const masteryScore = word.masteryScore || 0;
-  const nextReviewInterval = calculateNextReviewInterval(word);
   const hoursSinceLastPractice = word.lastPracticed 
     ? (Date.now() - word.lastPracticed) / (1000 * 60 * 60)
     : 1000;
@@ -141,13 +142,29 @@ export const calculatePriority = (word) => {
   const difficultyPriority = (difficulty / 100) * 300; // 0-300 points
   const masteryPriority = (1 - masteryScore / 100) * 200; // 0-200 points
   
-  // Check if word is overdue for review
+  // Check if word is overdue for review based on spaced repetition intervals
+  const nextReviewInterval = calculateNextReviewInterval(word);
   const isOverdue = hoursSinceLastPractice > nextReviewInterval;
   const overduePriority = isOverdue ? 100 : 0; // 0-100 points
   
   const totalPriority = retentionPriority + difficultyPriority + masteryPriority + overduePriority;
   
   return Math.round(totalPriority);
+};
+
+/**
+ * Fisher-Yates shuffle algorithm for proper randomization
+ * 
+ * @param {Array} array - Array to shuffle
+ * @returns {Array} - Shuffled array
+ */
+const shuffleArray = (array) => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
 };
 
 /**
@@ -200,11 +217,12 @@ export const selectWordsForSession = (allWords, count, options = {}) => {
   const easierCount = selectedCount - highPriorityCount; // 30% easier
   
   const highPriority = sorted.slice(0, highPriorityCount);
-  const easier = sorted.slice(-easierCount).reverse(); // Take from end (lower priority)
+  // Take middle-priority words (not the absolute easiest, but easier than high-priority)
+  const easier = sorted.slice(highPriorityCount, highPriorityCount + easierCount);
   
-  // Combine and shuffle to avoid predictable patterns
+  // Combine and shuffle using Fisher-Yates to avoid predictable patterns
   const selected = [...highPriority, ...easier];
-  const shuffled = selected.sort(() => Math.random() - 0.5);
+  const shuffled = shuffleArray(selected);
   
   return shuffled.map(w => w.word);
 };
@@ -266,11 +284,34 @@ export const getWordInsights = (word) => {
  * @returns {Object} - Session analysis with recommendations
  */
 export const analyzeSession = (sessionWords, sessionStats) => {
+  if (sessionWords.length === 0) {
+    return {
+      feedback: 'No words practiced yet',
+      nextSteps: ['Start practicing to see insights'],
+      avgDifficulty: 0,
+      avgMastery: 0,
+      accuracy: 0,
+    };
+  }
+  
   const totalWords = sessionWords.length;
   const avgDifficulty = sessionWords.reduce((sum, w) => sum + estimateDifficulty(w), 0) / totalWords;
   const avgMastery = sessionWords.reduce((sum, w) => sum + (w.masteryScore || 0), 0) / totalWords;
   
-  const accuracy = sessionStats.correct / (sessionStats.correct + sessionStats.wrong);
+  const totalAttempts = (sessionStats.correct || 0) + (sessionStats.wrong || 0);
+  
+  // Handle case where no attempts were made
+  if (totalAttempts === 0) {
+    return {
+      feedback: 'No matches attempted yet',
+      nextSteps: ['Start matching words'],
+      avgDifficulty: Math.round(avgDifficulty),
+      avgMastery: Math.round(avgMastery),
+      accuracy: 0,
+    };
+  }
+  
+  const accuracy = sessionStats.correct / totalAttempts;
   
   let feedback = '';
   let nextSteps = [];

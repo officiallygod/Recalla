@@ -6,9 +6,12 @@ A modern Progressive Web App (PWA) for learning and remembering words through fu
 
 - **📝 Word Management**: Add your own words and meanings to create a personalized vocabulary
 - **🎯 Match Game**: Interactive word-meaning matching game with smooth animations
+- **🤖 AI-Powered Learning**: Intelligent word selection using spaced repetition and difficulty estimation
+- **📈 Adaptive System**: Words you struggle with appear more frequently
+- **🧠 Smart Insights**: Real-time learning analytics and progress tracking
 - **🏆 Gamification**: Earn points, coins, and level up as you learn
 - **🔥 Combo System**: Build combos for bonus points when matching correctly
-- **📊 Statistics**: Track your progress with detailed statistics
+- **📊 Statistics**: Track your progress with detailed AI-driven insights
 - **🎨 Modern Design**: Clean, minimal interface inspired by world-class apps
 - **✨ Smooth Interactions**: Ripple effects, press animations, and haptic-like feedback
 - **💾 Local Storage**: All your data is stored locally in your browser
@@ -83,8 +86,15 @@ For detailed setup instructions, see [GITHUB_ACTIONS_GUIDE.md](GITHUB_ACTIONS_GU
 - Earn 100+ points for each correct match
 - Build combos for bonus points (50 points per combo level)
 - Wrong matches reset your combo
-- Words you get wrong more often appear more frequently in games
+- **🤖 AI-powered word selection**: The system intelligently chooses which words to show based on:
+  - **Spaced Repetition**: Words appear at optimal review intervals
+  - **Difficulty Estimation**: Harder words appear more frequently
+  - **Forgetting Curve**: Words you're likely to forget are prioritized
+  - **Mastery Tracking**: System adapts as you improve
 - Complete rounds to progress and earn bonuses
+- See detailed learning insights in Statistics
+
+For more details about the AI system, see [AI_FEATURES.md](AI_FEATURES.md)
 
 ## 🎨 Design Principles
 
