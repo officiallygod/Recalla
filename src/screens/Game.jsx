@@ -33,7 +33,7 @@ const Game = () => {
   const [activeWordIds, setActiveWordIds] = useState([]); // Words currently on screen
 
   useEffect(() => {
-    if (gameWords.length < 4) {
+    if (gameWords.length < 8) {
       navigate('/');
       return;
     }
@@ -123,7 +123,7 @@ const Game = () => {
 
   const startNewRound = () => {
     // Constants for word selection algorithm
-    const CARDS_PER_ROUND = 4; // Number of word pairs to show
+    const CARDS_PER_ROUND = 8; // Number of word pairs to show (8 pairs = 16 cards, 4 per column in 4-col layout)
     
     // Use AI-powered word selection
     const selectedWords = selectWordsForSession(gameWords, CARDS_PER_ROUND, {

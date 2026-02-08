@@ -23,7 +23,7 @@ const Home = () => {
       description: 'Match words with their meanings',
       path: '/game',
       variant: 'success',
-      disabled: words.length < 4
+      disabled: words.length < 8
     },
     {
       title: 'My Words',
@@ -89,12 +89,12 @@ const Home = () => {
         })}
       </div>
 
-      {words.length < 4 && (
+      {words.length < 8 && (
         <Card className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
           <div className="flex items-start gap-2 p-3">
             <Lightbulb className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-amber-800 dark:text-amber-200">
-              Add at least 4 words to unlock the Match Game!
+              Add at least 8 words to unlock the Match Game!
             </p>
           </div>
         </Card>
