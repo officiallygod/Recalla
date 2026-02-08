@@ -388,14 +388,16 @@ const Game = () => {
                 }}
                 exit={{ opacity: 0, scale: 0 }}
                 transition={{ duration: 0.3 }}
+                className={selected ? 'border-shine' : ''}
               >
                 <Card
                   onClick={(e) => handleCardClick(index, e)}
                   className={`
                     min-h-[120px] sm:min-h-[140px] flex items-center justify-center text-center p-4
                     transition-all duration-300
-                    ${selected ? 'bg-gradient-to-br from-primary-500 to-purple-600 text-white shadow-2xl scale-105 ring-4 ring-primary-300 dark:ring-primary-600' : ''}
+                    ${selected ? 'bg-gradient-to-br from-primary-500 to-purple-600 text-white shadow-2xl scale-105' : ''}
                     ${matched ? 'pointer-events-none' : 'cursor-pointer hover:shadow-2xl'}
+                    ${selected ? 'border-shine-inner' : ''}
                   `}
                   pressable={!matched}
                   hoverable={!matched}

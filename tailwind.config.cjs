@@ -40,6 +40,7 @@ module.exports = {
         'wiggle': 'wiggle 1s ease-in-out infinite',
         'particle': 'particle 1s ease-out forwards',
         'confetti': 'confetti 2s ease-out forwards',
+        'border-shine': 'border-shine 2s linear infinite',
       },
       keyframes: {
         ripple: {
@@ -66,6 +67,14 @@ module.exports = {
         confetti: {
           '0%': { transform: 'translateY(0) rotate(0deg)', opacity: '1' },
           '100%': { transform: 'translateY(100vh) rotate(720deg)', opacity: '0' },
+        },
+        'border-shine': {
+          '0%': { 
+            '--shine-angle': '0deg',
+          },
+          '100%': { 
+            '--shine-angle': '360deg',
+          },
         },
       },
     },
