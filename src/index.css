@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50 text-slate-900 min-h-screen;
+    @apply bg-gradient-to-br from-slate-50 via-slate-100 to-indigo-50 text-slate-900 min-h-screen;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
       'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
       sans-serif;
@@ -14,7 +14,7 @@
   }
 
   .dark body {
-    @apply bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-950 text-slate-100;
+    @apply bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-slate-100;
   }
 }
 

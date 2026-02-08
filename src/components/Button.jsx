@@ -43,10 +43,10 @@ const Button = ({
   };
 
   const variants = {
-    primary: 'bg-gradient-to-r from-primary-600 to-primary-500 text-white hover:from-primary-700 hover:to-primary-600 shadow-lg shadow-primary-500/30 dark:shadow-primary-500/20',
-    secondary: 'glass-dark text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-600 shadow-sm',
-    success: 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white hover:from-emerald-700 hover:to-emerald-600 shadow-lg shadow-emerald-500/30 dark:shadow-emerald-500/20',
-    danger: 'bg-gradient-to-r from-rose-600 to-rose-500 text-white hover:from-rose-700 hover:to-rose-600 shadow-lg shadow-rose-500/30 dark:shadow-rose-500/20',
+    primary: 'bg-gradient-to-r from-primary-600 to-purple-600 text-white hover:from-primary-700 hover:to-purple-700 shadow-lg shadow-primary-500/20',
+    secondary: 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 shadow-sm',
+    success: 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white hover:from-emerald-700 hover:to-emerald-600 shadow-lg shadow-emerald-500/20',
+    danger: 'bg-gradient-to-r from-rose-600 to-rose-500 text-white hover:from-rose-700 hover:to-rose-600 shadow-lg shadow-rose-500/20',
   };
 
   const sizes = {
@@ -61,9 +61,9 @@ const Button = ({
       onClick={handleClick}
       disabled={disabled}
       whileTap={{ scale: disabled ? 1 : 0.98 }}
-      whileHover={{ scale: disabled ? 1 : 1.02 }}
+      whileHover={{ scale: disabled ? 1 : 1.01 }}
       className={`
-        relative overflow-hidden rounded-2xl font-semibold
+        relative overflow-hidden rounded-xl font-semibold
         transition-all duration-200 ease-out
         ${variants[variant]}
         ${sizes[size]}
