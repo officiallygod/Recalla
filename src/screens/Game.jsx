@@ -116,12 +116,12 @@ const Game = () => {
           ];
           
           // Shuffle using simple random swap for 2 elements
-          const randomizedNewCards = Math.random() < 0.5 ? newCards : [newCards[1], newCards[0]];
+          const shuffledNewCards = Math.random() < 0.5 ? newCards : [newCards[1], newCards[0]];
           
           // Replace matched cards with new ones
           const updated = [...prev];
-          updated[matchedIndices[0]] = randomizedNewCards[0];
-          updated[matchedIndices[1]] = randomizedNewCards[1];
+          updated[matchedIndices[0]] = shuffledNewCards[0];
+          updated[matchedIndices[1]] = shuffledNewCards[1];
           
           return updated;
         });
