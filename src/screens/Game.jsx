@@ -31,6 +31,7 @@ const Game = () => {
   const [particles, setParticles] = useState([]);
   const [availableWords, setAvailableWords] = useState([]); // Pool of words not currently shown
   const [activeWordIds, setActiveWordIds] = useState([]); // Words currently on screen
+  const [shownWordIds, setShownWordIds] = useState([]); // Track all words shown in this session
 
   useEffect(() => {
     if (gameWords.length < 4) {
@@ -67,8 +68,15 @@ const Game = () => {
       return; // No more words to add
     }
     
+    // Filter out words that have already been shown in this session
+    const unseenWords = availableWords.filter(w => !shownWordIds.includes(w.id));
+    
+    if (unseenWords.length === 0) {
+      return; // All available words have been shown
+    }
+    
     // Use AI selector to choose the next word with highest priority
-    const selectedWords = selectWordsForSession(availableWords, 1, {
+    const selectedWords = selectWordsForSession(unseenWords, 1, {
       balanceChallenge: false, // Just get the highest priority word
       includeNew: true,
     });
@@ -114,9 +122,10 @@ const Game = () => {
         return updated;
       });
       
-      // Update available words and active words
+      // Update available words, active words, and mark as shown
       setAvailableWords(prev => prev.filter(w => w.id !== selectedWord.id));
       setActiveWordIds(prev => [...prev, selectedWord.id]);
+      setShownWordIds(prev => [...prev, selectedWord.id]);
     }, delay);
   };
 
@@ -139,6 +148,7 @@ const Game = () => {
     // Store available words (those not currently shown)
     const currentWordIds = selectedWords.map(w => w.id);
     setActiveWordIds(currentWordIds);
+    setShownWordIds(currentWordIds); // Initialize shown words for the session
     setAvailableWords(gameWords.filter(w => !currentWordIds.includes(w.id)));
 
     // Create cards
@@ -180,7 +190,7 @@ const Game = () => {
     const card2 = gameCards[second];
 
     if (card1.pairId === card2.pairId) {
-      // Correct match
+      // Correct match - both cards share the same word ID, update once
       setMatchedPairs(prev => [...prev, card1.pairId]);
       const newCombo = combo + 1;
       setCombo(newCombo);
@@ -193,6 +203,7 @@ const Game = () => {
       setMessage(`🎉 Perfect Match! +${points} points! ${newCombo > 1 ? `🔥x${newCombo}` : ''}`);
       createParticles(x, y, true);
       
+      // Update stats once for the matched word
       updateWordStats(card1.id, true);
       recordMatch(true);
 
@@ -226,13 +237,14 @@ const Game = () => {
         }
       }
     } else {
-      // Wrong match
+      // Wrong match - only update stats for the words if they were actually being tested
+      // Don't update stats for random clicks, only when attempting a real match
       setCombo(0);
       setMessage('❌ Try again! Keep matching!');
       createParticles(x, y, false);
-      updateWordStats(card1.id, false);
-      updateWordStats(card2.id, false);
       recordMatch(false);
+      // Note: We don't update word stats here because the user wasn't specifically
+      // being tested on either word - they just clicked two unrelated cards
     }
 
     setTimeout(() => {
