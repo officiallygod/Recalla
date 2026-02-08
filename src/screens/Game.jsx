@@ -98,9 +98,10 @@ const Game = () => {
         
         // Create new cards for the selected word
         const newPairId = Math.max(...prev.map(c => c.pairId)) + 1;
+        const timestamp = Date.now();
         const newCards = [
-          { type: 'word', value: selectedWord.word, id: selectedWord.id, pairId: newPairId },
-          { type: 'meaning', value: selectedWord.meaning, id: selectedWord.id, pairId: newPairId }
+          { type: 'word', value: selectedWord.word, id: selectedWord.id, pairId: newPairId, cardId: `${timestamp}-${newPairId}-word` },
+          { type: 'meaning', value: selectedWord.meaning, id: selectedWord.id, pairId: newPairId, cardId: `${timestamp}-${newPairId}-meaning` }
         ];
         
         // Shuffle the new cards to avoid obvious pairing
@@ -144,8 +145,8 @@ const Game = () => {
     // Create cards
     const cards = [];
     selectedWords.forEach((word, index) => {
-      cards.push({ type: 'word', value: word.word, id: word.id, pairId: index });
-      cards.push({ type: 'meaning', value: word.meaning, id: word.id, pairId: index });
+      cards.push({ type: 'word', value: word.word, id: word.id, pairId: index, cardId: `${Date.now()}-${index}-word` });
+      cards.push({ type: 'meaning', value: word.meaning, id: word.id, pairId: index, cardId: `${Date.now()}-${index}-meaning` });
     });
 
     // Shuffle cards
@@ -379,7 +380,7 @@ const Game = () => {
 
           return (
             <div
-              key={`card-${index}-${card.id}-${card.type}-${card.pairId}`}
+              key={card.cardId}
               className={`
                 min-h-[120px] sm:min-h-[140px]
                 ${selected ? 'border-shine' : ''}

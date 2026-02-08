@@ -5,7 +5,7 @@
   const existingWords = localStorage.getItem('recalla_words');
   const isDevMode = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   
-  if (!existingWords || existingWords === '[]') {
+  if (isDevMode && (!existingWords || existingWords === '[]')) {
     const germanWords = [
       { word: "bereits", meaning: "already" },
       { word: "besonders", meaning: "especially" },
