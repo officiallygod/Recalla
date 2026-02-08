@@ -170,7 +170,8 @@ const Game = () => {
 
     if (newSelected.length === 2) {
       setIsChecking(true);
-      setTimeout(() => checkMatch(newSelected, x, y), 500);
+      // Reduced delay for faster gameplay and combo scoring
+      setTimeout(() => checkMatch(newSelected, x, y), 300);
     }
   };
 
@@ -235,10 +236,11 @@ const Game = () => {
       recordMatch(false);
     }
 
+    // Faster reset for snappy gameplay and combo scoring
     setTimeout(() => {
       setSelectedCards([]);
       setIsChecking(false);
-    }, 1000);
+    }, 600);
   };
 
   const isCardSelected = (index) => selectedCards.includes(index);
@@ -369,50 +371,46 @@ const Game = () => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Game Board */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-        <AnimatePresence mode="popLayout">
-          {gameCards.map((card, index) => {
-            const selected = isCardSelected(index);
-            const matched = isCardMatched(card);
+      {/* Game Board - Fixed 4 column layout (2 on mobile) with no layout shifts */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+        {gameCards.map((card, index) => {
+          const selected = isCardSelected(index);
+          const matched = isCardMatched(card);
 
-            return (
-              <motion.div
-                key={`${card.id}-${card.type}-${card.pairId}`}
-                layout
-                initial={{ opacity: 0, scale: 0.8, rotateY: -180 }}
-                animate={{ 
-                  opacity: matched ? 0 : 1, 
-                  scale: matched ? 0.5 : 1,
-                  rotateY: 0
-                }}
-                exit={{ opacity: 0, scale: 0 }}
-                transition={{ duration: 0.3 }}
-                className={selected ? 'border-shine' : ''}
+          return (
+            <div
+              key={`${card.id}-${card.type}-${card.pairId}`}
+              className={`
+                min-h-[120px] sm:min-h-[140px]
+                ${selected ? 'border-shine' : ''}
+                ${matched ? 'opacity-0 pointer-events-none' : 'opacity-100'}
+                transition-opacity duration-200
+              `}
+              style={{ 
+                // Reserve space even when invisible to prevent layout shifts
+                visibility: matched ? 'hidden' : 'visible'
+              }}
+            >
+              <Card
+                onClick={(e) => handleCardClick(index, e)}
+                className={`
+                  h-full flex items-center justify-center text-center p-4
+                  transition-all duration-200
+                  ${selected ? 'bg-gradient-to-br from-primary-500 to-purple-600 text-white shadow-2xl scale-105' : ''}
+                  ${matched ? '' : 'cursor-pointer hover:shadow-2xl'}
+                `}
+                pressable={!matched}
+                hoverable={!matched}
               >
-                <Card
-                  onClick={(e) => handleCardClick(index, e)}
-                  className={`
-                    min-h-[120px] sm:min-h-[140px] flex items-center justify-center text-center p-4
-                    transition-all duration-300
-                    ${selected ? 'bg-gradient-to-br from-primary-500 to-purple-600 text-white shadow-2xl scale-105' : ''}
-                    ${matched ? 'pointer-events-none' : 'cursor-pointer hover:shadow-2xl'}
-                  `}
-                  pressable={!matched}
-                  hoverable={!matched}
+                <p 
+                  className={`font-semibold text-base sm:text-lg px-4 ${selected ? 'text-white' : 'text-slate-800 dark:text-slate-200'}`}
                 >
-                  <motion.p 
-                    className={`font-semibold text-base sm:text-lg px-4 ${selected ? 'text-white' : 'text-slate-800 dark:text-slate-200'}`}
-                    animate={selected ? { scale: [1, 1.1, 1] } : {}}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {card.value}
-                  </motion.p>
-                </Card>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
+                  {card.value}
+                </p>
+              </Card>
+            </div>
+          );
+        })}
       </div>
     </motion.div>
   );
