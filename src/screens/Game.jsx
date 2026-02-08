@@ -32,6 +32,18 @@ const Game = () => {
   const [availableWords, setAvailableWords] = useState([]); // Pool of words not currently shown
   const [activeWordIds, setActiveWordIds] = useState([]); // Words currently on screen
   const [shownWordIds, setShownWordIds] = useState([]); // Track all words shown in this session
+  const [timer, setTimer] = useState(30); // 30-second timer
+  const [isTimerActive, setIsTimerActive] = useState(false);
+
+  // Fisher-Yates shuffle for proper randomization
+  const shuffleArray = (array) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
 
   useEffect(() => {
     if (gameWords.length < 4) {
@@ -40,7 +52,28 @@ const Game = () => {
     }
     incrementGamesPlayed();
     startNewRound();
+    
+    // Start the 30-second timer
+    setIsTimerActive(true);
   }, [selectedTopic, gameWords.length]);
+
+  // Timer effect - count down from 30 seconds, auto-resets
+  useEffect(() => {
+    if (!isTimerActive) return;
+    
+    if (timer <= 0) {
+      // Timer expired - reset to 30 and continue (never stop the user)
+      setTimer(30);
+      return;
+    }
+    
+    const interval = setInterval(() => {
+      setTimer(prev => Math.max(0, prev - 1));
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [timer, isTimerActive]);
+
 
   const createParticles = (x, y, isCorrect) => {
     const colors = isCorrect 
@@ -90,9 +123,9 @@ const Game = () => {
       
       const selectedWord = selectedWords[0];
       
-      // Add delay (500-1500ms) for randomness so user can't predict
-      const MIN_DELAY_MS = 500;
-      const MAX_DELAY_MS = 1500;
+      // Add minimal delay (200-600ms) for snappy feel
+      const MIN_DELAY_MS = 200;
+      const MAX_DELAY_MS = 600;
       const delay = MIN_DELAY_MS + Math.random() * (MAX_DELAY_MS - MIN_DELAY_MS);
       
       setTimeout(() => {
@@ -115,8 +148,8 @@ const Game = () => {
             { type: 'meaning', value: selectedWord.meaning, id: selectedWord.id, pairId: newPairId }
           ];
           
-          // Shuffle using simple random swap for 2 elements
-          const shuffledNewCards = Math.random() < 0.5 ? newCards : [newCards[1], newCards[0]];
+          // Shuffle new cards using Fisher-Yates
+          const shuffledNewCards = shuffleArray(newCards);
           
           // Replace matched cards with new ones
           const updated = [...prev];
@@ -165,8 +198,8 @@ const Game = () => {
       cards.push({ type: 'meaning', value: word.meaning, id: word.id, pairId: index });
     });
 
-    // Shuffle cards
-    const shuffled = cards.sort(() => Math.random() - 0.5);
+    // Shuffle cards using Fisher-Yates
+    const shuffled = shuffleArray(cards);
     setGameCards(shuffled);
     setSelectedCards([]);
     setMatchedPairs([]);
@@ -174,7 +207,20 @@ const Game = () => {
   };
 
   const handleCardClick = (index, event) => {
-    if (isChecking || selectedCards.length >= 2 || selectedCards.includes(index) || matchedPairs.includes(gameCards[index].pairId)) {
+    // Allow deselection - if card is already selected, deselect it
+    if (selectedCards.includes(index)) {
+      setSelectedCards(prev => prev.filter(i => i !== index));
+      return;
+    }
+    
+    // Don't allow selection of matched cards
+    if (matchedPairs.includes(gameCards[index].pairId)) {
+      return;
+    }
+    
+    // Allow selection even during checking (celebration animations)
+    // Only block if we already have 2 cards selected and this isn't a deselection
+    if (selectedCards.length >= 2) {
       return;
     }
 
@@ -187,7 +233,7 @@ const Game = () => {
 
     if (newSelected.length === 2) {
       setIsChecking(true);
-      setTimeout(() => checkMatch(newSelected, x, y), 500);
+      setTimeout(() => checkMatch(newSelected, x, y), 300); // Faster check (was 500ms)
     }
   };
 
@@ -225,17 +271,20 @@ const Game = () => {
         } else {
           // No more words, complete the round
           setShowConfetti(true);
+          setIsTimerActive(false); // Pause timer during celebration
           setTimeout(() => {
             // Harder round completion bonus
             const bonus = newCombo * 50;
             awardPoints(bonus, 20);
             setMessage(`🏆 Round ${round} Complete! Bonus: +${bonus} points!`);
             setRound(prev => prev + 1);
+            setTimer(30); // Reset timer for next round
             setTimeout(() => {
               setShowConfetti(false);
+              setIsTimerActive(true); // Resume timer for next round
               startNewRound();
-            }, 2000);
-          }, 1000);
+            }, 1000); // Faster transition (was 2000ms)
+          }, 500); // Faster confetti (was 1000ms)
         }
       } else {
         // Not all pairs matched yet, replace this pair if words available
@@ -256,7 +305,7 @@ const Game = () => {
     setTimeout(() => {
       setSelectedCards([]);
       setIsChecking(false);
-    }, 1000);
+    }, 600); // Faster reset (was 1000ms)
   };
 
   const isCardSelected = (index) => selectedCards.includes(index);
@@ -331,8 +380,8 @@ const Game = () => {
         {/* Game Stats */}
         <div className="flex gap-2 sm:gap-4">
           <motion.div
-            animate={{ scale: [1, 1.1, 1] }}
-            transition={{ duration: 0.5 }}
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 0.3 }}
             key={round}
           >
             <Card className="px-4 py-2">
@@ -343,8 +392,8 @@ const Game = () => {
             </Card>
           </motion.div>
           <motion.div
-            animate={{ scale: [1, 1.1, 1] }}
-            transition={{ duration: 0.5 }}
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 0.3 }}
             key={score}
           >
             <Card className="px-4 py-2">
@@ -356,16 +405,30 @@ const Game = () => {
           </motion.div>
           <motion.div
             animate={{ 
-              scale: combo > 0 ? [1, 1.2, 1] : 1,
-              rotate: combo > 0 ? [0, -10, 10, 0] : 0
+              scale: combo > 0 ? [1, 1.1, 1] : 1,
             }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.3 }}
             key={combo}
           >
             <Card className="px-4 py-2">
               <div className="text-center">
                 <div className="text-xs text-slate-500 dark:text-slate-400">Combo</div>
                 <div className="text-lg font-bold text-orange-600 dark:text-orange-400">{combo}🔥</div>
+              </div>
+            </Card>
+          </motion.div>
+          <motion.div
+            animate={{ 
+              scale: timer <= 5 ? [1, 1.1, 1] : 1,
+            }}
+            transition={{ duration: 0.5, repeat: timer <= 5 ? Infinity : 0 }}
+          >
+            <Card className="px-4 py-2">
+              <div className="text-center">
+                <div className="text-xs text-slate-500 dark:text-slate-400">Timer</div>
+                <div className={`text-lg font-bold ${timer <= 5 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                  {timer}s
+                </div>
               </div>
             </Card>
           </motion.div>
@@ -376,10 +439,10 @@ const Game = () => {
       <AnimatePresence mode="wait">
         <motion.div
           key={message}
-          initial={{ opacity: 0, scale: 0.8, y: -20 }}
+          initial={{ opacity: 0, scale: 0.9, y: -10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.8, y: 20 }}
-          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          exit={{ opacity: 0, scale: 0.9, y: 10 }}
+          transition={{ type: "spring", stiffness: 500, damping: 30 }}
         >
           <Card glassEffect className="text-center">
             <p className="text-lg font-semibold text-slate-800 dark:text-slate-200">{message}</p>
@@ -396,33 +459,33 @@ const Game = () => {
 
             return (
               <motion.div
-                key={`${card.id}-${card.type}-${card.pairId}`}
+                key={`${card.id}-${card.type}-${card.pairId}-${index}`}
                 layout
-                initial={{ opacity: 0, scale: 0.8, rotateY: -180 }}
+                initial={{ opacity: 0, scale: 0.9, rotateY: -90 }}
                 animate={{ 
                   opacity: matched ? 0 : 1, 
-                  scale: matched ? 0.5 : 1,
+                  scale: matched ? 0.8 : 1,
                   rotateY: 0
                 }}
-                exit={{ opacity: 0, scale: 0 }}
-                transition={{ duration: 0.3 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.2 }}
                 className={selected ? 'border-shine' : ''}
               >
                 <Card
                   onClick={(e) => handleCardClick(index, e)}
                   className={`
                     min-h-[120px] sm:min-h-[140px] flex items-center justify-center text-center p-4
-                    transition-all duration-300
-                    ${selected ? 'bg-gradient-to-br from-primary-500 to-purple-600 text-white shadow-2xl scale-105' : ''}
-                    ${matched ? 'pointer-events-none' : 'cursor-pointer hover:shadow-2xl'}
+                    transition-all duration-200
+                    ${selected ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white scale-105' : ''}
+                    ${matched ? 'pointer-events-none' : 'cursor-pointer hover:scale-102'}
                   `}
                   pressable={!matched}
                   hoverable={!matched}
                 >
                   <motion.p 
                     className={`font-semibold text-base sm:text-lg px-4 ${selected ? 'text-white' : 'text-slate-800 dark:text-slate-200'}`}
-                    animate={selected ? { scale: [1, 1.1, 1] } : {}}
-                    transition={{ duration: 0.3 }}
+                    animate={selected ? { scale: [1, 1.05, 1] } : {}}
+                    transition={{ duration: 0.2 }}
                   >
                     {card.value}
                   </motion.p>
