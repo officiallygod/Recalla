@@ -145,7 +145,7 @@ const AddWord = () => {
                 className="p-4 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700 rounded-xl"
               >
                 <p className="text-emerald-700 dark:text-emerald-300 text-sm font-medium">
-                  ✅ Word added successfully! +10 points
+                  ✅ Word added successfully! +5 points, +2 coins
                 </p>
               </motion.div>
             )}
