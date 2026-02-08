@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Target, Gamepad2, BookOpen, BarChart3, GraduationCap, Lightbulb } from 'lucide-react';
+import { Target, Gamepad2, BookOpen, BarChart3, GraduationCap, Lightbulb, Clock } from 'lucide-react';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { useGame } from '../contexts/GameContext';
@@ -8,6 +8,7 @@ import { useGame } from '../contexts/GameContext';
 const Home = () => {
   const navigate = useNavigate();
   const { words } = useGame();
+  const [timerDuration, setTimerDuration] = useState(30);
 
   const menuItems = [
     {
@@ -23,7 +24,8 @@ const Home = () => {
       description: 'Match words with their meanings',
       path: '/game',
       variant: 'success',
-      disabled: words.length < 8 // Need 8 words for 4 per column in 4-col layout
+      disabled: words.length < 8, // Need 8 words for 4 per column in 4-col layout
+      state: { timerDuration }
     },
     {
       title: 'My Words',
@@ -56,6 +58,33 @@ const Home = () => {
         </p>
       </Card>
 
+      {/* Timer Selection Card */}
+      <Card className="p-4 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Clock className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+            <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">Game Timer:</span>
+          </div>
+          <div className="flex gap-2">
+            {[15, 30, 45, 60].map((duration) => (
+              <button
+                key={duration}
+                onClick={() => setTimerDuration(duration)}
+                className={`
+                  px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                  ${timerDuration === duration
+                    ? 'bg-primary-600 text-white shadow-lg'
+                    : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                  }
+                `}
+              >
+                {duration}s
+              </button>
+            ))}
+          </div>
+        </div>
+      </Card>
+
       {/* Menu Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {menuItems.map((item) => {
@@ -63,7 +92,7 @@ const Home = () => {
           return (
             <Card
               key={item.path}
-              onClick={!item.disabled ? () => navigate(item.path) : undefined}
+              onClick={!item.disabled ? () => navigate(item.path, { state: item.state }) : undefined}
               className={`
                 ${item.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900
