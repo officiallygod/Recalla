@@ -272,11 +272,12 @@ const Game = () => {
           // No more words, complete the round
           setShowConfetti(true);
           setIsTimerActive(false); // Pause timer during celebration
+          const currentRound = round; // Capture current round before async operations
           setTimeout(() => {
             // Harder round completion bonus
             const bonus = newCombo * 50;
-            awardPoints(bonus, 20, round);
-            setMessage(`🏆 Round ${round} Complete! Bonus: +${bonus} points!`);
+            awardPoints(bonus, 20, currentRound);
+            setMessage(`🏆 Round ${currentRound} Complete! Bonus: +${bonus} points!`);
             setRound(prev => prev + 1);
             setTimer(30); // Reset timer for next round
             setTimeout(() => {
