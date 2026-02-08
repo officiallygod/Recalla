@@ -252,7 +252,7 @@ const Game = () => {
       // Harder rewards: Reduced points and coins significantly
       const points = 50 + (newCombo * 25);
       setScore(prev => prev + points);
-      awardPoints(points, 3 + (newCombo * 2));
+      awardPoints(points, 3 + (newCombo * 2), round);
       
       setMessage(`🎉 Perfect Match! +${points} points! ${newCombo > 1 ? `🔥x${newCombo}` : ''}`);
       createParticles(x, y, true);
@@ -274,7 +274,7 @@ const Game = () => {
           setTimeout(() => {
             // Harder round completion bonus
             const bonus = newCombo * 50;
-            awardPoints(bonus, 20);
+            awardPoints(bonus, 20, round);
             setMessage(`🏆 Round ${round} Complete! Bonus: +${bonus} points!`);
             setRound(prev => prev + 1);
             setTimeout(() => {

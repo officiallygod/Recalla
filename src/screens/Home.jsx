@@ -23,7 +23,7 @@ const Home = () => {
       description: 'Match words with their meanings',
       path: '/game',
       variant: 'success',
-      disabled: words.length < 8
+      disabled: words.length < 8 // Need 8 words for 4 per column in 4-col layout
     },
     {
       title: 'My Words',
@@ -67,7 +67,7 @@ const Home = () => {
               className={`
                 ${item.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900
-                ${!item.disabled ? 'hover:border-primary-300 dark:hover:border-primary-600 hover:shadow-sm' : ''}
+                ${!item.disabled ? 'hover:border-indigo-300 dark:hover:border-indigo-600' : ''}
                 transition-all duration-200
               `}
             >

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const Confetti = ({ trigger, duration = 2000 }) => {
+const Confetti = ({ trigger, duration = 1000 }) => {
   const [pieces, setPieces] = useState([]);
   const [show, setShow] = useState(false);
 
