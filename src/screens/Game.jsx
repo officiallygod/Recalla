@@ -7,6 +7,20 @@ import Confetti from '../components/Confetti';
 import { useGame } from '../contexts/GameContext';
 import { selectWordsForSession, estimateDifficulty } from '../utils/aiWordSelector';
 
+// Coin reward constants - kept very small (< 10) as per requirements
+const COIN_REWARDS = {
+  MATCH: {
+    BASE: 1,           // Base coins per match
+    COMBO_DIVISOR: 3,  // Combo count divided by this for bonus
+    MAX: 5             // Maximum coins per match
+  },
+  ROUND: {
+    BASE: 5,           // Base coins for completing a round
+    COMBO_DIVISOR: 2,  // Combo count divided by this for bonus
+    MAX: 9             // Maximum coins per round
+  }
+};
+
 const Game = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -253,9 +267,14 @@ const Game = () => {
       setCombo(newCombo);
       
       // Harder rewards: Reduced points and coins significantly
+      // Keep coin rewards very small (< 10) as per requirements
       const points = 50 + (newCombo * 25);
+      const coinReward = Math.min(
+        COIN_REWARDS.MATCH.BASE + Math.floor(newCombo / COIN_REWARDS.MATCH.COMBO_DIVISOR),
+        COIN_REWARDS.MATCH.MAX
+      );
       setScore(prev => prev + points);
-      awardPoints(points, 3 + (newCombo * 2), round);
+      awardPoints(points, coinReward, round);
       
       setMessage(`🎉 Perfect Match! +${points} points! ${newCombo > 1 ? `🔥x${newCombo}` : ''}`);
       createParticles(x, y, true);
@@ -279,8 +298,13 @@ const Game = () => {
           const currentRound = round; // Capture current round before async operations
           setTimeout(() => {
             // Harder round completion bonus
+            // Keep coin bonus very small (< 10) as per requirements
             const bonus = newCombo * 50;
-            awardPoints(bonus, 20, currentRound);
+            const coinBonus = Math.min(
+              COIN_REWARDS.ROUND.BASE + Math.floor(newCombo / COIN_REWARDS.ROUND.COMBO_DIVISOR),
+              COIN_REWARDS.ROUND.MAX
+            );
+            awardPoints(bonus, coinBonus, currentRound);
             setMessage(`🏆 Round ${currentRound} Complete! Bonus: +${bonus} points!`);
             setRound(prev => prev + 1);
             setTimer(timerDuration); // Reset timer for next round
