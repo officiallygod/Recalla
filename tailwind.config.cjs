@@ -40,6 +40,7 @@ module.exports = {
         'wiggle': 'wiggle 1s ease-in-out infinite',
         'particle': 'particle 1s ease-out forwards',
         'confetti': 'confetti 2s ease-out forwards',
+        'border-shine': 'border-shine 2s linear infinite',
       },
       keyframes: {
         ripple: {

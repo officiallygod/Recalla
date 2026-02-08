@@ -71,4 +71,36 @@
   .transition-smooth {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
+
+  /* Animated border shine effect */
+  @keyframes border-shine {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  .border-shine {
+    position: relative;
+    background: linear-gradient(90deg, 
+      rgba(99, 102, 241, 0.8) 0%, 
+      rgba(147, 51, 234, 1) 25%, 
+      rgba(236, 72, 153, 1) 50%, 
+      rgba(147, 51, 234, 1) 75%, 
+      rgba(99, 102, 241, 0.8) 100%
+    );
+    background-size: 200% 100%;
+    animation: border-shine 2s linear infinite;
+    padding: 4px;
+    border-radius: 0.75rem;
+  }
+
+  .border-shine > * {
+    border-radius: 0.625rem;
+  }
 }
