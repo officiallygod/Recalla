@@ -38,7 +38,7 @@ const Layout = ({ children }) => {
             {/* Stats and Theme Toggle */}
             <div className="flex items-center gap-2 sm:gap-3">
               <StatItem 
-                icon={<Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />} 
+                icon={<Star className="w-5 h-5 text-yellow-500" fill="currentColor" />} 
                 value={userData.points} 
                 label="Points" 
               />
