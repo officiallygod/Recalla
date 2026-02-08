@@ -13,6 +13,9 @@ const Game = () => {
   const { words, topics, updateWordStats, awardPoints, recordMatch, incrementGamesPlayed, getWordsByTopic } = useGame();
   const [selectedTopic, setSelectedTopic] = useState(location.state?.topicId || null);
   
+  // Get timer duration from location state, default to 30 seconds
+  const initialTimerDuration = location.state?.timerDuration || 30;
+  
   // Get words for the game - if a topic is selected, use only that topic's words
   // If no topic is selected, use words that have a topicId (ensuring words are grouped by topic)
   const gameWords = selectedTopic 
@@ -32,7 +35,8 @@ const Game = () => {
   const [availableWords, setAvailableWords] = useState([]); // Pool of words not currently shown
   const [activeWordIds, setActiveWordIds] = useState([]); // Words currently on screen
   const [shownWordIds, setShownWordIds] = useState([]); // Track all words shown in this session
-  const [timer, setTimer] = useState(30); // 30-second timer
+  const [timer, setTimer] = useState(initialTimerDuration);
+  const [timerDuration, setTimerDuration] = useState(initialTimerDuration); // Store the timer duration for resets
   const [isTimerActive, setIsTimerActive] = useState(false);
 
   // Fisher-Yates shuffle for proper randomization
@@ -57,13 +61,13 @@ const Game = () => {
     setIsTimerActive(true);
   }, [selectedTopic, gameWords.length]);
 
-  // Timer effect - count down from 30 seconds, auto-resets
+  // Timer effect - count down from timerDuration seconds, auto-resets
   useEffect(() => {
     if (!isTimerActive) return;
     
     if (timer <= 0) {
-      // Timer expired - reset to 30 and continue (never stop the user)
-      setTimer(30);
+      // Timer expired - reset to timerDuration and continue (never stop the user)
+      setTimer(timerDuration);
       return;
     }
     
@@ -72,7 +76,7 @@ const Game = () => {
     }, 1000);
     
     return () => clearInterval(interval);
-  }, [timer, isTimerActive]);
+  }, [timer, isTimerActive, timerDuration]);
 
   const createParticles = (x, y, isCorrect) => {
     const colors = isCorrect 
@@ -279,7 +283,7 @@ const Game = () => {
             awardPoints(bonus, 20, currentRound);
             setMessage(`🏆 Round ${currentRound} Complete! Bonus: +${bonus} points!`);
             setRound(prev => prev + 1);
-            setTimer(30); // Reset timer for next round
+            setTimer(timerDuration); // Reset timer for next round
             setTimeout(() => {
               setShowConfetti(false);
               setIsTimerActive(true); // Resume timer for next round
