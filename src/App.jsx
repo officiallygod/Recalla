@@ -9,6 +9,7 @@ import AddWord from './screens/AddWord';
 import WordsList from './screens/WordsList';
 import Game from './screens/Game';
 import Statistics from './screens/Statistics';
+import TopicDetails from './screens/TopicDetails';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
               <Route path="/words" element={<WordsList />} />
               <Route path="/game" element={<Game />} />
               <Route path="/stats" element={<Statistics />} />
+              <Route path="/stats/topic/:topicId" element={<TopicDetails />} />
             </Routes>
           </Layout>
         </Router>
