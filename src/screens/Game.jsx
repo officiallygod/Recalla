@@ -7,6 +7,20 @@ import Confetti from '../components/Confetti';
 import { useGame } from '../contexts/GameContext';
 import { selectWordsForSession, estimateDifficulty } from '../utils/aiWordSelector';
 
+// Coin reward constants - kept very small (< 10) as per requirements
+const COIN_REWARDS = {
+  MATCH: {
+    BASE: 1,           // Base coins per match
+    COMBO_DIVISOR: 3,  // Combo count divided by this for bonus
+    MAX: 5             // Maximum coins per match
+  },
+  ROUND: {
+    BASE: 5,           // Base coins for completing a round
+    COMBO_DIVISOR: 2,  // Combo count divided by this for bonus
+    MAX: 9             // Maximum coins per round
+  }
+};
+
 const Game = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -255,7 +269,10 @@ const Game = () => {
       // Harder rewards: Reduced points and coins significantly
       // Keep coin rewards very small (< 10) as per requirements
       const points = 50 + (newCombo * 25);
-      const coinReward = Math.min(1 + Math.floor(newCombo / 3), 5); // Max 5 coins per match
+      const coinReward = Math.min(
+        COIN_REWARDS.MATCH.BASE + Math.floor(newCombo / COIN_REWARDS.MATCH.COMBO_DIVISOR),
+        COIN_REWARDS.MATCH.MAX
+      );
       setScore(prev => prev + points);
       awardPoints(points, coinReward, round);
       
@@ -283,7 +300,10 @@ const Game = () => {
             // Harder round completion bonus
             // Keep coin bonus very small (< 10) as per requirements
             const bonus = newCombo * 50;
-            const coinBonus = Math.min(5 + Math.floor(newCombo / 2), 9); // Max 9 coins for round
+            const coinBonus = Math.min(
+              COIN_REWARDS.ROUND.BASE + Math.floor(newCombo / COIN_REWARDS.ROUND.COMBO_DIVISOR),
+              COIN_REWARDS.ROUND.MAX
+            );
             awardPoints(bonus, coinBonus, currentRound);
             setMessage(`🏆 Round ${currentRound} Complete! Bonus: +${bonus} points!`);
             setRound(prev => prev + 1);

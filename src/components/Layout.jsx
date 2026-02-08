@@ -2,7 +2,7 @@ import React from 'react';
 import { Gamepad2, Star, Coins, Trophy, Sun, Moon } from 'lucide-react';
 import { useGame } from '../contexts/GameContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { formatNumberCompact } from '../utils/numberFormatter';
+import { formatNumber } from '../utils/numberFormatter';
 
 const Layout = ({ children }) => {
   const { userData } = useGame();
@@ -24,8 +24,8 @@ const Layout = ({ children }) => {
 
             {/* Stats and Theme Toggle */}
             <div className="flex items-center gap-2 sm:gap-4">
-              <StatItem icon={<Star className="w-4 h-4" fill="currentColor" />} value={formatNumberCompact(userData.points)} label="Points" />
-              <StatItem icon={<Coins className="w-4 h-4" />} value={formatNumberCompact(userData.coins)} label="Coins" />
+              <StatItem icon={<Star className="w-4 h-4" fill="currentColor" />} value={formatNumber(userData.points)} label="Points" />
+              <StatItem icon={<Coins className="w-4 h-4" />} value={formatNumber(userData.coins)} label="Coins" />
               <StatItem icon={<Trophy className="w-4 h-4" />} value={userData.level} label="Level" />
               
               {/* Theme Toggle */}

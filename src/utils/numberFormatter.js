@@ -47,12 +47,3 @@ export const formatNumber = (num, decimals = 1) => {
 
   return sign + absNum.toString();
 };
-
-/**
- * Format number for compact display (removes decimal places when showing K/M/B)
- * @param {number} num - The number to format
- * @returns {string} Formatted number
- */
-export const formatNumberCompact = (num) => {
-  return formatNumber(num, 1);
-};
