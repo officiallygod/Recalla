@@ -97,7 +97,7 @@ const Game = () => {
       
       setTimeout(() => {
         setGameCards(prev => {
-          // Find indices of matched cards
+          // Find indices of matched cards - validate they still exist
           const matchedIndices = [];
           prev.forEach((card, idx) => {
             if (card.pairId === matchedPairId) {
@@ -105,6 +105,7 @@ const Game = () => {
             }
           });
           
+          // If the matched pair no longer exists or has been replaced, abort
           if (matchedIndices.length !== 2) return prev;
           
           // Create new cards for the selected word
@@ -115,12 +116,12 @@ const Game = () => {
           ];
           
           // Shuffle using simple random swap for 2 elements
-          const shuffledNewCards = Math.random() < 0.5 ? newCards : [newCards[1], newCards[0]];
+          const randomizedNewCards = Math.random() < 0.5 ? newCards : [newCards[1], newCards[0]];
           
           // Replace matched cards with new ones
           const updated = [...prev];
-          updated[matchedIndices[0]] = shuffledNewCards[0];
-          updated[matchedIndices[1]] = shuffledNewCards[1];
+          updated[matchedIndices[0]] = randomizedNewCards[0];
+          updated[matchedIndices[1]] = randomizedNewCards[1];
           
           return updated;
         });
