@@ -1,10 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { Target, Gamepad2, BookOpen, BarChart3, GraduationCap, Lightbulb } from 'lucide-react';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { useGame } from '../contexts/GameContext';
-import { Target, Gamepad2, BookOpen, BarChart3 } from 'lucide-react';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -13,14 +12,14 @@ const Home = () => {
   const menuItems = [
     {
       title: 'Topics',
-      icon: <Target className="w-16 h-16 text-red-500" />,
+      icon: Target,
       description: 'Manage your learning topics',
       path: '/welcome',
       variant: 'primary'
     },
     {
       title: 'Play Match Game',
-      icon: <Gamepad2 className="w-16 h-16 text-indigo-500" />,
+      icon: Gamepad2,
       description: 'Match words with their meanings',
       path: '/game',
       variant: 'success',
@@ -28,14 +27,14 @@ const Home = () => {
     },
     {
       title: 'My Words',
-      icon: <BookOpen className="w-16 h-16 text-blue-500" />,
+      icon: BookOpen,
       description: `${words.length} words in your collection`,
       path: '/words',
       variant: 'secondary'
     },
     {
       title: 'Statistics',
-      icon: <BarChart3 className="w-16 h-16 text-purple-500" />,
+      icon: BarChart3,
       description: 'View your progress and stats',
       path: '/stats',
       variant: 'secondary'
@@ -43,93 +42,64 @@ const Home = () => {
   ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="space-y-8 pb-4"
-    >
+    <div className="space-y-4 sm:space-y-6 pb-4">
       {/* Welcome Card */}
-      <Card glassEffect className="text-center p-8">
-        <motion.div
-          initial={{ scale: 0.95 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.1, type: "spring", stiffness: 150 }}
-        >
-          <motion.h2 
-            className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary-600 via-purple-600 to-pink-600 dark:from-primary-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent"
-          >
-            Welcome to Recalla! 🎓
-          </motion.h2>
-          <p className="text-lg text-slate-600 dark:text-slate-300">
-            Learn and remember words through fun interactive games
-          </p>
-        </motion.div>
+      <Card className="text-center p-4 sm:p-6 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <GraduationCap className="w-8 h-8 text-primary-600 dark:text-primary-400" />
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
+            Welcome to Recalla!
+          </h2>
+        </div>
+        <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300">
+          Learn and remember words through fun interactive games
+        </p>
       </Card>
 
       {/* Menu Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
-        {menuItems.map((item, index) => (
-          <motion.div
-            key={item.path}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 * (index + 1) }}
-            whileHover={{ scale: item.disabled ? 1 : 1.02 }}
-            className="w-full"
-          >
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+        {menuItems.map((item) => {
+          const IconComponent = item.icon;
+          return (
             <Card
+              key={item.path}
               onClick={!item.disabled ? () => navigate(item.path) : undefined}
               className={`
-                ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}
-                hover:shadow-xl transition-all duration-200
+                ${item.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900
+                ${!item.disabled ? 'hover:border-primary-300 dark:hover:border-primary-600 hover:shadow-sm' : ''}
+                transition-all duration-200
               `}
-              pressable={!item.disabled}
-              hoverable={!item.disabled}
             >
-              <div className="flex items-center gap-5 p-4">
-                <motion.div 
-                  className="flex-shrink-0"
-                  animate={!item.disabled ? { 
-                    scale: [1, 1.05, 1]
-                  } : {}}
-                  transition={{ 
-                    duration: 2, 
-                    repeat: Infinity,
-                    repeatDelay: 1
-                  }}
-                >
-                  {item.icon}
-                </motion.div>
+              <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4">
+                <div className="flex-shrink-0">
+                  <IconComponent className="w-8 h-8 sm:w-10 sm:h-10 text-primary-600 dark:text-primary-400" />
+                </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-1">
+                  <h3 className="text-base sm:text-lg font-semibold text-slate-900 dark:text-slate-100 mb-0.5 truncate">
                     {item.title}
                   </h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
                     {item.description}
                   </p>
                 </div>
               </div>
             </Card>
-          </motion.div>
-        ))}
+          );
+        })}
       </div>
 
       {words.length < 4 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-center"
-        >
-          <Card className="bg-amber-50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-700">
-            <p className="text-amber-800 dark:text-amber-200">
-              💡 Add at least 4 words to unlock the Match Game!
+        <Card className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+          <div className="flex items-start gap-2 p-3">
+            <Lightbulb className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-amber-800 dark:text-amber-200">
+              Add at least 4 words to unlock the Match Game!
             </p>
-          </Card>
-        </motion.div>
+          </div>
+        </Card>
       )}
-    </motion.div>
+    </div>
   );
 };
 

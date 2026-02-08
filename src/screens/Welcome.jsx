@@ -1,16 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import EmojiPicker from '../components/EmojiPicker';
 import { useGame } from '../contexts/GameContext';
+import germanVocabulary from '../data/germanVocabulary';
 
 const Welcome = () => {
   const navigate = useNavigate();
   const {
     topics,
     words,
+    addWord,
     addTopic,
     updateTopic,
     deleteTopic,
@@ -24,6 +26,76 @@ const Welcome = () => {
   const [newTopicEmoji, setNewTopicEmoji] = useState('📚');
   const [editingTopic, setEditingTopic] = useState(null);
   const [error, setError] = useState('');
+  const [showGermanSuggestion, setShowGermanSuggestion] = useState(false);
+  const [isImportingGerman, setIsImportingGerman] = useState(false);
+
+  // Check if user has German-related topics or words
+  useEffect(() => {
+    // Only check if suggestion is not already shown or dismissed
+    const germanTopicExists = topics.some(t => 
+      t.name === germanVocabulary.topic.name
+    );
+    
+    // Skip if library already imported
+    if (germanTopicExists) {
+      setShowGermanSuggestion(false);
+      return;
+    }
+    
+    const hasGermanTopic = topics.some(t => 
+      t.name.toLowerCase().includes('german') || 
+      t.name.toLowerCase().includes('deutsch') ||
+      t.emoji === '🇩🇪'
+    );
+    
+    const hasGermanWords = words.some(w => 
+      w.word && /[äöüßÄÖÜ]/.test(w.word)
+    );
+    
+    // Show suggestion if user has German content but hasn't imported the pre-built library
+    if ((hasGermanTopic || hasGermanWords) && !showGermanSuggestion) {
+      setShowGermanSuggestion(true);
+    }
+  }, [topics, words, showGermanSuggestion]);
+
+  const handleImportGermanLibrary = async () => {
+    setIsImportingGerman(true);
+    setError('');
+    
+    try {
+      // Create the German topic
+      const newTopic = addTopic(
+        germanVocabulary.topic.name,
+        germanVocabulary.topic.emoji
+      );
+      
+      // Import all words into the new topic
+      let successCount = 0;
+      let skipCount = 0;
+      
+      for (const wordData of germanVocabulary.words) {
+        // Check if word already exists
+        const wordExists = words.some(w => 
+          w.word.toLowerCase() === wordData.word.toLowerCase()
+        );
+        
+        if (!wordExists) {
+          addWord(wordData.word, wordData.meaning, newTopic.id);
+          successCount++;
+        } else {
+          skipCount++;
+        }
+      }
+      
+      alert(`✅ Successfully imported ${successCount} German words!${skipCount > 0 ? `\n(Skipped ${skipCount} duplicate words)` : ''}`);
+      setShowGermanSuggestion(false);
+    } catch (err) {
+      setError('Failed to import German library. Please try again.');
+      console.error(err);
+    } finally {
+      setIsImportingGerman(false);
+    }
+  };
 
   const handleAddTopic = (e) => {
     e.preventDefault();
@@ -129,6 +201,64 @@ const Welcome = () => {
           Organize your learning with topics and track your progress
         </p>
       </Card>
+
+      {/* German Library Suggestion */}
+      <AnimatePresence>
+        {showGermanSuggestion && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Card className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border-2 border-indigo-300 dark:border-indigo-600">
+              <div className="flex items-start gap-4">
+                <motion.div
+                  className="text-5xl"
+                  animate={{ 
+                    rotate: [0, -10, 10, -10, 0],
+                    scale: [1, 1.1, 1]
+                  }}
+                  transition={{ 
+                    duration: 2, 
+                    repeat: Infinity,
+                    repeatDelay: 3
+                  }}
+                >
+                  🇩🇪
+                </motion.div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-indigo-900 dark:text-indigo-200 mb-2">
+                    Suggested: German Essential 1000 📚
+                  </h3>
+                  <p className="text-indigo-700 dark:text-indigo-300 mb-4">
+                    We noticed you're learning German! Get instant access to 1000 carefully curated German words (A2-C2 level) from internet usage patterns. Perfect for building a strong vocabulary foundation.
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <Button
+                      variant="primary"
+                      size="md"
+                      onClick={handleImportGermanLibrary}
+                      disabled={isImportingGerman}
+                      icon={isImportingGerman ? "⏳" : "📥"}
+                    >
+                      {isImportingGerman ? 'Importing...' : 'Import German Library'}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      onClick={() => setShowGermanSuggestion(false)}
+                      icon="✕"
+                    >
+                      Dismiss
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Actions Bar */}
       <div className="flex flex-wrap gap-3 items-center justify-between">
