@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../components/Button';
@@ -14,6 +14,14 @@ const AddWord = () => {
   const [selectedTopic, setSelectedTopic] = useState(location.state?.topicId || null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [error, setError] = useState('');
+
+  // Redirect to topics page if no topic is selected
+  const topicIdFromState = location.state?.topicId;
+  useEffect(() => {
+    if (!topicIdFromState) {
+      navigate('/welcome', { replace: true });
+    }
+  }, [topicIdFromState, navigate]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -53,10 +61,10 @@ const AddWord = () => {
       <Button
         variant="secondary"
         size="sm"
-        onClick={() => navigate('/')}
+        onClick={() => navigate('/welcome')}
         icon="←"
       >
-        Back
+        Back to Topics
       </Button>
 
       {/* Title */}
@@ -68,26 +76,20 @@ const AddWord = () => {
       {/* Form */}
       <Card>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Topic Selection */}
-          {topics.length > 0 && (
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-                Topic (Optional)
-              </label>
-              <select
-                value={selectedTopic || ''}
-                onChange={(e) => setSelectedTopic(e.target.value ? parseInt(e.target.value) : null)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 focus:border-primary-500 focus:outline-none transition-colors bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
-              >
-                <option value="">No Topic (General)</option>
-                {topics.map(topic => (
-                  <option key={topic.id} value={topic.id}>
-                    {topic.emoji} {topic.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+          {/* Topic Display */}
+          {selectedTopic && topics.length > 0 && (() => {
+            const currentTopic = topics.find(t => t.id === selectedTopic);
+            return currentTopic ? (
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  Topic
+                </label>
+                <div className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100">
+                  {currentTopic.emoji} {currentTopic.name}
+                </div>
+              </div>
+            ) : null;
+          })()}
 
           {/* Word Input */}
           <div className="space-y-2">

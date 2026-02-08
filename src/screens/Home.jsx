@@ -18,13 +18,6 @@ const Home = () => {
       variant: 'primary'
     },
     {
-      title: 'Add Words',
-      icon: '➕',
-      description: 'Add new words to your vocabulary',
-      path: '/add-word',
-      variant: 'primary'
-    },
-    {
       title: 'Play Match Game',
       icon: '🎮',
       description: 'Match words with their meanings',

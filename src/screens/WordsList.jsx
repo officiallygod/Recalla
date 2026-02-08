@@ -83,10 +83,10 @@ const WordsList = () => {
             No words yet
           </h3>
           <p className="text-slate-500 dark:text-slate-400 mb-6">
-            Start adding words to build your vocabulary
+            Start adding words through topics to build your vocabulary
           </p>
-          <Button onClick={() => navigate('/add-word')} icon="➕">
-            Add Your First Word
+          <Button onClick={() => navigate('/welcome')} icon="🎯">
+            Go to Topics
           </Button>
         </Card>
       ) : (
