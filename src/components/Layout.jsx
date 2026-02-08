@@ -91,7 +91,7 @@ const StatItem = ({ icon, value, label }) => {
       {icon}
       <div className="flex flex-col">
         <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{value}</span>
-        <span className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">{label}</span>
+        <span className="text-xs text-slate-500 dark:text-slate-400 hidden lg:block">{label}</span>
       </div>
     </motion.div>
   );

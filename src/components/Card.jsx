@@ -15,7 +15,7 @@ const Card = ({
       whileHover={hoverable ? { scale: 1.01, y: -2 } : {}}
       whileTap={pressable ? { scale: 0.99 } : {}}
       className={`
-        rounded-3xl p-6 transition-all duration-200
+        rounded-2xl p-6 transition-all duration-200
         ${glassEffect ? 'bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm' : 'bg-white dark:bg-slate-800'}
         ${onClick ? 'cursor-pointer' : ''}
         shadow-md hover:shadow-lg
