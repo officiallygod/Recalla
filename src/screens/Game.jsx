@@ -31,6 +31,19 @@ const Game = () => {
   const [particles, setParticles] = useState([]);
   const [availableWords, setAvailableWords] = useState([]); // Pool of words not currently shown
   const [activeWordIds, setActiveWordIds] = useState([]); // Words currently on screen
+  const [shownWordIds, setShownWordIds] = useState([]); // Track all words shown in this session
+  const [timer, setTimer] = useState(30); // 30-second timer
+  const [isTimerActive, setIsTimerActive] = useState(false);
+
+  // Fisher-Yates shuffle for proper randomization
+  const shuffleArray = (array) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
 
   useEffect(() => {
     if (gameWords.length < 8) {
@@ -39,7 +52,27 @@ const Game = () => {
     }
     incrementGamesPlayed();
     startNewRound();
+    
+    // Start the 30-second timer
+    setIsTimerActive(true);
   }, [selectedTopic, gameWords.length]);
+
+  // Timer effect - count down from 30 seconds, auto-resets
+  useEffect(() => {
+    if (!isTimerActive) return;
+    
+    if (timer <= 0) {
+      // Timer expired - reset to 30 and continue (never stop the user)
+      setTimer(30);
+      return;
+    }
+    
+    const interval = setInterval(() => {
+      setTimer(prev => Math.max(0, prev - 1));
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [timer, isTimerActive]);
 
   const createParticles = (x, y, isCorrect) => {
     const colors = isCorrect 
@@ -67,58 +100,73 @@ const Game = () => {
       return; // No more words to add
     }
     
-    // Use AI selector to choose the next word with highest priority
-    const selectedWords = selectWordsForSession(availableWords, 1, {
-      balanceChallenge: false, // Just get the highest priority word
-      includeNew: true,
-    });
-    
-    if (selectedWords.length === 0) {
-      return;
-    }
-    
-    const selectedWord = selectedWords[0];
-    
-    // Add delay (500-1500ms) for randomness so user can't predict
-    const MIN_DELAY_MS = 500;
-    const MAX_DELAY_MS = 1500;
-    const delay = MIN_DELAY_MS + Math.random() * (MAX_DELAY_MS - MIN_DELAY_MS);
-    
-    setTimeout(() => {
-      setGameCards(prev => {
-        // Find indices of matched cards
-        const matchedIndices = [];
-        prev.forEach((card, idx) => {
-          if (card.pairId === matchedPairId) {
-            matchedIndices.push(idx);
-          }
-        });
-        
-        if (matchedIndices.length !== 2) return prev;
-        
-        // Create new cards for the selected word
-        const newPairId = Math.max(...prev.map(c => c.pairId)) + 1;
-        const timestamp = Date.now();
-        const newCards = [
-          { type: 'word', value: selectedWord.word, id: selectedWord.id, pairId: newPairId, cardId: `${timestamp}-${newPairId}-word` },
-          { type: 'meaning', value: selectedWord.meaning, id: selectedWord.id, pairId: newPairId, cardId: `${timestamp}-${newPairId}-meaning` }
-        ];
-        
-        // Shuffle the new cards to avoid obvious pairing
-        const shuffledNewCards = newCards.sort(() => Math.random() - 0.5);
-        
-        // Replace matched cards with new ones
-        const updated = [...prev];
-        updated[matchedIndices[0]] = shuffledNewCards[0];
-        updated[matchedIndices[1]] = shuffledNewCards[1];
-        
-        return updated;
+    // Get current shown words and filter for unseen words
+    setShownWordIds(currentShownIds => {
+      // Filter out words that have already been shown in this session
+      const shownSet = new Set(currentShownIds);
+      const unseenWords = availableWords.filter(w => !shownSet.has(w.id));
+      
+      if (unseenWords.length === 0) {
+        return currentShownIds; // All available words have been shown
+      }
+      
+      // Use AI selector to choose the next word with highest priority
+      const selectedWords = selectWordsForSession(unseenWords, 1, {
+        balanceChallenge: false, // Just get the highest priority word
+        includeNew: true,
       });
       
-      // Update available words and active words
-      setAvailableWords(prev => prev.filter(w => w.id !== selectedWord.id));
-      setActiveWordIds(prev => [...prev, selectedWord.id]);
-    }, delay);
+      if (selectedWords.length === 0) {
+        return currentShownIds;
+      }
+      
+      const selectedWord = selectedWords[0];
+      
+      // Add minimal delay (200-600ms) for snappy feel
+      const MIN_DELAY_MS = 200;
+      const MAX_DELAY_MS = 600;
+      const delay = MIN_DELAY_MS + Math.random() * (MAX_DELAY_MS - MIN_DELAY_MS);
+      
+      setTimeout(() => {
+        setGameCards(prev => {
+          // Find indices of matched cards - validate they still exist
+          const matchedIndices = [];
+          prev.forEach((card, idx) => {
+            if (card.pairId === matchedPairId) {
+              matchedIndices.push(idx);
+            }
+          });
+          
+          // If the matched pair no longer exists or has been replaced, abort
+          if (matchedIndices.length !== 2) return prev;
+          
+          // Create new cards for the selected word
+          const newPairId = Math.max(...prev.map(c => c.pairId)) + 1;
+          const timestamp = Date.now();
+          const newCards = [
+            { type: 'word', value: selectedWord.word, id: selectedWord.id, pairId: newPairId, cardId: `${timestamp}-${newPairId}-word` },
+            { type: 'meaning', value: selectedWord.meaning, id: selectedWord.id, pairId: newPairId, cardId: `${timestamp}-${newPairId}-meaning` }
+          ];
+          
+          // Shuffle new cards using Fisher-Yates
+          const shuffledNewCards = shuffleArray(newCards);
+          
+          // Replace matched cards with new ones
+          const updated = [...prev];
+          updated[matchedIndices[0]] = shuffledNewCards[0];
+          updated[matchedIndices[1]] = shuffledNewCards[1];
+          
+          return updated;
+        });
+        
+        // Update available words and active words
+        setAvailableWords(prev => prev.filter(w => w.id !== selectedWord.id));
+        setActiveWordIds(prev => [...prev, selectedWord.id]);
+      }, delay);
+      
+      // Immediately mark word as shown to prevent duplicate selection in rapid matches
+      return [...currentShownIds, selectedWord.id];
+    });
   };
 
   const startNewRound = () => {
@@ -140,6 +188,7 @@ const Game = () => {
     // Store available words (those not currently shown)
     const currentWordIds = selectedWords.map(w => w.id);
     setActiveWordIds(currentWordIds);
+    setShownWordIds(currentWordIds); // Initialize shown words for the session
     setAvailableWords(gameWords.filter(w => !currentWordIds.includes(w.id)));
 
     // Create cards
@@ -149,8 +198,8 @@ const Game = () => {
       cards.push({ type: 'meaning', value: word.meaning, id: word.id, pairId: index, cardId: `${Date.now()}-${index}-meaning` });
     });
 
-    // Shuffle cards
-    const shuffled = cards.sort(() => Math.random() - 0.5);
+    // Shuffle cards using Fisher-Yates
+    const shuffled = shuffleArray(cards);
     setGameCards(shuffled);
     setSelectedCards([]);
     setMatchedPairs([]);
@@ -158,7 +207,20 @@ const Game = () => {
   };
 
   const handleCardClick = (index, event) => {
-    if (isChecking || selectedCards.length >= 2 || selectedCards.includes(index) || matchedPairs.includes(gameCards[index].pairId)) {
+    // Allow deselection - if card is already selected, deselect it
+    if (selectedCards.includes(index)) {
+      setSelectedCards(prev => prev.filter(i => i !== index));
+      return;
+    }
+    
+    // Don't allow selection of matched cards
+    if (matchedPairs.includes(gameCards[index].pairId)) {
+      return;
+    }
+    
+    // Allow selection even during checking (celebration animations)
+    // Only block if we already have 2 cards selected and this isn't a deselection
+    if (selectedCards.length >= 2) {
       return;
     }
 
@@ -354,6 +416,21 @@ const Game = () => {
               </div>
             </Card>
           </motion.div>
+          <motion.div
+            animate={{ 
+              scale: timer <= 5 ? [1, 1.1, 1] : 1,
+            }}
+            transition={{ duration: 0.5, repeat: timer <= 5 ? Infinity : 0 }}
+          >
+            <Card className="px-4 py-2">
+              <div className="text-center">
+                <div className="text-xs text-slate-500 dark:text-slate-400">Timer</div>
+                <div className={`text-lg font-bold ${timer <= 5 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                  {timer}s
+                </div>
+              </div>
+            </Card>
+          </motion.div>
         </div>
       </div>
 
@@ -361,10 +438,10 @@ const Game = () => {
       <AnimatePresence mode="wait">
         <motion.div
           key={message}
-          initial={{ opacity: 0, scale: 0.8, y: -20 }}
+          initial={{ opacity: 0, scale: 0.9, y: -10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.8, y: 20 }}
-          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          exit={{ opacity: 0, scale: 0.9, y: 10 }}
+          transition={{ type: "spring", stiffness: 500, damping: 30 }}
         >
           <Card glassEffect className="text-center">
             <p className="text-lg font-semibold text-slate-800 dark:text-slate-200">{message}</p>
