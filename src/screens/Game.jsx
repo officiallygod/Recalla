@@ -452,7 +452,7 @@ const Game = () => {
 
             return (
               <motion.div
-                key={`${card.id}-${card.type}-${card.pairId}`}
+                key={`${card.id}-${card.type}-${card.pairId}-${index}`}
                 layout
                 initial={{ opacity: 0, scale: 0.9, rotateY: -90 }}
                 animate={{ 
