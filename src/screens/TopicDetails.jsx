@@ -43,9 +43,19 @@ const TopicDetails = () => {
       };
     }
 
-    const totalMastery = topicWords.reduce((sum, w) => sum + (w.masteryScore || 0), 0);
-    const totalCorrect = topicWords.reduce((sum, w) => sum + (w.correct || 0), 0);
-    const totalWrong = topicWords.reduce((sum, w) => sum + (w.wrong || 0), 0);
+    // Only count practiced words (with at least one attempt)
+    const practicedTopicWords = topicWords.filter(w => {
+      const totalAttempts = (w.correct || 0) + (w.wrong || 0);
+      return totalAttempts > 0;
+    });
+
+    // If no words have been practiced yet, use all words but show zeros for metrics
+    const wordsToAnalyze = practicedTopicWords.length > 0 ? practicedTopicWords : topicWords;
+    const effectiveTotalWords = practicedTopicWords.length;
+
+    const totalMastery = wordsToAnalyze.reduce((sum, w) => sum + (w.masteryScore || 0), 0);
+    const totalCorrect = practicedTopicWords.reduce((sum, w) => sum + (w.correct || 0), 0);
+    const totalWrong = practicedTopicWords.reduce((sum, w) => sum + (w.wrong || 0), 0);
     const totalAttempts = totalCorrect + totalWrong;
 
     // Categorize words by status
@@ -57,7 +67,7 @@ const TopicDetails = () => {
       new: 0
     };
 
-    topicWords.forEach(word => {
+    wordsToAnalyze.forEach(word => {
       const insights = getWordInsights(word);
       const status = insights.status.toLowerCase();
       if (statusCount.hasOwnProperty(status)) {
@@ -66,8 +76,8 @@ const TopicDetails = () => {
     });
 
     return {
-      totalWords: topicWords.length,
-      avgMastery: Math.round(totalMastery / topicWords.length),
+      totalWords: effectiveTotalWords,
+      avgMastery: wordsToAnalyze.length > 0 ? Math.round(totalMastery / wordsToAnalyze.length) : 0,
       masteredWords: statusCount.mastered,
       learningWords: statusCount.learning + statusCount.familiar,
       newWords: statusCount.new,
