@@ -54,8 +54,11 @@ const Home = () => {
           </h2>
         </div>
         <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300">
-          Learn and remember words through fun interactive games
+          AI-Powered Learning: Smart word selection, adaptive difficulty, and personalized insights
         </p>
+        <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 bg-indigo-100 dark:bg-indigo-900/30 rounded-full">
+          <span className="text-xs font-semibold text-indigo-700 dark:text-indigo-300">🤖 AI Mode Active</span>
+        </div>
       </Card>
 
       {/* Timer Selection Card */}
