@@ -34,8 +34,27 @@ const Statistics = () => {
       };
     }
 
-    const totalMastery = words.reduce((sum, w) => sum + (w.masteryScore || 0), 0);
-    const wordsWithDifficulty = words.map(w => ({
+    // Only count words that have been practiced (have at least one attempt)
+    const practicedWords = words.filter(w => {
+      const totalAttempts = (w.correct || 0) + (w.wrong || 0);
+      return totalAttempts > 0;
+    });
+
+    // If no words have been practiced yet, return zeros
+    if (practicedWords.length === 0) {
+      return {
+        totalWords: 0,
+        avgMastery: 0,
+        avgDifficulty: 0,
+        masteredWords: 0,
+        learningWords: 0,
+        newWords: words.length, // All words are new
+        challengingWords: 0
+      };
+    }
+
+    const totalMastery = practicedWords.reduce((sum, w) => sum + (w.masteryScore || 0), 0);
+    const wordsWithDifficulty = practicedWords.map(w => ({
       ...w,
       difficulty: estimateDifficulty(w)
     }));
@@ -50,7 +69,7 @@ const Statistics = () => {
       new: 0
     };
 
-    words.forEach(word => {
+    practicedWords.forEach(word => {
       const insights = getWordInsights(word);
       const status = insights.status.toLowerCase();
       if (statusCount.hasOwnProperty(status)) {
@@ -59,9 +78,9 @@ const Statistics = () => {
     });
 
     return {
-      totalWords: words.length,
-      avgMastery: Math.round(totalMastery / words.length),
-      avgDifficulty: Math.round(totalDifficulty / words.length),
+      totalWords: practicedWords.length,
+      avgMastery: Math.round(totalMastery / practicedWords.length),
+      avgDifficulty: Math.round(totalDifficulty / practicedWords.length),
       masteredWords: statusCount.mastered,
       learningWords: statusCount.learning + statusCount.familiar,
       newWords: statusCount.new,
@@ -74,7 +93,13 @@ const Statistics = () => {
     return topics.map(topic => {
       const topicWords = words.filter(w => w.topicId === topic.id);
       
-      if (topicWords.length === 0) {
+      // Only count practiced words (with at least one attempt)
+      const practicedTopicWords = topicWords.filter(w => {
+        const totalAttempts = (w.correct || 0) + (w.wrong || 0);
+        return totalAttempts > 0;
+      });
+      
+      if (practicedTopicWords.length === 0) {
         return {
           ...topic,
           totalWords: 0,
@@ -84,20 +109,20 @@ const Statistics = () => {
         };
       }
 
-      const totalMastery = topicWords.reduce((sum, w) => sum + (w.masteryScore || 0), 0);
-      const totalCorrect = topicWords.reduce((sum, w) => sum + (w.correct || 0), 0);
-      const totalWrong = topicWords.reduce((sum, w) => sum + (w.wrong || 0), 0);
+      const totalMastery = practicedTopicWords.reduce((sum, w) => sum + (w.masteryScore || 0), 0);
+      const totalCorrect = practicedTopicWords.reduce((sum, w) => sum + (w.correct || 0), 0);
+      const totalWrong = practicedTopicWords.reduce((sum, w) => sum + (w.wrong || 0), 0);
       const totalAttempts = totalCorrect + totalWrong;
       
-      const masteredWords = topicWords.filter(w => {
+      const masteredWords = practicedTopicWords.filter(w => {
         const insights = getWordInsights(w);
         return insights.status.toLowerCase() === 'mastered';
       }).length;
 
       return {
         ...topic,
-        totalWords: topicWords.length,
-        avgMastery: Math.round(totalMastery / topicWords.length),
+        totalWords: practicedTopicWords.length,
+        avgMastery: Math.round(totalMastery / practicedTopicWords.length),
         accuracy: totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 0,
         masteredWords
       };

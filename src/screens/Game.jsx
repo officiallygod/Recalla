@@ -341,13 +341,16 @@ const Game = () => {
         }
       }
     } else {
-      // Wrong match - In a matching game format, we cannot determine which word
-      // the user was attempting to match, so updating stats for either word would
-      // produce inaccurate metrics. Only correct matches update word stats.
+      // Wrong match - Update both words' wrong counts since both were attempted
+      // This ensures accurate mastery metrics
       setCombo(0);
       setMessage('❌ Try again! Keep matching!');
       createParticles(x, y, false);
       recordMatch(false);
+      
+      // Update stats for both words involved in the wrong match
+      updateWordStats(card1.id, false);
+      updateWordStats(card2.id, false);
     }
 
     // Faster reset for snappy gameplay and combo scoring
