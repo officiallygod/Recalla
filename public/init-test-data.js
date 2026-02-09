@@ -16,7 +16,15 @@
       { word: "eigentlich", meaning: "actually" },
       { word: "einzeln", meaning: "individual" },
       { word: "entscheiden", meaning: "to decide" },
-      { word: "Erfahrung", meaning: "experience" }
+      { word: "Erfahrung", meaning: "experience" },
+      { word: "Erfolg", meaning: "success" },
+      { word: "erreichen", meaning: "to reach" },
+      { word: "Gedanke", meaning: "thought" },
+      { word: "Gefühl", meaning: "feeling" },
+      { word: "Gelegenheit", meaning: "opportunity" },
+      { word: "Geschichte", meaning: "story/history" },
+      { word: "Gewalt", meaning: "violence/force" },
+      { word: "Grund", meaning: "reason" }
     ];
     
     const topicId = 1739006000000;
