@@ -49,11 +49,22 @@ const TopicDetails = () => {
       return totalAttempts > 0;
     });
 
-    // If no words have been practiced yet, use all words but show zeros for metrics
-    const wordsToAnalyze = practicedTopicWords.length > 0 ? practicedTopicWords : topicWords;
-    const effectiveTotalWords = practicedTopicWords.length;
+    // If no words have been practiced yet, return zeros
+    if (practicedTopicWords.length === 0) {
+      return {
+        totalWords: 0,
+        avgMastery: 0,
+        masteredWords: 0,
+        learningWords: 0,
+        newWords: topicWords.length, // All words are new
+        challengingWords: 0,
+        totalCorrect: 0,
+        totalWrong: 0,
+        accuracy: 0
+      };
+    }
 
-    const totalMastery = wordsToAnalyze.reduce((sum, w) => sum + (w.masteryScore || 0), 0);
+    const totalMastery = practicedTopicWords.reduce((sum, w) => sum + (w.masteryScore || 0), 0);
     const totalCorrect = practicedTopicWords.reduce((sum, w) => sum + (w.correct || 0), 0);
     const totalWrong = practicedTopicWords.reduce((sum, w) => sum + (w.wrong || 0), 0);
     const totalAttempts = totalCorrect + totalWrong;
@@ -67,7 +78,7 @@ const TopicDetails = () => {
       new: 0
     };
 
-    wordsToAnalyze.forEach(word => {
+    practicedTopicWords.forEach(word => {
       const insights = getWordInsights(word);
       const status = insights.status.toLowerCase();
       if (statusCount.hasOwnProperty(status)) {
@@ -76,8 +87,8 @@ const TopicDetails = () => {
     });
 
     return {
-      totalWords: effectiveTotalWords,
-      avgMastery: wordsToAnalyze.length > 0 ? Math.round(totalMastery / wordsToAnalyze.length) : 0,
+      totalWords: practicedTopicWords.length,
+      avgMastery: Math.round(totalMastery / practicedTopicWords.length),
       masteredWords: statusCount.mastered,
       learningWords: statusCount.learning + statusCount.familiar,
       newWords: statusCount.new,

@@ -40,12 +40,21 @@ const Statistics = () => {
       return totalAttempts > 0;
     });
 
-    // If no words have been practiced yet, use all words but show zeros for metrics
-    const wordsToAnalyze = practicedWords.length > 0 ? practicedWords : words;
-    const effectiveTotalWords = practicedWords.length;
+    // If no words have been practiced yet, return zeros
+    if (practicedWords.length === 0) {
+      return {
+        totalWords: 0,
+        avgMastery: 0,
+        avgDifficulty: 0,
+        masteredWords: 0,
+        learningWords: 0,
+        newWords: words.length, // All words are new
+        challengingWords: 0
+      };
+    }
 
-    const totalMastery = wordsToAnalyze.reduce((sum, w) => sum + (w.masteryScore || 0), 0);
-    const wordsWithDifficulty = wordsToAnalyze.map(w => ({
+    const totalMastery = practicedWords.reduce((sum, w) => sum + (w.masteryScore || 0), 0);
+    const wordsWithDifficulty = practicedWords.map(w => ({
       ...w,
       difficulty: estimateDifficulty(w)
     }));
@@ -60,7 +69,7 @@ const Statistics = () => {
       new: 0
     };
 
-    wordsToAnalyze.forEach(word => {
+    practicedWords.forEach(word => {
       const insights = getWordInsights(word);
       const status = insights.status.toLowerCase();
       if (statusCount.hasOwnProperty(status)) {
@@ -69,9 +78,9 @@ const Statistics = () => {
     });
 
     return {
-      totalWords: effectiveTotalWords,
-      avgMastery: wordsToAnalyze.length > 0 ? Math.round(totalMastery / wordsToAnalyze.length) : 0,
-      avgDifficulty: wordsToAnalyze.length > 0 ? Math.round(totalDifficulty / wordsToAnalyze.length) : 0,
+      totalWords: practicedWords.length,
+      avgMastery: Math.round(totalMastery / practicedWords.length),
+      avgDifficulty: Math.round(totalDifficulty / practicedWords.length),
       masteredWords: statusCount.mastered,
       learningWords: statusCount.learning + statusCount.familiar,
       newWords: statusCount.new,
