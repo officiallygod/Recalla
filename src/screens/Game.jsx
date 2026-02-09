@@ -236,8 +236,15 @@ const Game = () => {
       return;
     }
     
-    // Allow selection even during checking (celebration animations)
-    // Only block if we already have 2 cards selected and this isn't a deselection
+    // Allow selection during checking animations - players can keep playing
+    // If checking and there are already 2 cards selected, clear them first
+    if (isChecking && selectedCards.length >= 2) {
+      setSelectedCards([index]);
+      setIsChecking(false);
+      return;
+    }
+    
+    // Only block if we already have 2 cards selected and not checking
     if (selectedCards.length >= 2) {
       return;
     }
@@ -465,20 +472,22 @@ const Game = () => {
         </div>
       </div>
 
-      {/* Message */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={message}
-          initial={{ opacity: 0, scale: 0.9, y: -10 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 10 }}
-          transition={{ type: "spring", stiffness: 500, damping: 30 }}
-        >
-          <Card glassEffect className="text-center">
-            <p className="text-lg font-semibold text-slate-800 dark:text-slate-200">{message}</p>
-          </Card>
-        </motion.div>
-      </AnimatePresence>
+      {/* Message - Fixed height to prevent layout shifts */}
+      <div className="min-h-[68px]">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={message}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+          >
+            <Card glassEffect className="text-center">
+              <p className="text-lg font-semibold text-slate-800 dark:text-slate-200">{message}</p>
+            </Card>
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
       {/* Game Board - Responsive column layout (2 on mobile, 3 on tablet, 4 on desktop) with no layout shifts */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
