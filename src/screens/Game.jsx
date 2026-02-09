@@ -360,72 +360,31 @@ const Game = () => {
   const isCardSelected = (index) => selectedCards.includes(index);
   const isCardMatched = (card) => matchedPairs.includes(card.pairId);
 
-  // Game Over Component
+  // Game Over Component - Simple overlay
   const GameOverScreen = () => (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
     >
-      {/* Red strip animation */}
-      <motion.div
-        initial={{ x: '-100%' }}
-        animate={{ x: '100%' }}
-        transition={{ duration: 1.5, ease: 'easeInOut' }}
-        className="absolute top-1/2 -translate-y-1/2 w-full h-32 bg-gradient-to-r from-transparent via-red-600 to-transparent"
-        style={{ transformOrigin: 'center' }}
-      />
-      
-      {/* Game Over Content */}
-      <motion.div
-        initial={{ scale: 0.5, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.5, duration: 0.5 }}
-        className="relative z-10"
-      >
-        <Card className="p-8 text-center space-y-6 bg-white dark:bg-slate-800 border-4 border-red-500">
-          <motion.h1
-            initial={{ y: -20 }}
-            animate={{ y: 0 }}
-            transition={{ delay: 0.7 }}
-            className="text-5xl font-bold text-red-600 dark:text-red-400"
-          >
-            GAME OVER
-          </motion.h1>
-          
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.9 }}
-            className="space-y-4"
-          >
-            <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-              Final Score: {finalScore}
-            </div>
-            <div className="text-xl text-slate-700 dark:text-slate-300">
-              Rounds Completed: {finalRound}
-            </div>
-            <div className="text-lg text-slate-600 dark:text-slate-400">
-              Difficulty: {difficulty === 'easy' ? 'Easy (2 rows)' : 'Hard (4 rows)'}
-            </div>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.2 }}
-            className="pt-4"
-          >
-            <Button
-              onClick={() => navigate('/')}
-              variant="primary"
-              size="lg"
-            >
-              Back to Home
-            </Button>
-          </motion.div>
-        </Card>
-      </motion.div>
+      <Card className="p-6 text-center space-y-3 bg-white dark:bg-slate-800 max-w-sm mx-4">
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+          Game Over!
+        </h1>
+        
+        <div className="text-slate-700 dark:text-slate-300">
+          <p className="text-xl font-semibold">Score: {finalScore}</p>
+        </div>
+        
+        <Button
+          onClick={() => navigate('/')}
+          variant="primary"
+          size="md"
+          className="mt-4"
+        >
+          Play Again
+        </Button>
+      </Card>
     </motion.div>
   );
 

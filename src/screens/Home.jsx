@@ -75,7 +75,7 @@ const Home = () => {
               <button
                 onClick={() => setDifficulty('easy')}
                 className={`
-                  flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200
+                  flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
                   ${difficulty === 'easy'
                     ? 'bg-emerald-600 text-white shadow-lg'
                     : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
@@ -83,12 +83,11 @@ const Home = () => {
                 `}
               >
                 Easy
-                <div className="text-xs opacity-80">2 rows</div>
               </button>
               <button
                 onClick={() => setDifficulty('hard')}
                 className={`
-                  flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200
+                  flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
                   ${difficulty === 'hard'
                     ? 'bg-red-600 text-white shadow-lg'
                     : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
@@ -96,7 +95,6 @@ const Home = () => {
                 `}
               >
                 Hard
-                <div className="text-xs opacity-80">4 rows</div>
               </button>
             </div>
           </div>
