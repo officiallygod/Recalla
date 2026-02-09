@@ -577,7 +577,7 @@ const Game = () => {
 
       {/* Game Board - Responsive column layout based on difficulty */}
       {/* Easy: 2 rows × 4 columns = 8 cards, Hard: 4 rows × 4 columns = 16 cards */}
-      <div className={`grid ${difficulty === 'easy' ? 'grid-cols-4' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'} gap-4 sm:gap-6`}>
+      <div className={`grid ${difficulty === 'easy' ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'} gap-4 sm:gap-6`}>
         {gameCards.map((card, index) => {
           const selected = isCardSelected(index);
           const matched = isCardMatched(card);
