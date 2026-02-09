@@ -27,8 +27,14 @@ const Game = () => {
   const { words, topics, updateWordStats, awardPoints, recordMatch, incrementGamesPlayed, getWordsByTopic } = useGame();
   const [selectedTopic, setSelectedTopic] = useState(location.state?.topicId || null);
   
-  // Get timer duration from location state, default to 30 seconds
+  // Get timer duration and difficulty from location state
   const initialTimerDuration = location.state?.timerDuration || 30;
+  const difficulty = location.state?.difficulty || 'easy'; // 'easy' or 'hard'
+  
+  // Calculate cards per round based on difficulty
+  // Easy: 2 rows × 4 columns = 8 cards (4 pairs)
+  // Hard: 4 rows × 4 columns = 16 cards (8 pairs)
+  const CARDS_PER_ROUND = difficulty === 'easy' ? 4 : 8;
   
   // Get words for the game - if a topic is selected, use only that topic's words
   // If no topic is selected, use words that have a topicId (ensuring words are grouped by topic)
@@ -52,6 +58,9 @@ const Game = () => {
   const [timer, setTimer] = useState(initialTimerDuration);
   const [timerDuration, setTimerDuration] = useState(initialTimerDuration); // Store the timer duration for resets
   const [isTimerActive, setIsTimerActive] = useState(false);
+  const [gameOver, setGameOver] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const [finalRound, setFinalRound] = useState(0);
 
   // Fisher-Yates shuffle for proper randomization
   const shuffleArray = (array) => {
@@ -64,24 +73,27 @@ const Game = () => {
   };
 
   useEffect(() => {
-    if (gameWords.length < 8) {
+    if (gameWords.length < CARDS_PER_ROUND * 2) {
       navigate('/');
       return;
     }
     incrementGamesPlayed();
     startNewRound();
     
-    // Start the 30-second timer
+    // Start the timer
     setIsTimerActive(true);
   }, [selectedTopic, gameWords.length]);
 
-  // Timer effect - count down from timerDuration seconds, auto-resets
+  // Timer effect - count down from timerDuration seconds, stop game when timer expires
   useEffect(() => {
-    if (!isTimerActive) return;
+    if (!isTimerActive || gameOver) return;
     
     if (timer <= 0) {
-      // Timer expired - reset to timerDuration and continue (never stop the user)
-      setTimer(timerDuration);
+      // Timer expired - end the game
+      setGameOver(true);
+      setIsTimerActive(false);
+      setFinalScore(score);
+      setFinalRound(round);
       return;
     }
     
@@ -90,7 +102,7 @@ const Game = () => {
     }, 1000);
     
     return () => clearInterval(interval);
-  }, [timer, isTimerActive, timerDuration]);
+  }, [timer, isTimerActive, gameOver, score, round]);
 
   const createParticles = (x, y, isCorrect) => {
     const colors = isCorrect 
@@ -188,9 +200,6 @@ const Game = () => {
   };
 
   const startNewRound = () => {
-    // Constants for word selection algorithm
-    const CARDS_PER_ROUND = 8; // Number of word pairs to show (8 pairs = 16 cards total)
-    
     // Use AI-powered word selection
     const selectedWords = selectWordsForSession(gameWords, CARDS_PER_ROUND, {
       includeNew: true,
@@ -225,6 +234,9 @@ const Game = () => {
   };
 
   const handleCardClick = (index, event) => {
+    // Don't allow any interactions if game is over
+    if (gameOver) return;
+    
     // Allow deselection - if card is already selected, deselect it
     if (selectedCards.includes(index)) {
       setSelectedCards(prev => prev.filter(i => i !== index));
@@ -347,6 +359,80 @@ const Game = () => {
 
   const isCardSelected = (index) => selectedCards.includes(index);
   const isCardMatched = (card) => matchedPairs.includes(card.pairId);
+
+  // Game Over Component
+  const GameOverScreen = () => (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+    >
+      {/* Red strip animation */}
+      <motion.div
+        initial={{ x: '-100%' }}
+        animate={{ x: '100%' }}
+        transition={{ duration: 1.5, ease: 'easeInOut' }}
+        className="absolute top-1/2 -translate-y-1/2 w-full h-32 bg-gradient-to-r from-transparent via-red-600 to-transparent"
+        style={{ transformOrigin: 'center' }}
+      />
+      
+      {/* Game Over Content */}
+      <motion.div
+        initial={{ scale: 0.5, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 0.5, duration: 0.5 }}
+        className="relative z-10"
+      >
+        <Card className="p-8 text-center space-y-6 bg-white dark:bg-slate-800 border-4 border-red-500">
+          <motion.h1
+            initial={{ y: -20 }}
+            animate={{ y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="text-5xl font-bold text-red-600 dark:text-red-400"
+          >
+            GAME OVER
+          </motion.h1>
+          
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.9 }}
+            className="space-y-4"
+          >
+            <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+              Final Score: {finalScore}
+            </div>
+            <div className="text-xl text-slate-700 dark:text-slate-300">
+              Rounds Completed: {finalRound}
+            </div>
+            <div className="text-lg text-slate-600 dark:text-slate-400">
+              Difficulty: {difficulty === 'easy' ? 'Easy (2 rows)' : 'Hard (4 rows)'}
+            </div>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.2 }}
+            className="pt-4"
+          >
+            <Button
+              onClick={() => navigate('/')}
+              variant="primary"
+              size="lg"
+            >
+              Back to Home
+            </Button>
+          </motion.div>
+        </Card>
+      </motion.div>
+    </motion.div>
+  );
+
+  // If game is over, show game over screen
+  if (gameOver) {
+    return <GameOverScreen />;
+  }
 
   return (
     <motion.div
@@ -489,8 +575,9 @@ const Game = () => {
         </AnimatePresence>
       </div>
 
-      {/* Game Board - Responsive column layout (2 on mobile, 3 on tablet, 4 on desktop) with no layout shifts */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
+      {/* Game Board - Responsive column layout based on difficulty */}
+      {/* Easy: 2 rows × 4 columns = 8 cards, Hard: 4 rows × 4 columns = 16 cards */}
+      <div className={`grid ${difficulty === 'easy' ? 'grid-cols-4' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'} gap-4 sm:gap-6`}>
         {gameCards.map((card, index) => {
           const selected = isCardSelected(index);
           const matched = isCardMatched(card);

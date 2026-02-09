@@ -9,6 +9,7 @@ const Home = () => {
   const navigate = useNavigate();
   const { words } = useGame();
   const [timerDuration, setTimerDuration] = useState(30);
+  const [difficulty, setDifficulty] = useState('easy'); // 'easy' or 'hard'
 
   const menuItems = [
     {
@@ -25,7 +26,7 @@ const Home = () => {
       path: '/game',
       variant: 'success',
       disabled: words.length < 8, // Need 8 words for 4 per column in 4-col layout
-      state: { timerDuration }
+      state: { timerDuration, difficulty }
     },
     {
       title: 'My Words',
@@ -61,32 +62,73 @@ const Home = () => {
         </div>
       </Card>
 
-      {/* Timer Selection Card */}
-      <Card className="p-4 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-2">
-            <Clock className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-            <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">Game Timer:</span>
-          </div>
-          <div className="flex gap-2">
-            {[15, 30, 45, 60].map((duration) => (
+      {/* Game Settings Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Difficulty Selection Card */}
+        <Card className="p-4 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2">
+              <Target className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+              <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">Difficulty:</span>
+            </div>
+            <div className="flex gap-2">
               <button
-                key={duration}
-                onClick={() => setTimerDuration(duration)}
+                onClick={() => setDifficulty('easy')}
                 className={`
-                  px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
-                  ${timerDuration === duration
-                    ? 'bg-primary-600 text-white shadow-lg'
+                  flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200
+                  ${difficulty === 'easy'
+                    ? 'bg-emerald-600 text-white shadow-lg'
                     : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
                   }
                 `}
               >
-                {duration}s
+                Easy
+                <div className="text-xs opacity-80">2 rows</div>
               </button>
-            ))}
+              <button
+                onClick={() => setDifficulty('hard')}
+                className={`
+                  flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200
+                  ${difficulty === 'hard'
+                    ? 'bg-red-600 text-white shadow-lg'
+                    : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                  }
+                `}
+              >
+                Hard
+                <div className="text-xs opacity-80">4 rows</div>
+              </button>
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+
+        {/* Timer Selection Card */}
+        <Card className="p-4 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+              <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">Game Timer:</span>
+            </div>
+            <div className="flex gap-2">
+              {[15, 30, 45, 60].map((duration) => (
+                <button
+                  key={duration}
+                  onClick={() => setTimerDuration(duration)}
+                  className={`
+                    flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                    ${timerDuration === duration
+                      ? 'bg-primary-600 text-white shadow-lg'
+                      : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                    }
+                  `}
+                >
+                  {duration}s
+                </button>
+              ))}
+            </div>
+          </div>
+        </Card>
+      </div>
 
       {/* Menu Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
