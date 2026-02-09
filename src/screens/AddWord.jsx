@@ -7,7 +7,7 @@ import { useGame } from '../contexts/GameContext';
 
 // Character limits
 const MAX_WORD_LENGTH = 50;
-const MAX_MEANING_LENGTH = 200;
+const MAX_MEANING_LENGTH = 60;
 
 const AddWord = () => {
   const navigate = useNavigate();
