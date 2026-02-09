@@ -5,6 +5,10 @@ import Button from '../components/Button';
 import Card from '../components/Card';
 import { useGame } from '../contexts/GameContext';
 
+// Character limits
+const MAX_WORD_LENGTH = 50;
+const MAX_MEANING_LENGTH = 200;
+
 const AddWord = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,6 +33,17 @@ const AddWord = () => {
 
     if (!word.trim() || !meaning.trim()) {
       setError('Please fill in both fields');
+      return;
+    }
+
+    // Check character limits
+    if (word.trim().length > MAX_WORD_LENGTH) {
+      setError(`Word must be ${MAX_WORD_LENGTH} characters or less`);
+      return;
+    }
+
+    if (meaning.trim().length > MAX_MEANING_LENGTH) {
+      setError(`Meaning must be ${MAX_MEANING_LENGTH} characters or less`);
       return;
     }
 
@@ -93,14 +108,24 @@ const AddWord = () => {
 
           {/* Word Input */}
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-              Word
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                Word
+              </label>
+              <span className={`text-xs font-medium ${
+                word.length >= MAX_WORD_LENGTH 
+                  ? 'text-rose-600 dark:text-rose-400' 
+                  : 'text-slate-500 dark:text-slate-400'
+              }`}>
+                {word.length}/{MAX_WORD_LENGTH}
+              </span>
+            </div>
             <motion.input
               whileFocus={{ scale: 1.01 }}
               type="text"
               value={word}
               onChange={(e) => setWord(e.target.value)}
+              maxLength={MAX_WORD_LENGTH}
               placeholder="Enter word..."
               className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 focus:border-primary-500 focus:outline-none transition-colors bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
             />
@@ -108,13 +133,23 @@ const AddWord = () => {
 
           {/* Meaning Input */}
           <div className="space-y-2">
-            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-              Meaning
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                Meaning
+              </label>
+              <span className={`text-xs font-medium ${
+                meaning.length >= MAX_MEANING_LENGTH 
+                  ? 'text-rose-600 dark:text-rose-400' 
+                  : 'text-slate-500 dark:text-slate-400'
+              }`}>
+                {meaning.length}/{MAX_MEANING_LENGTH}
+              </span>
+            </div>
             <motion.textarea
               whileFocus={{ scale: 1.01 }}
               value={meaning}
               onChange={(e) => setMeaning(e.target.value)}
+              maxLength={MAX_MEANING_LENGTH}
               placeholder="Enter meaning..."
               rows={3}
               className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 focus:border-primary-500 focus:outline-none transition-colors resize-none bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
