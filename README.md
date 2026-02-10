@@ -73,6 +73,8 @@ This project includes a GitHub Actions workflow that automatically builds and de
 
 For detailed setup instructions, see [GITHUB_ACTIONS_GUIDE.md](GITHUB_ACTIONS_GUIDE.md)
 
+> **Note:** If you don't see the latest UI changes after a deployment, see [CACHE_CLEARING_GUIDE.md](CACHE_CLEARING_GUIDE.md) for instructions on clearing your browser cache and service worker.
+
 ## 🎮 How to Use
 
 1. **Add Words**: Click "Add Words" and enter words with their meanings
