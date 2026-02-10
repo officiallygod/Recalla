@@ -16,6 +16,12 @@ const STORAGE_KEYS = {
   TOPICS: 'recalla_topics'
 };
 
+// Counter to ensure unique IDs even when Date.now() returns the same value
+let idCounter = 0;
+const generateUniqueId = () => {
+  return Date.now() + (idCounter++);
+};
+
 export const GameProvider = ({ children }) => {
   const [words, setWords] = useState([]);
   const [topics, setTopics] = useState([]);
@@ -77,7 +83,7 @@ export const GameProvider = ({ children }) => {
   // topicId: The ID of the topic to associate this word with, or null for general words
   const addWord = (word, meaning, topicId = null) => {
     const newWord = {
-      id: Date.now(),
+      id: generateUniqueId(),
       word,
       meaning,
       topicId,
@@ -200,7 +206,7 @@ export const GameProvider = ({ children }) => {
   // Topic management functions
   const addTopic = (name, emoji = '📚') => {
     const newTopic = {
-      id: Date.now(),
+      id: generateUniqueId(),
       name,
       emoji,
       createdAt: Date.now()
@@ -242,7 +248,7 @@ export const GameProvider = ({ children }) => {
       }
 
       // Create new IDs to avoid conflicts
-      const newTopicId = Date.now();
+      const newTopicId = generateUniqueId();
       const newTopic = {
         ...data.topic,
         id: newTopicId,
@@ -250,9 +256,9 @@ export const GameProvider = ({ children }) => {
       };
 
       // Import words with new IDs and updated topicId
-      const newWords = data.words.map((word, index) => ({
+      const newWords = data.words.map((word) => ({
         ...word,
-        id: Date.now() + index + 1,
+        id: generateUniqueId(),
         topicId: newTopicId
       }));
 
