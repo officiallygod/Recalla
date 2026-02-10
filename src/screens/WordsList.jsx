@@ -92,7 +92,7 @@ const WordsList = () => {
       {displayWords.length > 0 && (
         <Card glassEffect>
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500" size={20} />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500" size={20} aria-hidden="true" />
             <input
               type="text"
               value={searchQuery}
@@ -103,6 +103,7 @@ const WordsList = () => {
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
+                aria-label="Clear search"
                 className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition-colors"
               >
                 <X size={20} />
