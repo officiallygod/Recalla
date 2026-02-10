@@ -59,7 +59,7 @@ const Home = () => {
         className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-700 dark:via-purple-700 dark:to-pink-700 p-8 sm:p-12 lg:p-16"
       >
         {/* Animated Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0 opacity-10" aria-hidden="true">
           <div className="absolute top-0 left-0 w-96 h-96 bg-white rounded-full blur-3xl animate-float"></div>
           <div className="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
         </div>
@@ -81,7 +81,7 @@ const Home = () => {
             transition={{ duration: 0.6, delay: 0.3 }}
           >
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-4 leading-tight">
-              Welcome to<br />
+              <span className="block">Welcome to</span>
               <span className="relative inline-block">
                 Recalla!
                 <motion.div

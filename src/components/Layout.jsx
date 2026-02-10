@@ -96,9 +96,7 @@ const StatItem = ({ icon, value, label, color = 'primary' }) => {
       whileTap={{ scale: 0.98 }}
       className="relative group"
     >
-      <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300 rounded-xl"
-        style={{ background: `linear-gradient(to right, var(--tw-gradient-stops))` }}
-      ></div>
+
       <div className="relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-all duration-300 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg">
         <span className={`bg-gradient-to-br ${colorClasses[color]} bg-clip-text text-transparent`}>
           {icon}
