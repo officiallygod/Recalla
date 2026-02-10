@@ -39,8 +39,8 @@ const WordsList = () => {
     : null;
 
   const handleDelete = (id) => {
-    // Safety check: ensure id is valid
-    if (!id || id === undefined || id === null) {
+    // Safety check: ensure id is provided
+    if (id === undefined || id === null) {
       console.error('Attempted to delete word with invalid id:', id);
       return;
     }

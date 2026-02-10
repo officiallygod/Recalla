@@ -112,7 +112,7 @@ export const GameProvider = ({ children }) => {
   };
 
   const deleteWord = (id) => {
-    // Safety check: ensure id is valid
+    // Safety check: ensure id is provided
     if (id === undefined || id === null) {
       console.error('deleteWord called with invalid id:', id);
       return;
