@@ -188,21 +188,42 @@ const Welcome = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="space-y-6 max-w-7xl mx-auto"
+      className="space-y-8 max-w-7xl mx-auto pb-8"
     >
-      {/* Header */}
-      <Card glassEffect className="text-center">
-        <motion.h2 
-          className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-primary-600 via-purple-600 to-pink-600 dark:from-primary-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent"
-        >
-          Welcome to Your Learning Hub! 🎓
-        </motion.h2>
-        <p className="text-base md:text-lg text-slate-600 dark:text-slate-300">
-          Organize your learning with topics and track your progress
-        </p>
-      </Card>
+      {/* Header with Modern Design */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-700 dark:via-purple-700 dark:to-pink-700 p-8 sm:p-12"
+      >
+        {/* Animated Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full blur-3xl animate-float"></div>
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-white rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
+        </div>
 
-      {/* German Library Suggestion */}
+        <div className="relative z-10 text-center">
+          <motion.h2 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-4xl md:text-5xl font-black text-white mb-4 leading-tight"
+          >
+            Your Learning Hub 🎓
+          </motion.h2>
+          <motion.p 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto"
+          >
+            Organize your learning with topics and track your progress
+          </motion.p>
+        </div>
+      </motion.div>
+
+      {/* German Library Suggestion with Enhanced Design */}
       <AnimatePresence>
         {showGermanSuggestion && (
           <motion.div
@@ -211,10 +232,10 @@ const Welcome = () => {
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <Card className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border-2 border-indigo-300 dark:border-indigo-600">
-              <div className="flex items-start gap-4">
+            <Card className="card-glass border-0 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 overflow-hidden">
+              <div className="flex items-start gap-4 p-6">
                 <motion.div
-                  className="text-5xl"
+                  className="flex-shrink-0"
                   animate={{ 
                     rotate: [0, -10, 10, -10, 0],
                     scale: [1, 1.1, 1]
@@ -225,13 +246,15 @@ const Welcome = () => {
                     repeatDelay: 3
                   }}
                 >
-                  🇩🇪
+                  <div className="text-6xl w-20 h-20 flex items-center justify-center bg-white dark:bg-slate-800 rounded-2xl shadow-lg">
+                    🇩🇪
+                  </div>
                 </motion.div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-indigo-900 dark:text-indigo-200 mb-2">
-                    Suggested: German Essential 1000 📚
+                  <h3 className="text-2xl font-bold text-indigo-900 dark:text-indigo-200 mb-2">
+                    German Essential 1000 📚
                   </h3>
-                  <p className="text-indigo-700 dark:text-indigo-300 mb-4">
+                  <p className="text-indigo-700 dark:text-indigo-300 mb-4 leading-relaxed">
                     We noticed you're learning German! Get instant access to 1000 carefully curated German words (A2-C2 level) from internet usage patterns. Perfect for building a strong vocabulary foundation.
                   </p>
                   <div className="flex flex-wrap gap-3">
@@ -263,14 +286,16 @@ const Welcome = () => {
       {/* Actions Bar */}
       <div className="flex flex-wrap gap-3 items-center justify-between">
         <div className="flex flex-wrap gap-3">
-          <Button
-            variant="primary"
-            size="md"
-            onClick={() => setShowAddTopic(true)}
-            icon="➕"
-          >
-            Add Topic
-          </Button>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => setShowAddTopic(true)}
+              icon="➕"
+            >
+              Add Topic
+            </Button>
+          </motion.div>
           
           <label>
             <input
@@ -279,24 +304,28 @@ const Welcome = () => {
               onChange={handleImportTopic}
               className="hidden"
             />
-            <Button
-              as="span"
-              variant="secondary"
-              size="md"
-              icon="📥"
-            >
-              Import Topic
-            </Button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                as="span"
+                variant="secondary"
+                size="md"
+                icon="📥"
+              >
+                Import Topic
+              </Button>
+            </motion.div>
           </label>
 
-          <Button
-            variant="secondary"
-            size="md"
-            onClick={() => navigate('/')}
-            icon="🏠"
-          >
-            Home
-          </Button>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => navigate('/')}
+              icon="🏠"
+            >
+              Home
+            </Button>
+          </motion.div>
         </div>
       </div>
 
@@ -309,14 +338,14 @@ const Welcome = () => {
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <Card>
-              <form onSubmit={handleAddTopic} className="space-y-4">
-                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+            <Card className="card-glass border-0">
+              <form onSubmit={handleAddTopic} className="space-y-6 p-6">
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
                   Create New Topic
                 </h3>
                 
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                <div className="space-y-3">
+                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">
                     Topic Name
                   </label>
                   <input
@@ -324,12 +353,12 @@ const Welcome = () => {
                     value={newTopicName}
                     onChange={(e) => setNewTopicName(e.target.value)}
                     placeholder="e.g., Spanish Vocabulary"
-                    className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-600 focus:border-primary-500 focus:outline-none transition-colors bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
+                    className="w-full px-5 py-4 rounded-xl border-2 border-slate-200 dark:border-slate-600 focus:border-indigo-500 focus:outline-none transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-base font-medium placeholder:text-slate-400"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                <div className="space-y-3">
+                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">
                     Select Emoji/Flag
                   </label>
                   <EmojiPicker
@@ -339,31 +368,40 @@ const Welcome = () => {
                 </div>
 
                 {error && (
-                  <div className="p-3 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-700 rounded-xl">
-                    <p className="text-rose-700 dark:text-rose-300 text-sm">❌ {error}</p>
-                  </div>
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-4 bg-rose-50 dark:bg-rose-900/30 border-2 border-rose-200 dark:border-rose-700 rounded-xl"
+                  >
+                    <p className="text-rose-700 dark:text-rose-300 text-sm font-semibold">❌ {error}</p>
+                  </motion.div>
                 )}
 
                 <div className="flex gap-3">
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    icon="✅"
-                  >
-                    Create Topic
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() => {
-                      setShowAddTopic(false);
-                      setError('');
-                      setNewTopicName('');
-                      setNewTopicEmoji('📚');
-                    }}
-                  >
-                    Cancel
-                  </Button>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="flex-1">
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      icon="✅"
+                      fullWidth
+                    >
+                      Create Topic
+                    </Button>
+                  </motion.div>
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => {
+                        setShowAddTopic(false);
+                        setError('');
+                        setNewTopicName('');
+                        setNewTopicEmoji('📚');
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </motion.div>
                 </div>
               </form>
             </Card>
@@ -373,15 +411,33 @@ const Welcome = () => {
 
       {/* Topics Grid */}
       {topics.length === 0 ? (
-        <Card className="text-center py-12">
-          <div className="text-6xl mb-4">📚</div>
-          <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">
-            No topics yet
-          </h3>
-          <p className="text-slate-500 dark:text-slate-400 mb-6">
-            Create your first topic to start organizing your learning
-          </p>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+        >
+          <Card className="card-glass border-0 text-center py-16">
+            <motion.div 
+              className="text-7xl mb-6"
+              animate={{ 
+                scale: [1, 1.1, 1],
+                rotate: [0, 5, -5, 0]
+              }}
+              transition={{ 
+                duration: 2, 
+                repeat: Infinity,
+                repeatDelay: 1
+              }}
+            >
+              📚
+            </motion.div>
+            <h3 className="text-2xl font-bold text-slate-700 dark:text-slate-300 mb-3">
+              No topics yet
+            </h3>
+            <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
+              Create your first topic to start organizing your learning journey
+            </p>
+          </Card>
+        </motion.div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {topics.map((topic, index) => {
@@ -395,102 +451,115 @@ const Welcome = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
-                <Card hoverable className="h-full">
-                  <div className="space-y-5">
+                <Card className="h-full card-glass border-0 hover-lift group">
+                  <div className="space-y-5 p-6">
                     {/* Topic Header */}
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <motion.div
-                          className="text-4xl flex-shrink-0"
+                          className="text-5xl flex-shrink-0 w-16 h-16 flex items-center justify-center bg-gradient-to-br from-indigo-500/10 to-purple-500/10 dark:from-indigo-500/20 dark:to-purple-500/20 rounded-2xl"
                           whileHover={{ scale: 1.1, rotate: 5 }}
+                          transition={{ type: "spring", stiffness: 300 }}
                         >
                           {topic.emoji}
                         </motion.div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 truncate">
+                          <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                             {topic.name}
                           </h3>
-                          <p className="text-sm text-slate-500 dark:text-slate-400">
+                          <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
                             {stats.count} {stats.count === 1 ? 'word' : 'words'}
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    {/* Stats */}
+                    {/* Stats Badge */}
                     <div className="flex gap-2 text-xs">
-                      <span className="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full">
+                      <span className="px-3 py-1.5 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 dark:from-emerald-500/20 dark:to-teal-500/20 text-emerald-700 dark:text-emerald-300 rounded-full font-semibold border border-emerald-200 dark:border-emerald-800">
                         ✅ {stats.practiced} practiced
                       </span>
                     </div>
 
                     {/* Actions */}
                     <div className="grid grid-cols-2 gap-2">
-                      <Button
-                        size="sm"
-                        variant="primary"
-                        onClick={() => navigate('/add-word', { state: { topicId: topic.id } })}
-                        icon="➕"
-                        fullWidth
-                      >
-                        Add Words
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => navigate('/words', { state: { topicId: topic.id } })}
-                        icon="📝"
-                        fullWidth
-                      >
-                        View
-                      </Button>
+                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                        <Button
+                          size="sm"
+                          variant="primary"
+                          onClick={() => navigate('/add-word', { state: { topicId: topic.id } })}
+                          icon="➕"
+                          fullWidth
+                        >
+                          Add Words
+                        </Button>
+                      </motion.div>
+                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => navigate('/words', { state: { topicId: topic.id } })}
+                          icon="📝"
+                          fullWidth
+                        >
+                          View
+                        </Button>
+                      </motion.div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
                       {stats.count >= 4 && (
-                        <Button
-                          size="sm"
-                          variant="success"
-                          onClick={() => navigate('/game', { state: { topicId: topic.id } })}
-                          icon="🎮"
-                          fullWidth
-                        >
-                          Play
-                        </Button>
+                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                          <Button
+                            size="sm"
+                            variant="success"
+                            onClick={() => navigate('/game', { state: { topicId: topic.id } })}
+                            icon="🎮"
+                            fullWidth
+                          >
+                            Play
+                          </Button>
+                        </motion.div>
                       )}
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => handleExportTopic(topic.id)}
-                        icon="📤"
-                        fullWidth
-                      >
-                        Export
-                      </Button>
-                      {stats.count < 4 && (
+                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                         <Button
                           size="sm"
                           variant="secondary"
-                          onClick={() => handleDeleteTopic(topic.id)}
-                          icon="🗑️"
+                          onClick={() => handleExportTopic(topic.id)}
+                          icon="📤"
                           fullWidth
                         >
-                          Delete
+                          Export
                         </Button>
+                      </motion.div>
+                      {stats.count < 4 && (
+                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => handleDeleteTopic(topic.id)}
+                            icon="🗑️"
+                            fullWidth
+                          >
+                            Delete
+                          </Button>
+                        </motion.div>
                       )}
                     </div>
 
                     {stats.count >= 4 && (
                       <div className="grid grid-cols-1 gap-2">
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => handleDeleteTopic(topic.id)}
-                          icon="🗑️"
-                          fullWidth
-                        >
-                          Delete
-                        </Button>
+                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => handleDeleteTopic(topic.id)}
+                            icon="🗑️"
+                            fullWidth
+                          >
+                            Delete
+                          </Button>
+                        </motion.div>
                       </div>
                     )}
                   </div>
@@ -503,34 +572,52 @@ const Welcome = () => {
 
       {/* Quick Stats */}
       {topics.length > 0 && (
-        <Card glassEffect className="text-center">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <p className="text-2xl font-bold text-primary-600 dark:text-primary-400">
-                {topics.length}
-              </p>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Topics</p>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: topics.length * 0.05 + 0.2 }}
+        >
+          <Card className="card-glass border-0">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 p-6">
+              <div className="text-center">
+                <motion.p 
+                  className="text-3xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent"
+                  whileHover={{ scale: 1.1 }}
+                >
+                  {topics.length}
+                </motion.p>
+                <p className="text-sm text-slate-600 dark:text-slate-400 font-semibold mt-1">Topics</p>
+              </div>
+              <div className="text-center">
+                <motion.p 
+                  className="text-3xl font-black bg-gradient-to-r from-purple-600 to-pink-600 dark:from-purple-400 dark:to-pink-400 bg-clip-text text-transparent"
+                  whileHover={{ scale: 1.1 }}
+                >
+                  {words.length}
+                </motion.p>
+                <p className="text-sm text-slate-600 dark:text-slate-400 font-semibold mt-1">Total Words</p>
+              </div>
+              <div className="text-center">
+                <motion.p 
+                  className="text-3xl font-black bg-gradient-to-r from-pink-600 to-rose-600 dark:from-pink-400 dark:to-rose-400 bg-clip-text text-transparent"
+                  whileHover={{ scale: 1.1 }}
+                >
+                  {words.filter(w => w.lastPracticed).length}
+                </motion.p>
+                <p className="text-sm text-slate-600 dark:text-slate-400 font-semibold mt-1">Practiced</p>
+              </div>
+              <div className="text-center">
+                <motion.p 
+                  className="text-3xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent"
+                  whileHover={{ scale: 1.1 }}
+                >
+                  {Math.round((words.filter(w => w.lastPracticed).length / Math.max(words.length, 1)) * 100)}%
+                </motion.p>
+                <p className="text-sm text-slate-600 dark:text-slate-400 font-semibold mt-1">Progress</p>
+              </div>
             </div>
-            <div>
-              <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                {words.length}
-              </p>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Total Words</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-pink-600 dark:text-pink-400">
-                {words.filter(w => w.lastPracticed).length}
-              </p>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Practiced</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                {Math.round((words.filter(w => w.lastPracticed).length / Math.max(words.length, 1)) * 100)}%
-              </p>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Progress</p>
-            </div>
-          </div>
-        </Card>
+          </Card>
+        </motion.div>
       )}
     </motion.div>
   );
