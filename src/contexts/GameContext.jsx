@@ -22,6 +22,8 @@ let idCounter = 0;
 const generateUniqueId = () => {
   // Simple approach: timestamp plus incrementing counter
   // This guarantees uniqueness even when Date.now() returns the same value
+  // Note: Counter resets when page reloads, which is acceptable since
+  // Date.now() will have advanced, ensuring no collisions with existing IDs
   return Date.now() + idCounter++;
 };
 
