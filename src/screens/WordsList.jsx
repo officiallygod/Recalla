@@ -39,6 +39,11 @@ const WordsList = () => {
     : null;
 
   const handleDelete = (id) => {
+    // Safety check: ensure id is valid
+    if (!id || id === undefined || id === null) {
+      console.error('Attempted to delete word with invalid id:', id);
+      return;
+    }
     if (window.confirm('Are you sure you want to delete this word?')) {
       deleteWord(id);
     }
@@ -188,7 +193,7 @@ const WordsList = () => {
         </Card>
       ) : (
         <div className="space-y-4">
-          <AnimatePresence>
+          <AnimatePresence mode="sync">
             {filteredWords.map((word, index) => {
               const insights = getWordInsights(word);
               return (
