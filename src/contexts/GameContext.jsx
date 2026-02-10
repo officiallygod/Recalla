@@ -18,8 +18,11 @@ const STORAGE_KEYS = {
 
 // Counter to ensure unique IDs even when Date.now() returns the same value
 let idCounter = 0;
+
 const generateUniqueId = () => {
-  return Date.now() + (idCounter++);
+  // Simple approach: timestamp plus incrementing counter
+  // This guarantees uniqueness even when Date.now() returns the same value
+  return Date.now() + idCounter++;
 };
 
 export const GameProvider = ({ children }) => {
