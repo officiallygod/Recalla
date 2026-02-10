@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../components/Button';
 import Card from '../components/Card';
-import Confetti from '../components/Confetti';
 import { useGame } from '../contexts/GameContext';
 import { selectWordsForSession, estimateDifficulty } from '../utils/aiWordSelector';
+
+// Lazy load Confetti component as it's only used on match success
+const Confetti = lazy(() => import('../components/Confetti'));
 
 // Coin reward constants - kept very small (< 10) as per requirements
 const COIN_REWARDS = {
@@ -402,7 +404,9 @@ const Game = () => {
       animate={{ opacity: 1 }}
       className="max-w-5xl mx-auto space-y-6"
     >
-      <Confetti trigger={showConfetti} />
+      <Suspense fallback={null}>
+        <Confetti trigger={showConfetti} />
+      </Suspense>
       
       {/* Particles */}
       <AnimatePresence>

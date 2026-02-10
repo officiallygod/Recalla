@@ -1,11 +1,82 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { useGame } from '../contexts/GameContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { getWordInsights, estimateDifficulty } from '../utils/aiWordSelector';
+
+// Create a lazy-loaded chart component to reduce initial bundle size
+const ProgressChart = lazy(() => 
+  import('recharts').then(module => {
+    const { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } = module;
+    
+    return {
+      default: ({ data, isDark }) => (
+        <ResponsiveContainer width="100%" height={300}>
+          <AreaChart data={data}>
+            <defs>
+              <linearGradient id="colorAccuracy" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8}/>
+                <stop offset="95%" stopColor="#6366f1" stopOpacity={0.1}/>
+              </linearGradient>
+              <linearGradient id="colorMastery" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid 
+              strokeDasharray="3 3" 
+              stroke={isDark ? '#334155' : '#e2e8f0'}
+              vertical={false}
+            />
+            <XAxis 
+              dataKey="date" 
+              stroke={isDark ? '#94a3b8' : '#64748b'}
+              style={{ fontSize: '12px' }}
+            />
+            <YAxis 
+              stroke={isDark ? '#94a3b8' : '#64748b'}
+              style={{ fontSize: '12px' }}
+              domain={[0, 100]}
+            />
+            <Tooltip 
+              contentStyle={{
+                backgroundColor: isDark ? '#1e293b' : '#ffffff',
+                border: `1px solid ${isDark ? '#334155' : '#e2e8f0'}`,
+                borderRadius: '12px',
+                padding: '12px'
+              }}
+            />
+            <Legend 
+              wrapperStyle={{ paddingTop: '20px' }}
+              iconType="circle"
+            />
+            <Area 
+              type="monotone" 
+              dataKey="accuracy" 
+              stroke="#6366f1" 
+              strokeWidth={2}
+              fillOpacity={1} 
+              fill="url(#colorAccuracy)"
+              name="Accuracy %"
+            />
+            <Area 
+              type="monotone" 
+              dataKey="mastery" 
+              stroke="#10b981" 
+              strokeWidth={2}
+              fillOpacity={1} 
+              fill="url(#colorMastery)"
+              name="Mastery %"
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      )
+    };
+  })
+);
 
 // Constants for mock data generation
 const ACCURACY_VARIANCE = 15; // ±15% random variation in historical accuracy
@@ -16,6 +87,7 @@ const MASTERY_DAILY_IMPROVEMENT = 1.5; // +1.5% mastery improvement per day
 const Statistics = () => {
   const navigate = useNavigate();
   const { words, topics, userData } = useGame();
+  const { isDark } = useTheme();
 
   const total = userData.correctMatches + userData.wrongMatches;
   const accuracy = total > 0 ? Math.round((userData.correctMatches / total) * 100) : 0;
@@ -261,48 +333,13 @@ const Statistics = () => {
           <p className="text-slate-600 dark:text-slate-400 text-center mb-6">
             Track your accuracy and mastery progress over the last 7 days
           </p>
-          <ResponsiveContainer width="100%" height={400}>
-            <AreaChart data={progressData}>
-              <defs>
-                <linearGradient id="colorAccuracy" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
-                </linearGradient>
-                <linearGradient id="colorMastery" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-              <XAxis dataKey="date" stroke="#64748b" style={{ fontSize: '14px' }} />
-              <YAxis stroke="#64748b" style={{ fontSize: '14px' }} domain={[0, 100]} />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#fff', 
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px',
-                  fontSize: '14px'
-                }}
-              />
-              <Legend wrapperStyle={{ fontSize: '14px' }} />
-              <Area 
-                type="monotone" 
-                dataKey="accuracy" 
-                stroke="#8b5cf6" 
-                fillOpacity={1} 
-                fill="url(#colorAccuracy)"
-                name="Accuracy %"
-              />
-              <Area 
-                type="monotone" 
-                dataKey="mastery" 
-                stroke="#10b981" 
-                fillOpacity={1} 
-                fill="url(#colorMastery)"
-                name="Mastery %"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          <Suspense fallback={
+            <div className="h-[400px] flex items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            </div>
+          }>
+            <ProgressChart data={progressData} isDark={isDark} />
+          </Suspense>
         </Card>
       </motion.div>
 

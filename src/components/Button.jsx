@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 
-const Button = ({ 
+const Button = React.memo(({ 
   children, 
   onClick, 
   variant = 'primary', 
@@ -94,6 +94,8 @@ const Button = ({
       </span>
     </motion.button>
   );
-};
+});
+
+Button.displayName = 'Button';
 
 export default Button;

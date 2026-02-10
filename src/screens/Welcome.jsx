@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../components/Button';
 import Card from '../components/Card';
-import EmojiPicker from '../components/EmojiPicker';
 import { useGame } from '../contexts/GameContext';
 import germanVocabulary from '../data/germanVocabulary';
+
+// Lazy load EmojiPicker component
+const EmojiPicker = lazy(() => import('../components/EmojiPicker'));
 
 const Welcome = () => {
   const navigate = useNavigate();
@@ -361,10 +363,12 @@ const Welcome = () => {
                   <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">
                     Select Emoji/Flag
                   </label>
-                  <EmojiPicker
-                    selectedEmoji={newTopicEmoji}
-                    onSelect={setNewTopicEmoji}
-                  />
+                  <Suspense fallback={<div className="h-10 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-xl"></div>}>
+                    <EmojiPicker
+                      selectedEmoji={newTopicEmoji}
+                      onSelect={setNewTopicEmoji}
+                    />
+                  </Suspense>
                 </div>
 
                 {error && (
