@@ -89,6 +89,8 @@ export default defineConfig({
         }
       }
     },
+    // Set higher chunk size limit to accommodate chart library (517KB)
+    // The recharts library is large but only loaded when viewing statistics
     chunkSizeWarningLimit: 1000,
   }
 })

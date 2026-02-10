@@ -86,7 +86,7 @@ export const GameProvider = ({ children }) => {
 
   // Add a word to the vocabulary, optionally associated with a topic
   // topicId: The ID of the topic to associate this word with, or null for general words
-  const addWord = (word, meaning, topicId = null) => {
+  const addWord = useCallback((word, meaning, topicId = null) => {
     const newWord = {
       id: generateUniqueId(),
       word,
@@ -109,18 +109,18 @@ export const GameProvider = ({ children }) => {
     }));
 
     return newWord;
-  };
+  }, []);
 
-  const deleteWord = (id) => {
+  const deleteWord = useCallback((id) => {
     // Safety check: ensure id is provided
     if (id === undefined || id === null) {
       console.error('deleteWord called with invalid id:', id);
       return;
     }
     setWords(prev => prev.filter(w => w.id !== id));
-  };
+  }, []);
 
-  const updateWordStats = (id, isCorrect) => {
+  const updateWordStats = useCallback((id, isCorrect) => {
     setWords(prev => prev.map(w => {
       if (w.id === id) {
         const newConsecutiveCorrect = isCorrect ? (w.consecutiveCorrect || 0) + 1 : 0;
@@ -157,23 +157,9 @@ export const GameProvider = ({ children }) => {
       }
       return w;
     }));
-  };
+  }, []);
 
-  const awardPoints = (points, coins, roundNumber = 0) => {
-    // Only give coins starting at round 50 and beyond
-    const shouldAwardCoins = roundNumber >= 50;
-    
-    setUserData(prev => ({
-      ...prev,
-      points: prev.points + points,
-      coins: prev.coins + (shouldAwardCoins ? coins : 0)
-    }));
-    
-    // Check level up
-    checkLevelUp();
-  };
-
-  const checkLevelUp = () => {
+  const checkLevelUp = useCallback(() => {
     // Make leveling more gradual with progressive difficulty
     // Level 1->2: 2500 points, Level 2->3: 5000 additional points, Level 3->4: 7500 additional points, etc.
     const pointsPerLevel = 2500;
@@ -196,25 +182,39 @@ export const GameProvider = ({ children }) => {
       return true;
     }
     return false;
-  };
+  }, [userData.points, userData.level]);
 
-  const recordMatch = (isCorrect) => {
+  const awardPoints = useCallback((points, coins, roundNumber = 0) => {
+    // Only give coins starting at round 50 and beyond
+    const shouldAwardCoins = roundNumber >= 50;
+    
+    setUserData(prev => ({
+      ...prev,
+      points: prev.points + points,
+      coins: prev.coins + (shouldAwardCoins ? coins : 0)
+    }));
+    
+    // Check level up
+    checkLevelUp();
+  }, [checkLevelUp]);
+
+  const recordMatch = useCallback((isCorrect) => {
     setUserData(prev => ({
       ...prev,
       correctMatches: isCorrect ? prev.correctMatches + 1 : prev.correctMatches,
       wrongMatches: !isCorrect ? prev.wrongMatches + 1 : prev.wrongMatches
     }));
-  };
+  }, []);
 
-  const incrementGamesPlayed = () => {
+  const incrementGamesPlayed = useCallback(() => {
     setUserData(prev => ({
       ...prev,
       totalGames: prev.totalGames + 1
     }));
-  };
+  }, []);
 
   // Topic management functions
-  const addTopic = (name, emoji = '📚') => {
+  const addTopic = useCallback((name, emoji = '📚') => {
     const newTopic = {
       id: generateUniqueId(),
       name,
@@ -223,21 +223,21 @@ export const GameProvider = ({ children }) => {
     };
     setTopics(prev => [...prev, newTopic]);
     return newTopic;
-  };
+  }, []);
 
-  const updateTopic = (id, updates) => {
+  const updateTopic = useCallback((id, updates) => {
     setTopics(prev => prev.map(t => 
       t.id === id ? { ...t, ...updates } : t
     ));
-  };
+  }, []);
 
-  const deleteTopic = (id) => {
+  const deleteTopic = useCallback((id) => {
     setTopics(prev => prev.filter(t => t.id !== id));
     // Also delete all words in this topic
     setWords(prev => prev.filter(w => w.topicId !== id));
-  };
+  }, []);
 
-  const exportTopic = (topicId) => {
+  const exportTopic = useCallback((topicId) => {
     const topic = topics.find(t => t.id === topicId);
     const topicWords = words.filter(w => w.topicId === topicId);
     
@@ -249,9 +249,9 @@ export const GameProvider = ({ children }) => {
       exportedAt: Date.now(),
       version: '1.0'
     };
-  };
+  }, [topics, words]);
 
-  const importTopic = (data) => {
+  const importTopic = useCallback((data) => {
     try {
       if (!data.topic || !data.words || !Array.isArray(data.words)) {
         throw new Error('Invalid topic data format');
@@ -279,7 +279,7 @@ export const GameProvider = ({ children }) => {
     } catch (error) {
       return { success: false, error: error.message };
     }
-  };
+  }, []);
 
   const getWordsByTopic = useCallback((topicId) => {
     return words.filter(w => w.topicId === topicId);
