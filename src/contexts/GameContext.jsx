@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 
 const GameContext = createContext();
 
@@ -281,11 +281,12 @@ export const GameProvider = ({ children }) => {
     }
   };
 
-  const getWordsByTopic = (topicId) => {
+  const getWordsByTopic = useCallback((topicId) => {
     return words.filter(w => w.topicId === topicId);
-  };
+  }, [words]);
 
-  const value = {
+  // Memoize the context value to prevent unnecessary re-renders
+  const value = useMemo(() => ({
     words,
     topics,
     userData,
@@ -302,7 +303,9 @@ export const GameProvider = ({ children }) => {
     exportTopic,
     importTopic,
     getWordsByTopic
-  };
+  }), [words, topics, userData, addWord, deleteWord, updateWordStats, awardPoints, 
+       recordMatch, incrementGamesPlayed, checkLevelUp, addTopic, updateTopic, 
+       deleteTopic, exportTopic, importTopic, getWordsByTopic]);
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
 };
