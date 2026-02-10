@@ -163,26 +163,28 @@ export const GameProvider = ({ children }) => {
     // Make leveling more gradual with progressive difficulty
     // Level 1->2: 2500 points, Level 2->3: 5000 additional points, Level 3->4: 7500 additional points, etc.
     const pointsPerLevel = 2500;
-    let requiredPoints = 0;
-    let level = 1;
     
-    // Calculate level based on cumulative points requirement
-    while (requiredPoints <= userData.points) {
-      requiredPoints += pointsPerLevel * level;
-      level++;
-    }
-    
-    const newLevel = level - 1; // Subtract 1 because we went one level too far
-    
-    if (newLevel > userData.level) {
-      setUserData(prev => ({
-        ...prev,
-        level: newLevel
-      }));
-      return true;
-    }
-    return false;
-  }, [userData.points, userData.level]);
+    setUserData(prev => {
+      let requiredPoints = 0;
+      let level = 1;
+      
+      // Calculate level based on cumulative points requirement
+      while (requiredPoints <= prev.points) {
+        requiredPoints += pointsPerLevel * level;
+        level++;
+      }
+      
+      const newLevel = level - 1; // Subtract 1 because we went one level too far
+      
+      if (newLevel > prev.level) {
+        return {
+          ...prev,
+          level: newLevel
+        };
+      }
+      return prev;
+    });
+  }, []);
 
   const awardPoints = useCallback((points, coins, roundNumber = 0) => {
     // Only give coins starting at round 50 and beyond
