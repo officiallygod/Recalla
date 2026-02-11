@@ -141,7 +141,7 @@ const Game = () => {
     }, 1000);
   };
 
-  const resetForNewSession = () => {
+  const restartGame = () => {
     setGameOver(false);
     setSessionCoins(0);
     setSessionStart(Date.now());
@@ -462,7 +462,7 @@ const Game = () => {
               />
             </div>
             <div>
-              <p className="text-sm uppercase tracking-[0.3em] text-indigo-400 font-semibold">Great run!</p>
+              <p className="text-sm uppercase tracking-[0.3em] text-indigo-400 font-semibold">Great Run!</p>
               <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white drop-shadow-sm">Game Over</h1>
               <p className="text-slate-600 dark:text-slate-300 mt-2">Here are your final stats.</p>
             </div>
@@ -488,8 +488,8 @@ const Game = () => {
                 <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Best Combo</p>
                 <p className="text-2xl font-bold text-fuchsia-500 dark:text-fuchsia-300">
                   {bestCombo}
-                  <span aria-hidden="true">🔥</span>
                   <span className="sr-only">{`Best combo streak ${bestCombo}`}</span>
+                  <span aria-hidden="true">🔥</span>
                 </p>
               </Card>
               <Card className="glass p-4 text-center">
@@ -504,7 +504,7 @@ const Game = () => {
 
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
-                onClick={resetForNewSession}
+                onClick={restartGame}
                 variant="primary"
                 size="md"
                 fullWidth
