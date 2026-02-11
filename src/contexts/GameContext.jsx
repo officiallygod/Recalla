@@ -36,7 +36,8 @@ export const GameProvider = ({ children }) => {
     level: 1,
     totalGames: 0,
     correctMatches: 0,
-    wrongMatches: 0
+    wrongMatches: 0,
+    firstUsedDate: null
   });
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -57,7 +58,12 @@ export const GameProvider = ({ children }) => {
       setWords(migratedWords);
     }
     if (storedUserData) {
-      setUserData(JSON.parse(storedUserData));
+      const parsedUserData = JSON.parse(storedUserData);
+      // Migrate existing users: set firstUsedDate to now if not present
+      setUserData({
+        ...parsedUserData,
+        firstUsedDate: parsedUserData.firstUsedDate ?? Date.now()
+      });
     }
     if (storedTopics) {
       setTopics(JSON.parse(storedTopics));
@@ -105,7 +111,9 @@ export const GameProvider = ({ children }) => {
     setUserData(prev => ({
       ...prev,
       points: prev.points + 5,
-      coins: prev.coins + 0
+      coins: prev.coins + 0,
+      // Set firstUsedDate on first word addition if not already set
+      firstUsedDate: prev.firstUsedDate ?? Date.now()
     }));
 
     return newWord;
@@ -204,14 +212,18 @@ export const GameProvider = ({ children }) => {
     setUserData(prev => ({
       ...prev,
       correctMatches: isCorrect ? prev.correctMatches + 1 : prev.correctMatches,
-      wrongMatches: !isCorrect ? prev.wrongMatches + 1 : prev.wrongMatches
+      wrongMatches: !isCorrect ? prev.wrongMatches + 1 : prev.wrongMatches,
+      // Set firstUsedDate on first match if not already set
+      firstUsedDate: prev.firstUsedDate ?? Date.now()
     }));
   }, []);
 
   const incrementGamesPlayed = useCallback(() => {
     setUserData(prev => ({
       ...prev,
-      totalGames: prev.totalGames + 1
+      totalGames: prev.totalGames + 1,
+      // Set firstUsedDate on first game if not already set
+      firstUsedDate: prev.firstUsedDate ?? Date.now()
     }));
   }, []);
 

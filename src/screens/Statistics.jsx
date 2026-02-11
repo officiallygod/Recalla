@@ -134,10 +134,18 @@ const Statistics = () => {
   }, [topics, words]);
 
   // Generate mock progress data (in a real app, this would come from historical data)
-  // Creates a 7-day trend showing gradual improvement toward current accuracy
+  // Creates a trend showing gradual improvement toward current accuracy
+  // Shows actual days since user started, not always 7 days
   const progressData = useMemo(() => {
-    const days = 7;
+    // Calculate days since first use (minimum 1 day - today)
+    const daysSinceStart = userData.firstUsedDate 
+      ? Math.max(1, Math.ceil((Date.now() - userData.firstUsedDate) / (1000 * 60 * 60 * 24)))
+      : 1;
+    
+    // Show up to 7 days, but not more than days since start
+    const days = Math.min(7, daysSinceStart);
     const data = [];
+    
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date();
       date.setDate(date.getDate() - i);
@@ -156,7 +164,7 @@ const Statistics = () => {
       data[data.length - 1].mastery = projectMetrics.avgMastery;
     }
     return data;
-  }, [accuracy, total, projectMetrics.avgMastery]);
+  }, [accuracy, total, projectMetrics.avgMastery, userData.firstUsedDate]);
 
   const stats = [
     { icon: '📚', label: 'Total Words', value: projectMetrics.totalWords, color: 'from-blue-500 to-blue-600' },
@@ -164,6 +172,18 @@ const Statistics = () => {
     { icon: '✅', label: 'Overall Accuracy', value: `${accuracy}%`, color: 'from-emerald-500 to-emerald-600' },
     { icon: '🏆', label: 'Mastered Words', value: projectMetrics.masteredWords, color: 'from-amber-500 to-amber-600' },
   ];
+
+  // Dynamic description based on actual days since first use
+  const progressDescription = useMemo(() => {
+    const numDays = progressData.length;
+    if (numDays === 1) {
+      return 'Track your accuracy and mastery progress starting today';
+    } else if (numDays < 7) {
+      return `Track your accuracy and mastery progress over the last ${numDays} days`;
+    } else {
+      return 'Track your accuracy and mastery progress over the last 7 days';
+    }
+  }, [progressData.length]);
 
   return (
     <motion.div
@@ -263,7 +283,7 @@ const Statistics = () => {
             📈 Your Learning Journey
           </h3>
           <p className="text-slate-600 dark:text-slate-400 text-center mb-6">
-            Track your accuracy and mastery progress over the last 7 days
+            {progressDescription}
           </p>
           <Suspense fallback={
             <div className="h-[400px] flex items-center justify-center">
