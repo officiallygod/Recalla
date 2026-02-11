@@ -10,7 +10,8 @@ const Button = React.memo(({
   disabled = false,
   fullWidth = false,
   icon = null,
-  className = ''
+  className = '',
+  ...rest
 }) => {
   const buttonRef = useRef(null);
   const [ripples, setRipples] = useState([]);
@@ -76,6 +77,7 @@ const Button = React.memo(({
         ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer active:scale-95'}
         ${className}
       `}
+      {...rest}
     >
       {/* Ripple effect */}
       {ripples.map(ripple => (

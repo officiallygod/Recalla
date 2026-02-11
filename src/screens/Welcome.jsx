@@ -494,6 +494,7 @@ const Welcome = () => {
                           onClick={() => navigate('/add-word', { state: { topicId: topic.id } })}
                           icon="➕"
                           fullWidth
+                          aria-label="Add Words"
                         >
                           Add
                         </Button>
