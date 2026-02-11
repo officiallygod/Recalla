@@ -15,6 +15,7 @@ const ACCURACY_VARIANCE = 15; // ±15% random variation in historical accuracy
 const ACCURACY_DAILY_IMPROVEMENT = 2; // +2% accuracy improvement per day
 const MASTERY_VARIANCE = 10; // ±10% random variation in historical mastery
 const MASTERY_DAILY_IMPROVEMENT = 1.5; // +1.5% mastery improvement per day
+const MS_PER_DAY = 1000 * 60 * 60 * 24; // Milliseconds in a day
 
 const Statistics = () => {
   const navigate = useNavigate();
@@ -139,7 +140,7 @@ const Statistics = () => {
   const progressData = useMemo(() => {
     // Calculate days since first use (minimum 1 day - today)
     const daysSinceStart = userData.firstUsedDate 
-      ? Math.max(1, Math.ceil((Date.now() - userData.firstUsedDate) / (1000 * 60 * 60 * 24)))
+      ? Math.max(1, Math.ceil((Date.now() - userData.firstUsedDate) / MS_PER_DAY))
       : 1;
     
     // Show up to 7 days, but not more than days since start
