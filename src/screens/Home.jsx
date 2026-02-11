@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Target, Gamepad2, BookOpen, BarChart3, GraduationCap, Lightbulb, Clock, Zap, ArrowRight, Sparkles } from 'lucide-react';
+import { Target, Gamepad2, BookOpen, BarChart3, GraduationCap, Lightbulb, Clock, Zap, ArrowRight, Sparkles, FolderOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Button from '../components/Button';
 import Card from '../components/Card';
@@ -23,7 +23,7 @@ const Home = () => {
   const menuItems = [
     {
       title: 'Topics',
-      icon: Target,
+      icon: FolderOpen,
       description: 'Manage your learning topics',
       path: '/welcome',
       variant: 'primary',
