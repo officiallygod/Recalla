@@ -328,23 +328,22 @@ const Game = () => {
       
       // Correct match - both cards share the same word ID, update once
       setMatchedPairs(prev => [...prev, card1.pairId]);
-       const newCombo = combo + 1;
-       setCombo(newCombo);
-       setBestCombo(prev => Math.max(prev, newCombo));
+      const newCombo = combo + 1;
+      setCombo(newCombo);
+      setBestCombo(prev => Math.max(prev, newCombo));
       
       // In infinite mode, don't award points or coins
       if (!isInfiniteMode) {
         // Harder rewards: Reduced points and coins significantly
         // Keep coin rewards very small (< 10) as per requirements
-         const points = 50 + (newCombo * 25);
-         const coinReward = Math.min(
-           COIN_REWARDS.MATCH.BASE + Math.floor(newCombo / COIN_REWARDS.MATCH.COMBO_DIVISOR),
-           COIN_REWARDS.MATCH.MAX
-         );
-         const coinsEarnedThisMatch = coinReward;
-         setSessionCoins(prev => prev + coinsEarnedThisMatch);
-         setScore(prev => prev + points);
-         awardPoints(points, coinReward, round);
+        const points = 50 + (newCombo * 25);
+        const coinReward = Math.min(
+          COIN_REWARDS.MATCH.BASE + Math.floor(newCombo / COIN_REWARDS.MATCH.COMBO_DIVISOR),
+          COIN_REWARDS.MATCH.MAX
+        );
+        setSessionCoins(prev => prev + coinReward);
+        setScore(prev => prev + points);
+        awardPoints(points, coinReward, round);
         
         setMessage(`🎉 Perfect Match!${newCombo > 1 ? ` 🔥x${newCombo}` : ''}`);
       } else {
@@ -375,15 +374,14 @@ const Game = () => {
             if (!isInfiniteMode) {
               // Harder round completion bonus
               // Keep coin bonus very small (< 10) as per requirements
-               const bonus = newCombo * 50;
-               const coinBonus = Math.min(
-                 COIN_REWARDS.ROUND.BASE + Math.floor(newCombo / COIN_REWARDS.ROUND.COMBO_DIVISOR),
-                 COIN_REWARDS.ROUND.MAX
-               );
-               const coinsEarnedThisRound = coinBonus;
-               setSessionCoins(prev => prev + coinsEarnedThisRound);
-               awardPoints(bonus, coinBonus, currentRound);
-               setMessage(`🏆 Round ${currentRound} Complete! Bonus: +${bonus} points!`);
+              const bonus = newCombo * 50;
+              const coinBonus = Math.min(
+                COIN_REWARDS.ROUND.BASE + Math.floor(newCombo / COIN_REWARDS.ROUND.COMBO_DIVISOR),
+                COIN_REWARDS.ROUND.MAX
+              );
+              setSessionCoins(prev => prev + coinBonus);
+              awardPoints(bonus, coinBonus, currentRound);
+              setMessage(`🏆 Round ${currentRound} Complete! Bonus: +${bonus} points!`);
             } else {
               setMessage(`🏆 Round ${currentRound} Complete!${newCombo > 1 ? ` 🔥x${newCombo}` : ''}`);
             }
@@ -477,7 +475,11 @@ const Game = () => {
               <Card className="glass p-4 text-center">
                 <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Time</p>
                 <p className="text-2xl font-bold text-orange-500 dark:text-orange-300">
-                  {elapsedTime ? formatTime(elapsedTime) : `${timerDuration}s`}
+                  {elapsedTime
+                    ? formatTime(elapsedTime)
+                    : isInfiniteMode
+                      ? '∞'
+                      : `${timerDuration}s`}
                 </p>
               </Card>
               <Card className="glass p-4 text-center">
