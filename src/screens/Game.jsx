@@ -501,7 +501,7 @@ const Game = () => {
           <motion.div
             animate={{ scale: [1, 1.05, 1] }}
             transition={{ duration: 0.3 }}
-            key={round}
+            key="round-stat"
           >
             <Card className="px-4 py-2">
               <div className="text-center">
@@ -514,7 +514,7 @@ const Game = () => {
             <motion.div
               animate={{ scale: [1, 1.05, 1] }}
               transition={{ duration: 0.3 }}
-              key={score}
+              key="score-stat"
             >
               <Card className="px-4 py-2">
                 <div className="text-center">
@@ -529,7 +529,7 @@ const Game = () => {
               scale: combo > 0 ? [1, 1.1, 1] : 1,
             }}
             transition={{ duration: 0.3 }}
-            key={combo}
+            key="combo-stat"
           >
             <Card className="px-4 py-2">
               <div className="text-center">
