@@ -488,7 +488,7 @@ const Game = () => {
                 <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Best Combo</p>
                 <p className="text-2xl font-bold text-fuchsia-500 dark:text-fuchsia-300">
                   {bestCombo}
-                  <span className="sr-only">{`Best combo streak ${bestCombo}`}</span>
+                  <span className="sr-only">{`Your best combo streak was ${bestCombo} matches`}</span>
                   <span aria-hidden="true">🔥</span>
                 </p>
               </Card>
