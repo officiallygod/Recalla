@@ -131,6 +131,7 @@
     padding: 3px;
     border-radius: 1rem;
     background: transparent;
+    transition: background 0.2s ease;
   }
 
   .border-shine-reserved > * {
@@ -138,15 +139,7 @@
   }
 
   .border-shine-reserved.border-shine-active {
-    background: linear-gradient(90deg, 
-      rgba(79, 70, 229, 0.8) 0%, 
-      rgba(99, 102, 241, 1) 25%, 
-      rgba(139, 92, 246, 1) 50%, 
-      rgba(99, 102, 241, 1) 75%, 
-      rgba(79, 70, 229, 0.8) 100%
-    );
-    background-size: 200% 100%;
-    animation: border-shine 2s linear infinite;
+    background: rgba(99, 102, 241, 0.7);
   }
   
   /* Hover lift effect */
