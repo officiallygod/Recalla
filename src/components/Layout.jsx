@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Gamepad2, Star, Coins, Trophy, Sun, Moon } from 'lucide-react';
 import { useGame } from '../contexts/GameContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -6,6 +7,7 @@ import { formatNumber } from '../utils/numberFormatter';
 import { motion } from 'framer-motion';
 
 const Layout = ({ children }) => {
+  const navigate = useNavigate();
   const { userData } = useGame();
   const { isDark, toggleTheme } = useTheme();
 
@@ -46,9 +48,9 @@ const Layout = ({ children }) => {
 
             {/* Stats and Theme Toggle */}
             <div className="flex items-center gap-2 sm:gap-3">
-              <StatItem icon={<Star className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" />} value={formatNumber(userData.points)} label="Points" color="indigo" />
-              <StatItem icon={<Coins className="w-4 h-4 sm:w-5 sm:h-5" />} value={formatNumber(userData.coins)} label="Coins" color="amber" />
-              <StatItem icon={<Trophy className="w-4 h-4 sm:w-5 sm:h-5" />} value={userData.level} label="Level" color="purple" />
+              <StatItem icon={<Star className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" />} value={formatNumber(userData.points)} label="Points" color="indigo" onClick={() => navigate('/stats')} />
+              <StatItem icon={<Coins className="w-4 h-4 sm:w-5 sm:h-5" />} value={formatNumber(userData.coins)} label="Coins" color="amber" onClick={() => navigate('/stats')} />
+              <StatItem icon={<Trophy className="w-4 h-4 sm:w-5 sm:h-5" />} value={userData.level} label="Level" color="purple" onClick={() => navigate('/stats')} />
               
               {/* Theme Toggle with Modern Design */}
               <motion.button
@@ -83,7 +85,7 @@ const Layout = ({ children }) => {
   );
 };
 
-const StatItem = ({ icon, value, label, color = 'primary' }) => {
+const StatItem = ({ icon, value, label, color = 'primary', onClick }) => {
   const colorClasses = {
     indigo: 'from-indigo-500 to-indigo-600 dark:from-indigo-400 dark:to-indigo-500',
     amber: 'from-amber-500 to-amber-600 dark:from-amber-400 dark:to-amber-500',
@@ -94,7 +96,8 @@ const StatItem = ({ icon, value, label, color = 'primary' }) => {
     <motion.div 
       whileHover={{ scale: 1.05, y: -2 }}
       whileTap={{ scale: 0.98 }}
-      className="relative group"
+      onClick={onClick}
+      className="relative group cursor-pointer"
     >
 
       <div className="relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-all duration-300 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg">

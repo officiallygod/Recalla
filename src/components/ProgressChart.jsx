@@ -1,6 +1,30 @@
 import React from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
+// Custom tooltip to format percentages to 2 decimal places
+const CustomTooltip = ({ active, payload, label, isDark }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div 
+        style={{
+          backgroundColor: isDark ? '#1e293b' : '#ffffff',
+          border: `1px solid ${isDark ? '#334155' : '#e2e8f0'}`,
+          borderRadius: '12px',
+          padding: '12px'
+        }}
+      >
+        <p className="text-sm font-semibold mb-2">{label}</p>
+        {payload.map((entry, index) => (
+          <p key={index} style={{ color: entry.color }} className="text-sm">
+            {`${entry.name}: ${entry.value.toFixed(2)}%`}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
 const ProgressChart = ({ data, isDark }) => {
   return (
     <ResponsiveContainer width="100%" height={300}>
@@ -30,14 +54,7 @@ const ProgressChart = ({ data, isDark }) => {
           style={{ fontSize: '12px' }}
           domain={[0, 100]}
         />
-        <Tooltip 
-          contentStyle={{
-            backgroundColor: isDark ? '#1e293b' : '#ffffff',
-            border: `1px solid ${isDark ? '#334155' : '#e2e8f0'}`,
-            borderRadius: '12px',
-            padding: '12px'
-          }}
-        />
+        <Tooltip content={<CustomTooltip isDark={isDark} />} />
         <Legend 
           wrapperStyle={{ paddingTop: '20px' }}
           iconType="circle"

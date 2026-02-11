@@ -7,6 +7,31 @@ import Card from '../components/Card';
 import { useGame } from '../contexts/GameContext';
 import { getWordInsights, estimateDifficulty } from '../utils/aiWordSelector';
 
+// Custom tooltip to format percentages to 2 decimal places
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div 
+        style={{
+          backgroundColor: '#fff',
+          border: '1px solid #e2e8f0',
+          borderRadius: '8px',
+          fontSize: '14px',
+          padding: '12px'
+        }}
+      >
+        <p className="text-sm font-semibold mb-2">{label}</p>
+        {payload.map((entry, index) => (
+          <p key={index} style={{ color: entry.color }} className="text-sm">
+            {`${entry.name}: ${entry.value.toFixed(2)}%`}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
 // Constants for mock data generation and game requirements
 const ACCURACY_VARIANCE = 15; // ±15% random variation in historical accuracy
 const ACCURACY_DAILY_IMPROVEMENT = 2; // +2% accuracy improvement per day
@@ -126,10 +151,11 @@ const TopicDetails = () => {
       const date = new Date();
       date.setDate(date.getDate() - i);
       const historicalAccuracy = Math.max(0, topicMetrics.accuracy - Math.random() * ACCURACY_VARIANCE + (i * ACCURACY_DAILY_IMPROVEMENT));
+      const historicalMastery = Math.max(0, topicMetrics.avgMastery - Math.random() * MASTERY_VARIANCE + (i * MASTERY_DAILY_IMPROVEMENT));
       data.push({
         date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        accuracy: historicalAccuracy,
-        mastery: Math.max(0, topicMetrics.avgMastery - Math.random() * MASTERY_VARIANCE + (i * MASTERY_DAILY_IMPROVEMENT))
+        accuracy: Math.round(historicalAccuracy * 100) / 100,
+        mastery: Math.round(historicalMastery * 100) / 100
       });
     }
     // Set today's data to actual values
@@ -228,14 +254,7 @@ const TopicDetails = () => {
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
             <XAxis dataKey="date" stroke="#64748b" style={{ fontSize: '12px' }} />
             <YAxis stroke="#64748b" style={{ fontSize: '12px' }} domain={[0, 100]} />
-            <Tooltip 
-              contentStyle={{ 
-                backgroundColor: '#fff', 
-                border: '1px solid #e2e8f0',
-                borderRadius: '8px',
-                fontSize: '14px'
-              }}
-            />
+            <Tooltip content={<CustomTooltip />} />
             <Legend />
             <Area 
               type="monotone" 
