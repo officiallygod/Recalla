@@ -25,7 +25,7 @@ const CustomTooltip = ({ active, payload, label, isDark }) => {
   return null;
 };
 
-const ProgressChart = ({ data, isDark }) => {
+const ProgressChart = React.memo(({ data, isDark }) => {
   return (
     <ResponsiveContainer width="100%" height={300}>
       <AreaChart data={data}>
@@ -80,6 +80,8 @@ const ProgressChart = ({ data, isDark }) => {
       </AreaChart>
     </ResponsiveContainer>
   );
-};
+});
+
+ProgressChart.displayName = 'ProgressChart';
 
 export default ProgressChart;

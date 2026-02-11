@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../components/Button';
@@ -42,9 +42,12 @@ const Game = () => {
   
   // Get words for the game - if a topic is selected, use only that topic's words
   // If no topic is selected, use words that have a topicId (ensuring words are grouped by topic)
-  const gameWords = selectedTopic 
-    ? getWordsByTopic(selectedTopic) 
-    : words.filter(w => w.topicId != null);
+  const gameWords = useMemo(() => 
+    selectedTopic 
+      ? getWordsByTopic(selectedTopic) 
+      : words.filter(w => w.topicId != null),
+    [selectedTopic, getWordsByTopic, words]
+  );
   
   const [gameCards, setGameCards] = useState([]);
   const [selectedCards, setSelectedCards] = useState([]);
@@ -67,14 +70,14 @@ const Game = () => {
   const [finalRound, setFinalRound] = useState(0);
 
   // Fisher-Yates shuffle for proper randomization
-  const shuffleArray = (array) => {
+  const shuffleArray = useCallback((array) => {
     const shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     return shuffled;
-  };
+  }, []);
 
   useEffect(() => {
     if (gameWords.length < CARDS_PER_ROUND * 2) {
@@ -392,8 +395,8 @@ const Game = () => {
     }, 600); // Faster reset (was 1000ms)
   };
 
-  const isCardSelected = (index) => selectedCards.includes(index);
-  const isCardMatched = (card) => matchedPairs.includes(card.pairId);
+  const isCardSelected = useCallback((index) => selectedCards.includes(index), [selectedCards]);
+  const isCardMatched = useCallback((card) => matchedPairs.includes(card.pairId), [matchedPairs]);
 
   // Game Over Component - Simple overlay
   const GameOverScreen = () => (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../components/Button';
@@ -99,7 +99,7 @@ const Welcome = () => {
     }
   };
 
-  const handleAddTopic = (e) => {
+  const handleAddTopic = useCallback((e) => {
     e.preventDefault();
     setError('');
 
@@ -118,14 +118,14 @@ const Welcome = () => {
     setNewTopicEmoji('📚');
     setShowAddTopic(false);
     setError('');
-  };
+  }, [newTopicName, topics, addTopic, newTopicEmoji]);
 
-  const handleUpdateTopic = (topicId, name, emoji) => {
+  const handleUpdateTopic = useCallback((topicId, name, emoji) => {
     updateTopic(topicId, { name, emoji });
     setEditingTopic(null);
-  };
+  }, [updateTopic]);
 
-  const handleExportTopic = (topicId) => {
+  const handleExportTopic = useCallback((topicId) => {
     const data = exportTopic(topicId);
     if (!data) {
       alert('Failed to export topic');
@@ -141,9 +141,9 @@ const Welcome = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  };
+  }, [exportTopic]);
 
-  const handleImportTopic = (e) => {
+  const handleImportTopic = useCallback((e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -164,9 +164,9 @@ const Welcome = () => {
     };
     reader.readAsText(file);
     e.target.value = ''; // Reset input
-  };
+  }, [importTopic]);
 
-  const handleDeleteTopic = (topicId) => {
+  const handleDeleteTopic = useCallback((topicId) => {
     const topic = topics.find(t => t.id === topicId);
     const wordCount = getWordsByTopic(topicId).length;
     
@@ -175,15 +175,18 @@ const Welcome = () => {
     )) {
       deleteTopic(topicId);
     }
-  };
+  }, [topics, getWordsByTopic, deleteTopic]);
 
-  const getTopicStats = (topicId) => {
+  const getTopicStats = useCallback((topicId) => {
     const topicWords = getWordsByTopic(topicId);
     return {
       count: topicWords.length,
       practiced: topicWords.filter(w => w.lastPracticed).length
     };
-  };
+  }, [getWordsByTopic]);
+
+  const practicedCount = useMemo(() => words.filter(w => w.lastPracticed).length, [words]);
+  const progressPercent = useMemo(() => Math.round((practicedCount / Math.max(words.length, 1)) * 100), [practicedCount, words.length]);
 
   return (
     <motion.div
@@ -607,7 +610,7 @@ const Welcome = () => {
                   className="text-3xl font-black bg-gradient-to-r from-pink-600 to-rose-600 dark:from-pink-400 dark:to-rose-400 bg-clip-text text-transparent"
                   whileHover={{ scale: 1.1 }}
                 >
-                  {words.filter(w => w.lastPracticed).length}
+                  {practicedCount}
                 </motion.p>
                 <p className="text-sm text-slate-600 dark:text-slate-400 font-semibold mt-1">Practiced</p>
               </div>
@@ -616,7 +619,7 @@ const Welcome = () => {
                   className="text-3xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent"
                   whileHover={{ scale: 1.1 }}
                 >
-                  {Math.round((words.filter(w => w.lastPracticed).length / Math.max(words.length, 1)) * 100)}%
+                  {progressPercent}%
                 </motion.p>
                 <p className="text-sm text-slate-600 dark:text-slate-400 font-semibold mt-1">Progress</p>
               </div>

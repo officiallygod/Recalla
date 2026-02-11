@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const Confetti = ({ trigger, duration = 1000 }) => {
+const Confetti = React.memo(({ trigger, duration = 1000 }) => {
   const [pieces, setPieces] = useState([]);
   const [show, setShow] = useState(false);
 
@@ -66,6 +66,8 @@ const Confetti = ({ trigger, duration = 1000 }) => {
       )}
     </AnimatePresence>
   );
-};
+});
+
+Confetti.displayName = 'Confetti';
 
 export default Confetti;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X } from 'lucide-react';
@@ -20,25 +20,27 @@ const WordsList = () => {
     }
   }, [location.state?.topicId]);
 
-  const displayWords = selectedTopic 
-    ? getWordsByTopic(selectedTopic)
-    : words;
+  const displayWords = useMemo(() => 
+    selectedTopic ? getWordsByTopic(selectedTopic) : words,
+    [selectedTopic, getWordsByTopic, words]
+  );
 
   // Filter words based on search query
-  const filteredWords = displayWords.filter(word => {
+  const filteredWords = useMemo(() => displayWords.filter(word => {
     const query = searchQuery.toLowerCase().trim();
     if (!query) return true;
     return (
       word.word.toLowerCase().includes(query) ||
       word.meaning.toLowerCase().includes(query)
     );
-  });
+  }), [displayWords, searchQuery]);
 
-  const currentTopic = selectedTopic 
-    ? topics.find(t => t.id === selectedTopic)
-    : null;
+  const currentTopic = useMemo(() => 
+    selectedTopic ? topics.find(t => t.id === selectedTopic) : null,
+    [selectedTopic, topics]
+  );
 
-  const handleDelete = (id) => {
+  const handleDelete = useCallback((id) => {
     // Safety check: ensure id is provided
     if (id === undefined || id === null) {
       console.error('Attempted to delete word with invalid id:', id);
@@ -47,7 +49,7 @@ const WordsList = () => {
     if (window.confirm('Are you sure you want to delete this word?')) {
       deleteWord(id);
     }
-  };
+  }, [deleteWord]);
 
   return (
     <motion.div
