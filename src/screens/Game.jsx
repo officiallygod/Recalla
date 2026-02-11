@@ -589,7 +589,7 @@ const Game = () => {
               key={card.cardId}
               className={`
                 min-h-[120px] sm:min-h-[140px]
-                ${selected ? 'border-shine' : ''}
+                border-shine-reserved ${selected ? 'border-shine-active' : ''}
                 ${matched ? 'opacity-0 pointer-events-none' : 'opacity-100'}
                 transition-opacity duration-200
               `}
