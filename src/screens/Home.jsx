@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { useGame } from '../contexts/GameContext';
+import { hapticLight } from '../utils/haptic';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -122,7 +123,10 @@ const Home = () => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setDifficulty('easy')}
+                  onClick={() => {
+                    hapticLight();
+                    setDifficulty('easy');
+                  }}
                   className={`
                     flex-1 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-300 relative overflow-hidden
                     ${difficulty === 'easy'
@@ -144,7 +148,10 @@ const Home = () => {
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setDifficulty('hard')}
+                  onClick={() => {
+                    hapticLight();
+                    setDifficulty('hard');
+                  }}
                   className={`
                     flex-1 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-300 relative overflow-hidden
                     ${difficulty === 'hard'
@@ -191,7 +198,10 @@ const Home = () => {
                     key={duration}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => setTimerDuration(duration)}
+                    onClick={() => {
+                      hapticLight();
+                      setTimerDuration(duration);
+                    }}
                     className={`
                       flex-1 px-3 py-3 rounded-xl text-sm font-bold transition-all duration-300 relative overflow-hidden
                       ${timerDuration === duration
