@@ -64,8 +64,6 @@ const Game = () => {
   const [availableWords, setAvailableWords] = useState([]); // Pool of words not currently shown
   const [activeWordIds, setActiveWordIds] = useState([]); // Words currently on screen
   const [shownWordIds, setShownWordIds] = useState([]); // Track all words shown in this session
-  const pendingReplacementsRef = React.useRef([]); // Batched matched pair IDs awaiting replacement
-  const replacementTimerRef = React.useRef(null); // Timer for batched replacement delay
   const [timer, setTimer] = useState(initialTimerDuration);
   const [timerDuration, setTimerDuration] = useState(initialTimerDuration); // Store the timer duration for resets
   const [isTimerActive, setIsTimerActive] = useState(false);
@@ -100,15 +98,6 @@ const Game = () => {
       setIsTimerActive(true);
     }
   }, [selectedTopic, gameWords.length]);
-
-  // Cleanup replacement timer on unmount
-  useEffect(() => {
-    return () => {
-      if (replacementTimerRef.current) {
-        clearTimeout(replacementTimerRef.current);
-      }
-    };
-  }, []);
 
   // Timer effect - count down from timerDuration seconds, stop game when timer expires
   // Skip timer logic completely in infinite mode
@@ -174,86 +163,64 @@ const Game = () => {
   };
 
   // Replace matched cards with new words from the pool
-  const replaceMatchedCards = (matchedPairId) => {
-    if (availableWords.length === 0) {
-      return; // No more words to add
-    }
-    
-    // Get current shown words and filter for unseen words
+  // Keeps board positions stable (no full shuffle) and fills vacancies quickly
+  const replaceMatchedCards = useCallback((matchedPairId) => {
+    if (availableWords.length === 0) return;
+
     setShownWordIds(currentShownIds => {
       const shownSet = new Set(currentShownIds);
       const unseenWords = availableWords.filter(w => !shownSet.has(w.id));
 
-      // Select as many new words as there are pending pairs (one word per pair)
-      const needed = Math.min(pairIds.length, unseenWords.length);
-      if (needed === 0) return currentShownIds;
+      if (unseenWords.length === 0) return currentShownIds; // Nothing new to show
 
-      const selectedWords = selectWordsForSession(unseenWords, needed, {
+      const selectedWords = selectWordsForSession(unseenWords, 1, {
         balanceChallenge: false,
         includeNew: true,
       });
 
       if (selectedWords.length === 0) return currentShownIds;
 
-      setGameCards(prev => {
-        const updated = [...prev];
-        const maxPairId = prev.length > 0 ? Math.max(...prev.map(c => c.pairId)) : 0;
-        let nextPairId = maxPairId + 1;
-        const timestamp = Date.now();
+      const selectedWord = selectedWords[0];
 
-        for (let i = 0; i < selectedWords.length && i < pairIds.length; i++) {
-          const pairId = pairIds[i];
-          const word = selectedWords[i];
+      // Add minimal delay (200-600ms) for snappy feel
+      const MIN_DELAY_MS = 200;
+      const MAX_DELAY_MS = 600;
+      const delay = MIN_DELAY_MS + Math.random() * (MAX_DELAY_MS - MIN_DELAY_MS);
 
-          // Find indices of matched cards
+      setTimeout(() => {
+        setGameCards(prev => {
           const matchedIndices = [];
-          updated.forEach((card, idx) => {
-            if (card.pairId === pairId) matchedIndices.push(idx);
+          prev.forEach((card, idx) => {
+            if (card.pairId === matchedPairId) matchedIndices.push(idx);
           });
-          if (matchedIndices.length !== 2) continue;
 
+          if (matchedIndices.length !== 2) return prev; // Pair no longer present
+
+          const maxPairId = prev.length > 0 ? Math.max(...prev.map(c => c.pairId)) : 0;
+          const newPairId = maxPairId + 1;
+          const timestamp = Date.now();
           const newCards = [
-            { type: 'word', value: word.word, id: word.id, pairId: nextPairId, cardId: `${timestamp}-${nextPairId}-word` },
-            { type: 'meaning', value: word.meaning, id: word.id, pairId: nextPairId, cardId: `${timestamp}-${nextPairId}-meaning` }
+            { type: 'word', value: selectedWord.word, id: selectedWord.id, pairId: newPairId, cardId: `${timestamp}-${newPairId}-word` },
+            { type: 'meaning', value: selectedWord.meaning, id: selectedWord.id, pairId: newPairId, cardId: `${timestamp}-${newPairId}-meaning` }
           ];
-          
-          // Shuffle new cards using Fisher-Yates for the pair only
+
+          // Shuffle only the pair, keep board layout stable
           const shuffledNewCards = shuffleArray(newCards);
-          
-          // Replace matched cards with new ones, keep board positions stable
           const updated = [...prev];
           updated[matchedIndices[0]] = shuffledNewCards[0];
           updated[matchedIndices[1]] = shuffledNewCards[1];
-          
           return updated;
         });
-        
-        // Update available words and active words
+
+        // Update pools to avoid reusing this word
         setAvailableWords(prev => prev.filter(w => w.id !== selectedWord.id));
         setActiveWordIds(prev => [...prev, selectedWord.id]);
       }, delay);
-      
-      // Immediately mark word as shown to prevent duplicate selection in rapid matches
+
+      // Track that this word has been shown
       return [...currentShownIds, selectedWord.id];
     });
   }, [availableWords, shuffleArray]);
-
-  // Schedule replacement of matched cards with a 1.5s delay
-  // During the delay the user can match more pairs and they will be batched together
-  const replaceMatchedCards = (matchedPairId) => {
-    if (availableWords.length === 0) return;
-
-    pendingReplacementsRef.current = [...pendingReplacementsRef.current, matchedPairId];
-
-    // Clear any existing timer and start a new 1.5s window
-    if (replacementTimerRef.current) {
-      clearTimeout(replacementTimerRef.current);
-    }
-    replacementTimerRef.current = setTimeout(() => {
-      flushPendingReplacements();
-      replacementTimerRef.current = null;
-    }, 1500);
-  };
 
   const startNewRound = () => {
     // Use AI-powered word selection
@@ -273,11 +240,6 @@ const Game = () => {
     setActiveWordIds(currentWordIds);
     setShownWordIds(currentWordIds); // Initialize shown words for the session
     setAvailableWords(gameWords.filter(w => !currentWordIds.includes(w.id)));
-    pendingReplacementsRef.current = []; // Clear any pending replacements from previous round
-    if (replacementTimerRef.current) {
-      clearTimeout(replacementTimerRef.current);
-      replacementTimerRef.current = null;
-    }
 
     // Create cards
     const cards = [];
