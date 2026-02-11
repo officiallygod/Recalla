@@ -14,6 +14,12 @@ const Home = () => {
   const [isInfiniteMode, setIsInfiniteMode] = useState(false);
   const [difficulty, setDifficulty] = useState('easy'); // 'easy' or 'hard'
 
+  // Helper function to check if a timer option is selected
+  const isTimerSelected = (duration) => {
+    return (duration === 'infinite' && isInfiniteMode) || 
+           (duration !== 'infinite' && !isInfiniteMode && timerDuration === duration);
+  };
+
   const menuItems = [
     {
       title: 'Topics',
@@ -211,13 +217,13 @@ const Home = () => {
                     }}
                     className={`
                       flex-1 px-3 py-3 rounded-xl text-sm font-bold transition-all duration-300 relative overflow-hidden
-                      ${(duration === 'infinite' && isInfiniteMode) || (duration !== 'infinite' && !isInfiniteMode && timerDuration === duration)
+                      ${isTimerSelected(duration)
                         ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/50'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                       }
                     `}
                   >
-                    {((duration === 'infinite' && isInfiniteMode) || (duration !== 'infinite' && !isInfiniteMode && timerDuration === duration)) && (
+                    {isTimerSelected(duration) && (
                       <motion.div
                         className="absolute inset-0 bg-white/20"
                         initial={{ x: '-100%' }}

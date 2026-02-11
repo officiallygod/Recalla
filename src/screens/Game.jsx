@@ -347,7 +347,9 @@ const Game = () => {
               setMessage(`🏆 Round ${currentRound} Complete!`);
             }
             setRound(prev => prev + 1);
-            setTimer(timerDuration); // Reset timer for next round
+            if (!isInfiniteMode) {
+              setTimer(timerDuration); // Reset timer for next round only in timed mode
+            }
             setTimeout(() => {
               setShowConfetti(false);
               if (!isInfiniteMode) {
