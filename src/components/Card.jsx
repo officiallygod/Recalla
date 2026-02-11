@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Card = ({ 
+const Card = React.memo(({ 
   children, 
   onClick, 
   className = ''
@@ -18,6 +18,8 @@ const Card = ({
       {children}
     </div>
   );
-};
+});
+
+Card.displayName = 'Card';
 
 export default Card;
