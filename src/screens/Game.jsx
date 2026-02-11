@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import Lottie from 'lottie-react';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { useGame } from '../contexts/GameContext';
 import { selectWordsForSession, estimateDifficulty } from '../utils/aiWordSelector';
 import { hapticSuccess, hapticError } from '../utils/haptic';
+import gameOverCelebration from '../assets/gameOverCelebration.json';
 
 // Lazy load Confetti component as it's only used on match success
 const Confetti = lazy(() => import('../components/Confetti'));
@@ -68,6 +70,10 @@ const Game = () => {
   const [gameOver, setGameOver] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
   const [finalRound, setFinalRound] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [sessionCoins, setSessionCoins] = useState(0);
+  const [sessionStart, setSessionStart] = useState(() => Date.now());
+  const [bestCombo, setBestCombo] = useState(0);
 
   // Fisher-Yates shuffle for proper randomization
   const shuffleArray = useCallback((array) => {
@@ -104,6 +110,7 @@ const Game = () => {
       setIsTimerActive(false);
       setFinalScore(score);
       setFinalRound(round);
+      setElapsedTime(Math.round((Date.now() - sessionStart) / 1000));
       return;
     }
     
@@ -112,7 +119,7 @@ const Game = () => {
     }, 1000);
     
     return () => clearInterval(interval);
-  }, [timer, isTimerActive, gameOver, score, round, isInfiniteMode]);
+  }, [timer, isTimerActive, gameOver, score, round, isInfiniteMode, sessionStart]);
 
   const createParticles = (x, y, isCorrect) => {
     const colors = isCorrect 
@@ -132,6 +139,28 @@ const Game = () => {
     setTimeout(() => {
       setParticles(prev => prev.filter(p => !newParticles.find(np => np.id === p.id)));
     }, 1000);
+  };
+
+  const resetForNewSession = () => {
+    incrementGamesPlayed();
+    setGameOver(false);
+    setSessionCoins(0);
+    setSessionStart(Date.now());
+    setElapsedTime(0);
+    setScore(0);
+    setCombo(0);
+    setBestCombo(0);
+    setRound(1);
+    setTimer(timerDuration);
+    setMatchedPairs([]);
+    setSelectedCards([]);
+    setMessage('Match words with their meanings! ✨');
+    setShowConfetti(false);
+    setParticles([]);
+    startNewRound();
+    if (!isInfiniteMode) {
+      setIsTimerActive(true);
+    }
   };
 
   // Replace matched cards with new words from the pool
@@ -299,20 +328,23 @@ const Game = () => {
       
       // Correct match - both cards share the same word ID, update once
       setMatchedPairs(prev => [...prev, card1.pairId]);
-      const newCombo = combo + 1;
-      setCombo(newCombo);
+       const newCombo = combo + 1;
+       setCombo(newCombo);
+       setBestCombo(prev => Math.max(prev, newCombo));
       
       // In infinite mode, don't award points or coins
       if (!isInfiniteMode) {
         // Harder rewards: Reduced points and coins significantly
         // Keep coin rewards very small (< 10) as per requirements
-        const points = 50 + (newCombo * 25);
-        const coinReward = Math.min(
-          COIN_REWARDS.MATCH.BASE + Math.floor(newCombo / COIN_REWARDS.MATCH.COMBO_DIVISOR),
-          COIN_REWARDS.MATCH.MAX
-        );
-        setScore(prev => prev + points);
-        awardPoints(points, coinReward, round);
+         const points = 50 + (newCombo * 25);
+         const coinReward = Math.min(
+           COIN_REWARDS.MATCH.BASE + Math.floor(newCombo / COIN_REWARDS.MATCH.COMBO_DIVISOR),
+           COIN_REWARDS.MATCH.MAX
+         );
+         const coinsEarnedThisMatch = round >= 50 ? coinReward : 0;
+         setSessionCoins(prev => prev + coinsEarnedThisMatch);
+         setScore(prev => prev + points);
+         awardPoints(points, coinReward, round);
         
         setMessage(`🎉 Perfect Match!${newCombo > 1 ? ` 🔥x${newCombo}` : ''}`);
       } else {
@@ -343,13 +375,15 @@ const Game = () => {
             if (!isInfiniteMode) {
               // Harder round completion bonus
               // Keep coin bonus very small (< 10) as per requirements
-              const bonus = newCombo * 50;
-              const coinBonus = Math.min(
-                COIN_REWARDS.ROUND.BASE + Math.floor(newCombo / COIN_REWARDS.ROUND.COMBO_DIVISOR),
-                COIN_REWARDS.ROUND.MAX
-              );
-              awardPoints(bonus, coinBonus, currentRound);
-              setMessage(`🏆 Round ${currentRound} Complete! Bonus: +${bonus} points!`);
+               const bonus = newCombo * 50;
+               const coinBonus = Math.min(
+                 COIN_REWARDS.ROUND.BASE + Math.floor(newCombo / COIN_REWARDS.ROUND.COMBO_DIVISOR),
+                 COIN_REWARDS.ROUND.MAX
+               );
+               const coinsEarnedThisRound = currentRound >= 50 ? coinBonus : 0;
+               setSessionCoins(prev => prev + coinsEarnedThisRound);
+               awardPoints(bonus, coinBonus, currentRound);
+               setMessage(`🏆 Round ${currentRound} Complete! Bonus: +${bonus} points!`);
             } else {
               setMessage(`🏆 Round ${currentRound} Complete!${newCombo > 1 ? ` 🔥x${newCombo}` : ''}`);
             }
@@ -398,30 +432,88 @@ const Game = () => {
   const isCardSelected = useCallback((index) => selectedCards.includes(index), [selectedCards]);
   const isCardMatched = useCallback((card) => matchedPairs.includes(card.pairId), [matchedPairs]);
 
-  // Game Over Component - Simple overlay
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}m ${secs.toString().padStart(2, '0')}s`;
+  };
+
+  // Game Over Component - Enhanced overlay
   const GameOverScreen = () => (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-slate-900/80 via-slate-900/70 to-indigo-900/70 backdrop-blur-md px-4"
     >
-      <Card className="p-6 text-center space-y-3 bg-white dark:bg-slate-800 max-w-sm mx-4">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
-          Game Over!
-        </h1>
-        
-        <div className="text-slate-700 dark:text-slate-300">
-          <p className="text-xl font-semibold">Score: {finalScore}</p>
+      <Card className="w-full max-w-3xl overflow-hidden border border-white/10 bg-white/80 dark:bg-slate-900/90 shadow-2xl">
+        <div className="grid md:grid-cols-2 gap-6 p-6 md:p-10">
+          <div className="space-y-4 flex flex-col justify-center items-center text-center">
+            <div className="w-48 h-48 md:w-56 md:h-56">
+              <Lottie
+                animationData={gameOverCelebration}
+                loop
+                autoplay
+                className="w-full h-full"
+                rendererSettings={{ preserveAspectRatio: 'xMidYMid slice' }}
+              />
+            </div>
+            <div>
+              <p className="text-sm uppercase tracking-[0.3em] text-indigo-400 font-semibold">Great run!</p>
+              <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white drop-shadow-sm">Game Over</h1>
+              <p className="text-slate-600 dark:text-slate-300 mt-2">Here are your final stats.</p>
+            </div>
+          </div>
+
+          <div className="space-y-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <Card className="glass p-4 text-center">
+                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Points</p>
+                <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-300">{finalScore}</p>
+              </Card>
+              <Card className="glass p-4 text-center">
+                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Round</p>
+                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-300">{finalRound}</p>
+              </Card>
+              <Card className="glass p-4 text-center">
+                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Time</p>
+                <p className="text-2xl font-bold text-orange-500 dark:text-orange-300">
+                  {elapsedTime ? formatTime(elapsedTime) : `${timerDuration}s`}
+                </p>
+              </Card>
+              <Card className="glass p-4 text-center">
+                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Best Combo</p>
+                <p className="text-2xl font-bold text-fuchsia-500 dark:text-fuchsia-300">{bestCombo}🔥</p>
+              </Card>
+              <Card className="glass p-4 text-center">
+                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Coins</p>
+                <p className="text-2xl font-bold text-amber-500 dark:text-amber-300">{sessionCoins}</p>
+              </Card>
+              <Card className="glass p-4 text-center">
+                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Difficulty</p>
+                <p className="text-lg font-semibold text-slate-800 dark:text-slate-200 capitalize">{difficulty}</p>
+              </Card>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                onClick={resetForNewSession}
+                variant="primary"
+                size="md"
+                fullWidth
+              >
+                Play Again
+              </Button>
+              <Button
+                onClick={() => navigate('/')}
+                variant="secondary"
+                size="md"
+                fullWidth
+              >
+                Home
+              </Button>
+            </div>
+          </div>
         </div>
-        
-        <Button
-          onClick={() => navigate('/')}
-          variant="primary"
-          size="md"
-          className="mt-4"
-        >
-          Play Again
-        </Button>
       </Card>
     </motion.div>
   );
