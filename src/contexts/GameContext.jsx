@@ -47,8 +47,9 @@ export const GameProvider = ({ children }) => {
     const storedUserData = localStorage.getItem(STORAGE_KEYS.USER_DATA);
     const storedTopics = localStorage.getItem(STORAGE_KEYS.TOPICS);
 
+    let parsedWords = [];
     if (storedWords) {
-      const parsedWords = JSON.parse(storedWords);
+      parsedWords = JSON.parse(storedWords);
       // Migrate existing words to include new fields
       const migratedWords = parsedWords.map(word => ({
         ...word,
@@ -59,10 +60,20 @@ export const GameProvider = ({ children }) => {
     }
     if (storedUserData) {
       const parsedUserData = JSON.parse(storedUserData);
-      // Migrate existing users: set firstUsedDate to now if not present
+      // Migrate existing users: set firstUsedDate if not present
+      // If user has activity (games played, words, or correct matches), estimate they've been using the app for 7 days
+      // Otherwise, set to now for truly new users
+      let defaultFirstUsedDate = Date.now();
+      const hasActivity = parsedUserData.totalGames > 0 || 
+                         parsedUserData.correctMatches > 0 || 
+                         parsedWords.length > 0;
+      if (hasActivity) {
+        // Existing active user - assume they've been using it for at least 7 days
+        defaultFirstUsedDate = Date.now() - (7 * 24 * 60 * 60 * 1000);
+      }
       setUserData({
         ...parsedUserData,
-        firstUsedDate: parsedUserData.firstUsedDate ?? Date.now()
+        firstUsedDate: parsedUserData.firstUsedDate ?? defaultFirstUsedDate
       });
     }
     if (storedTopics) {
