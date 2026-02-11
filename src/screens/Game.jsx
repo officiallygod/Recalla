@@ -307,10 +307,10 @@ const Game = () => {
         setScore(prev => prev + points);
         awardPoints(points, coinReward, round);
         
-        setMessage(`🎉 Perfect Match! +${points} points! ${newCombo > 1 ? `🔥x${newCombo}` : ''}`);
+        setMessage(`🎉 Perfect Match!${newCombo > 1 ? ` 🔥x${newCombo}` : ''}`);
       } else {
         // Infinite mode - just show the match message without points
-        setMessage(`🎉 Perfect Match! ${newCombo > 1 ? `🔥x${newCombo}` : ''}`);
+        setMessage(`🎉 Perfect Match!${newCombo > 1 ? ` 🔥x${newCombo}` : ''}`);
       }
       
       createParticles(x, y, true);
@@ -344,7 +344,7 @@ const Game = () => {
               awardPoints(bonus, coinBonus, currentRound);
               setMessage(`🏆 Round ${currentRound} Complete! Bonus: +${bonus} points!`);
             } else {
-              setMessage(`🏆 Round ${currentRound} Complete!`);
+              setMessage(`🏆 Round ${currentRound} Complete!${newCombo > 1 ? ` 🔥x${newCombo}` : ''}`);
             }
             setRound(prev => prev + 1);
             if (!isInfiniteMode) {
