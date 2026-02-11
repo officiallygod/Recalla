@@ -23,7 +23,7 @@ const CustomTooltip = ({ active, payload, label }) => {
         <p className="text-sm font-semibold mb-2">{label}</p>
         {payload.map((entry, index) => (
           <p key={index} style={{ color: entry.color }} className="text-sm">
-            {`${entry.name}: ${entry.value.toFixed(2)}${entry.name.includes('%') ? '' : '%'}`}
+            {`${entry.name}: ${entry.value.toFixed(2)}%`}
           </p>
         ))}
       </div>
