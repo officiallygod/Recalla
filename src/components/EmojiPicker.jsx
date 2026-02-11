@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const EMOJI_CATEGORIES = {
@@ -9,7 +9,7 @@ const EMOJI_CATEGORIES = {
   smileys: ['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩']
 };
 
-const EmojiPicker = ({ selectedEmoji, onSelect, className = '' }) => {
+const EmojiPicker = React.memo(({ selectedEmoji, onSelect, className = '' }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState('flags');
   const pickerRef = useRef(null);
@@ -30,10 +30,10 @@ const EmojiPicker = ({ selectedEmoji, onSelect, className = '' }) => {
     };
   }, [isOpen]);
 
-  const handleEmojiSelect = (emoji) => {
+  const handleEmojiSelect = useCallback((emoji) => {
     onSelect(emoji);
     setIsOpen(false);
-  };
+  }, [onSelect]);
 
   return (
     <div className={`relative ${className}`} ref={pickerRef}>
@@ -116,6 +116,8 @@ const EmojiPicker = ({ selectedEmoji, onSelect, className = '' }) => {
       </AnimatePresence>
     </div>
   );
-};
+});
+
+EmojiPicker.displayName = 'EmojiPicker';
 
 export default EmojiPicker;

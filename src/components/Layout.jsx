@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Gamepad2, Star, Coins, Trophy, Sun, Moon } from 'lucide-react';
 import { useGame } from '../contexts/GameContext';
@@ -7,10 +7,20 @@ import { formatNumber } from '../utils/numberFormatter';
 import { motion } from 'framer-motion';
 import { hapticLight } from '../utils/haptic';
 
-const Layout = ({ children }) => {
+const Layout = React.memo(({ children }) => {
   const navigate = useNavigate();
   const { userData } = useGame();
   const { isDark, toggleTheme } = useTheme();
+
+  const handleThemeToggle = useCallback(() => {
+    hapticLight();
+    toggleTheme();
+  }, [toggleTheme]);
+
+  const navigateToStats = useCallback(() => navigate('/stats'), [navigate]);
+
+  const formattedPoints = useMemo(() => formatNumber(userData.points), [userData.points]);
+  const formattedCoins = useMemo(() => formatNumber(userData.coins), [userData.coins]);
 
   return (
     <div className="min-h-screen-mobile flex flex-col">
@@ -49,17 +59,16 @@ const Layout = ({ children }) => {
 
             {/* Stats and Theme Toggle */}
             <div className="flex items-center gap-1.5 sm:gap-3">
-              <StatItem icon={<Star className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" />} value={formatNumber(userData.points)} label="Points" color="indigo" onClick={() => navigate('/stats')} />
-              <StatItem icon={<Coins className="w-4 h-4 sm:w-5 sm:h-5" />} value={formatNumber(userData.coins)} label="Coins" color="amber" onClick={() => navigate('/stats')} />
-              <StatItem icon={<Trophy className="w-4 h-4 sm:w-5 sm:h-5" />} value={userData.level} label="Level" color="purple" onClick={() => navigate('/stats')} />
+              <StatItem icon={<Star className="w-4 h-4 sm:w-5 sm:h-5" fill="currentColor" />} value={formattedPoints} label="Points" color="indigo" onClick={navigateToStats} />
+              <StatItem icon={<Coins className="w-4 h-4 sm:w-5 sm:h-5" />} value={formattedCoins} label="Coins" color="amber" onClick={navigateToStats} />
+              <StatItem icon={<Trophy className="w-4 h-4 sm:w-5 sm:h-5" />} value={userData.level} label="Level" color="purple" onClick={navigateToStats} />
               
               {/* Theme Toggle with Modern Design */}
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => {
-                  hapticLight();
-                  toggleTheme();
+                  handleThemeToggle();
                 }}
                 className="relative p-2.5 sm:p-3 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 border border-slate-300 dark:border-slate-600 transition-all duration-300 hover:shadow-lg"
                 aria-label="Toggle theme"
@@ -87,9 +96,11 @@ const Layout = ({ children }) => {
       </main>
     </div>
   );
-};
+});
 
-const StatItem = ({ icon, value, label, color = 'primary', onClick }) => {
+Layout.displayName = 'Layout';
+
+const StatItem = React.memo(({ icon, value, label, color = 'primary', onClick }) => {
   const iconColorClasses = {
     indigo: 'text-indigo-500 dark:text-indigo-400',
     amber: 'text-amber-500 dark:text-amber-400',
@@ -116,6 +127,8 @@ const StatItem = ({ icon, value, label, color = 'primary', onClick }) => {
       </div>
     </motion.div>
   );
-};
+});
+
+StatItem.displayName = 'StatItem';
 
 export default Layout;

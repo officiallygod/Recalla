@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Target, Gamepad2, BookOpen, BarChart3, GraduationCap, Lightbulb, Clock, Zap, ArrowRight, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -15,12 +15,12 @@ const Home = () => {
   const [difficulty, setDifficulty] = useState('easy'); // 'easy' or 'hard'
 
   // Helper function to check if a timer option is selected
-  const isTimerSelected = (duration) => {
+  const isTimerSelected = useCallback((duration) => {
     return (duration === 'infinite' && isInfiniteMode) || 
            (duration !== 'infinite' && !isInfiniteMode && timerDuration === duration);
-  };
+  }, [isInfiniteMode, timerDuration]);
 
-  const menuItems = [
+  const menuItems = useMemo(() => [
     {
       title: 'Topics',
       icon: Target,
@@ -55,7 +55,7 @@ const Home = () => {
       variant: 'secondary',
       gradient: 'from-pink-500 to-rose-600'
     }
-  ];
+  ], [words.length, timerDuration, difficulty, isInfiniteMode]);
 
   return (
     <div className="space-y-8 sm:space-y-12 pb-8">

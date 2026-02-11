@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../components/Button';
@@ -27,7 +27,7 @@ const AddWord = () => {
     }
   }, [topicIdFromState, navigate]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = useCallback((e) => {
     e.preventDefault();
     setError('');
 
@@ -63,7 +63,7 @@ const AddWord = () => {
     // Clear form
     setWord('');
     setMeaning('');
-  };
+  }, [word, meaning, words, addWord, selectedTopic]);
 
   return (
     <motion.div
