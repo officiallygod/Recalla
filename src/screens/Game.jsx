@@ -216,19 +216,15 @@ const Game = () => {
             { type: 'meaning', value: selectedWord.meaning, id: selectedWord.id, pairId: newPairId, cardId: `${timestamp}-${newPairId}-meaning` }
           ];
           
-          // Shuffle new cards using Fisher-Yates
+          // Shuffle new cards using Fisher-Yates for the pair only
           const shuffledNewCards = shuffleArray(newCards);
           
-          // Replace matched cards with new ones
+          // Replace matched cards with new ones, keep board positions stable
           const updated = [...prev];
           updated[matchedIndices[0]] = shuffledNewCards[0];
           updated[matchedIndices[1]] = shuffledNewCards[1];
           
-          // Shuffle the entire board to randomize positions
-          // This prevents the new words from appearing at predictable positions
-          const shuffledBoard = shuffleArray(updated);
-          
-          return shuffledBoard;
+          return updated;
         });
         
         // Update available words and active words
