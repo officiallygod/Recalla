@@ -182,10 +182,8 @@ const Game = () => {
 
       const selectedWord = selectedWords[0];
 
-      // Add minimal delay (200-600ms) for snappy feel
-      const MIN_DELAY_MS = 200;
-      const MAX_DELAY_MS = 600;
-      const delay = MIN_DELAY_MS + Math.random() * (MAX_DELAY_MS - MIN_DELAY_MS);
+      // Add longer delay (≈2.5s) before showing new words
+      const delay = 2500;
 
       setTimeout(() => {
         setGameCards(prev => {
