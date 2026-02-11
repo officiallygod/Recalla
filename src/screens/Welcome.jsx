@@ -495,7 +495,7 @@ const Welcome = () => {
                           icon="➕"
                           fullWidth
                         >
-                          Add Words
+                          Add
                         </Button>
                       </motion.div>
                       <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
