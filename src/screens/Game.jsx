@@ -436,6 +436,12 @@ const Game = () => {
     return `${mins}m ${secs.toString().padStart(2, '0')}s`;
   };
 
+  const getDisplayTime = () => {
+    if (elapsedTime) return formatTime(elapsedTime);
+    if (isInfiniteMode) return '∞';
+    return `${timerDuration}s`;
+  };
+
   // Game Over Component - Enhanced overlay
   const GameOverScreen = () => (
     <motion.div
@@ -475,16 +481,16 @@ const Game = () => {
               <Card className="glass p-4 text-center">
                 <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Time</p>
                 <p className="text-2xl font-bold text-orange-500 dark:text-orange-300">
-                  {elapsedTime
-                    ? formatTime(elapsedTime)
-                    : isInfiniteMode
-                      ? '∞'
-                      : `${timerDuration}s`}
+                  {getDisplayTime()}
                 </p>
               </Card>
               <Card className="glass p-4 text-center">
                 <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Best Combo</p>
-                <p className="text-2xl font-bold text-fuchsia-500 dark:text-fuchsia-300">{bestCombo}🔥</p>
+                <p className="text-2xl font-bold text-fuchsia-500 dark:text-fuchsia-300">
+                  {bestCombo}
+                  <span aria-hidden="true">🔥</span>
+                  <span className="sr-only"> best combo streak</span>
+                </p>
               </Card>
               <Card className="glass p-4 text-center">
                 <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Coins</p>
