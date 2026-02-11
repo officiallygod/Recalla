@@ -146,8 +146,8 @@ const Statistics = () => {
       const historicalMastery = Math.max(0, projectMetrics.avgMastery - Math.random() * MASTERY_VARIANCE + (i * MASTERY_DAILY_IMPROVEMENT));
       data.push({
         date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        accuracy: historicalAccuracy,
-        mastery: historicalMastery
+        accuracy: parseFloat(historicalAccuracy.toFixed(2)),
+        mastery: parseFloat(historicalMastery.toFixed(2))
       });
     }
     // Set today's data to actual values
