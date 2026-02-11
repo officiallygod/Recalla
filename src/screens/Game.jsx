@@ -142,7 +142,6 @@ const Game = () => {
   };
 
   const resetForNewSession = () => {
-    incrementGamesPlayed();
     setGameOver(false);
     setSessionCoins(0);
     setSessionStart(Date.now());
@@ -459,6 +458,7 @@ const Game = () => {
                 autoplay
                 className="w-full h-full"
                 rendererSettings={{ preserveAspectRatio: 'xMidYMid slice' }}
+                aria-hidden="true"
               />
             </div>
             <div>
@@ -489,7 +489,7 @@ const Game = () => {
                 <p className="text-2xl font-bold text-fuchsia-500 dark:text-fuchsia-300">
                   {bestCombo}
                   <span aria-hidden="true">🔥</span>
-                  <span className="sr-only"> best combo streak</span>
+                  <span className="sr-only">{`Best combo streak ${bestCombo}`}</span>
                 </p>
               </Card>
               <Card className="glass p-4 text-center">
