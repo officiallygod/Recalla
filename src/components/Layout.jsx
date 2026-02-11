@@ -5,6 +5,7 @@ import { useGame } from '../contexts/GameContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { formatNumber } from '../utils/numberFormatter';
 import { motion } from 'framer-motion';
+import { hapticLight } from '../utils/haptic';
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
@@ -56,7 +57,10 @@ const Layout = ({ children }) => {
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={toggleTheme}
+                onClick={() => {
+                  hapticLight();
+                  toggleTheme();
+                }}
                 className="relative p-2.5 sm:p-3 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 border border-slate-300 dark:border-slate-600 transition-all duration-300 hover:shadow-lg"
                 aria-label="Toggle theme"
               >

@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import { hapticLight } from '../utils/haptic';
 
 const Button = React.memo(({ 
   children, 
@@ -38,8 +39,11 @@ const Button = React.memo(({
       setRipples(prev => prev.filter(ripple => ripple.id !== newRipple.id));
     }, 600);
 
-    // Call the actual click handler
-    onClick?.(e);
+    // Trigger haptic feedback and call the actual click handler
+    if (onClick) {
+      hapticLight();
+      onClick(e);
+    }
   };
 
   const variants = {
