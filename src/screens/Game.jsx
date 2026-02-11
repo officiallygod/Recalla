@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import Lottie from 'lottie-react';
 import Button from '../components/Button';
 import Card from '../components/Card';
 import { useGame } from '../contexts/GameContext';
 import { selectWordsForSession, estimateDifficulty } from '../utils/aiWordSelector';
 import { hapticSuccess, hapticError } from '../utils/haptic';
+import gameOverCelebration from '../assets/gameOverCelebration.json';
 
 // Lazy load Confetti component as it's only used on match success
 const Confetti = lazy(() => import('../components/Confetti'));
@@ -62,14 +64,16 @@ const Game = () => {
   const [availableWords, setAvailableWords] = useState([]); // Pool of words not currently shown
   const [activeWordIds, setActiveWordIds] = useState([]); // Words currently on screen
   const [shownWordIds, setShownWordIds] = useState([]); // Track all words shown in this session
-  const pendingReplacementsRef = React.useRef([]); // Batched matched pair IDs awaiting replacement
-  const replacementTimerRef = React.useRef(null); // Timer for batched replacement delay
   const [timer, setTimer] = useState(initialTimerDuration);
   const [timerDuration, setTimerDuration] = useState(initialTimerDuration); // Store the timer duration for resets
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
   const [finalRound, setFinalRound] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [sessionCoins, setSessionCoins] = useState(0);
+  const [sessionStart, setSessionStart] = useState(() => Date.now());
+  const [bestCombo, setBestCombo] = useState(0);
 
   // Fisher-Yates shuffle for proper randomization
   const shuffleArray = useCallback((array) => {
@@ -95,15 +99,6 @@ const Game = () => {
     }
   }, [selectedTopic, gameWords.length]);
 
-  // Cleanup replacement timer on unmount
-  useEffect(() => {
-    return () => {
-      if (replacementTimerRef.current) {
-        clearTimeout(replacementTimerRef.current);
-      }
-    };
-  }, []);
-
   // Timer effect - count down from timerDuration seconds, stop game when timer expires
   // Skip timer logic completely in infinite mode
   useEffect(() => {
@@ -115,6 +110,7 @@ const Game = () => {
       setIsTimerActive(false);
       setFinalScore(score);
       setFinalRound(round);
+      setElapsedTime(Math.round((Date.now() - sessionStart) / 1000));
       return;
     }
     
@@ -123,7 +119,7 @@ const Game = () => {
     }, 1000);
     
     return () => clearInterval(interval);
-  }, [timer, isTimerActive, gameOver, score, round, isInfiniteMode]);
+  }, [timer, isTimerActive, gameOver, score, round, isInfiniteMode, sessionStart]);
 
   const createParticles = (x, y, isCorrect) => {
     const colors = isCorrect 
@@ -145,83 +141,86 @@ const Game = () => {
     }, 1000);
   };
 
-  // Flush all pending matched pairs by replacing them with new words
-  const flushPendingReplacements = useCallback(() => {
-    const pairIds = pendingReplacementsRef.current;
-    if (pairIds.length === 0) return;
-    pendingReplacementsRef.current = [];
+  const restartGame = () => {
+    setGameOver(false);
+    setSessionCoins(0);
+    setSessionStart(Date.now());
+    setElapsedTime(0);
+    setScore(0);
+    setCombo(0);
+    setBestCombo(0);
+    setRound(1);
+    setTimer(timerDuration);
+    setMatchedPairs([]);
+    setSelectedCards([]);
+    setMessage('Match words with their meanings! ✨');
+    setShowConfetti(false);
+    setParticles([]);
+    startNewRound();
+    if (!isInfiniteMode) {
+      setIsTimerActive(true);
+    }
+  };
+
+  // Replace matched cards with new words from the pool
+  // Keeps board positions stable (no full shuffle) and fills vacancies quickly
+  const replaceMatchedCards = useCallback((matchedPairId) => {
+    if (availableWords.length === 0) return;
 
     setShownWordIds(currentShownIds => {
       const shownSet = new Set(currentShownIds);
       const unseenWords = availableWords.filter(w => !shownSet.has(w.id));
 
-      // Select as many new words as there are pending pairs (one word per pair)
-      const needed = Math.min(pairIds.length, unseenWords.length);
-      if (needed === 0) return currentShownIds;
+      if (unseenWords.length === 0) return currentShownIds; // Nothing new to show
 
-      const selectedWords = selectWordsForSession(unseenWords, needed, {
+      const selectedWords = selectWordsForSession(unseenWords, 1, {
         balanceChallenge: false,
         includeNew: true,
       });
 
       if (selectedWords.length === 0) return currentShownIds;
 
-      setGameCards(prev => {
-        const updated = [...prev];
-        const maxPairId = prev.length > 0 ? Math.max(...prev.map(c => c.pairId)) : 0;
-        let nextPairId = maxPairId + 1;
-        const timestamp = Date.now();
+      const selectedWord = selectedWords[0];
 
-        for (let i = 0; i < selectedWords.length && i < pairIds.length; i++) {
-          const pairId = pairIds[i];
-          const word = selectedWords[i];
+      // Add minimal delay (200-600ms) for snappy feel
+      const MIN_DELAY_MS = 200;
+      const MAX_DELAY_MS = 600;
+      const delay = MIN_DELAY_MS + Math.random() * (MAX_DELAY_MS - MIN_DELAY_MS);
 
-          // Find indices of matched cards
+      setTimeout(() => {
+        setGameCards(prev => {
           const matchedIndices = [];
-          updated.forEach((card, idx) => {
-            if (card.pairId === pairId) matchedIndices.push(idx);
+          prev.forEach((card, idx) => {
+            if (card.pairId === matchedPairId) matchedIndices.push(idx);
           });
-          if (matchedIndices.length !== 2) continue;
 
+          if (matchedIndices.length !== 2) return prev; // Pair no longer present
+
+          const maxPairId = prev.length > 0 ? Math.max(...prev.map(c => c.pairId)) : 0;
+          const newPairId = maxPairId + 1;
+          const timestamp = Date.now();
           const newCards = [
-            { type: 'word', value: word.word, id: word.id, pairId: nextPairId, cardId: `${timestamp}-${nextPairId}-word` },
-            { type: 'meaning', value: word.meaning, id: word.id, pairId: nextPairId, cardId: `${timestamp}-${nextPairId}-meaning` }
+            { type: 'word', value: selectedWord.word, id: selectedWord.id, pairId: newPairId, cardId: `${timestamp}-${newPairId}-word` },
+            { type: 'meaning', value: selectedWord.meaning, id: selectedWord.id, pairId: newPairId, cardId: `${timestamp}-${newPairId}-meaning` }
           ];
-          const shuffledNewCards = shuffleArray(newCards);
 
+          // Shuffle only the pair, keep board layout stable
+          const shuffledNewCards = shuffleArray(newCards);
+          const updated = [...prev];
           updated[matchedIndices[0]] = shuffledNewCards[0];
           updated[matchedIndices[1]] = shuffledNewCards[1];
-          nextPairId++;
-        }
+          return updated;
+        });
 
-        return updated; // Keep positions stable — no full board shuffle
-      });
+        // Update pools to avoid reusing this word
+        setAvailableWords(prev => prev.filter(w => w.id !== selectedWord.id));
+        setActiveWordIds(prev => [...prev, selectedWord.id]);
+      }, delay);
 
-      // Update available words and active words
-      const usedIds = selectedWords.map(w => w.id);
-      setAvailableWords(prev => prev.filter(w => !usedIds.includes(w.id)));
-      setActiveWordIds(prev => [...prev, ...usedIds]);
-
-      return [...currentShownIds, ...selectedWords.map(w => w.id)];
+      // Track that this word has been shown
+      return [...currentShownIds, selectedWord.id];
     });
   }, [availableWords, shuffleArray]);
-
-  // Schedule replacement of matched cards with a 1.5s delay
-  // During the delay the user can match more pairs and they will be batched together
-  const replaceMatchedCards = (matchedPairId) => {
-    if (availableWords.length === 0) return;
-
-    pendingReplacementsRef.current = [...pendingReplacementsRef.current, matchedPairId];
-
-    // Clear any existing timer and start a new 1.5s window
-    if (replacementTimerRef.current) {
-      clearTimeout(replacementTimerRef.current);
-    }
-    replacementTimerRef.current = setTimeout(() => {
-      flushPendingReplacements();
-      replacementTimerRef.current = null;
-    }, 1500);
-  };
 
   const startNewRound = () => {
     // Use AI-powered word selection
@@ -241,11 +240,6 @@ const Game = () => {
     setActiveWordIds(currentWordIds);
     setShownWordIds(currentWordIds); // Initialize shown words for the session
     setAvailableWords(gameWords.filter(w => !currentWordIds.includes(w.id)));
-    pendingReplacementsRef.current = []; // Clear any pending replacements from previous round
-    if (replacementTimerRef.current) {
-      clearTimeout(replacementTimerRef.current);
-      replacementTimerRef.current = null;
-    }
 
     // Create cards
     const cards = [];
@@ -316,6 +310,7 @@ const Game = () => {
       setMatchedPairs(prev => [...prev, card1.pairId]);
       const newCombo = combo + 1;
       setCombo(newCombo);
+      setBestCombo(prev => Math.max(prev, newCombo));
       
       // In infinite mode, don't award points or coins
       if (!isInfiniteMode) {
@@ -326,6 +321,7 @@ const Game = () => {
           COIN_REWARDS.MATCH.BASE + Math.floor(newCombo / COIN_REWARDS.MATCH.COMBO_DIVISOR),
           COIN_REWARDS.MATCH.MAX
         );
+        setSessionCoins(prev => prev + coinReward);
         setScore(prev => prev + points);
         awardPoints(points, coinReward, round);
         
@@ -363,6 +359,7 @@ const Game = () => {
                 COIN_REWARDS.ROUND.BASE + Math.floor(newCombo / COIN_REWARDS.ROUND.COMBO_DIVISOR),
                 COIN_REWARDS.ROUND.MAX
               );
+              setSessionCoins(prev => prev + coinBonus);
               awardPoints(bonus, coinBonus, currentRound);
               setMessage(`🏆 Round ${currentRound} Complete! Bonus: +${bonus} points!`);
             } else {
@@ -413,30 +410,104 @@ const Game = () => {
   const isCardSelected = useCallback((index) => selectedCards.includes(index), [selectedCards]);
   const isCardMatched = useCallback((card) => matchedPairs.includes(card.pairId), [matchedPairs]);
 
-  // Game Over Component - Simple overlay
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}m ${secs.toString().padStart(2, '0')}s`;
+  };
+
+  const getDisplayTime = () => {
+    if (elapsedTime) return formatTime(elapsedTime);
+    if (isInfiniteMode) return '∞';
+    return `${timerDuration}s`;
+  };
+
+  // Game Over Component - Enhanced overlay
   const GameOverScreen = () => (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-slate-900/80 via-slate-900/70 to-indigo-900/70 backdrop-blur-md px-4"
     >
-      <Card className="p-6 text-center space-y-3 bg-white dark:bg-slate-800 max-w-sm mx-4">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
-          Game Over!
-        </h1>
-        
-        <div className="text-slate-700 dark:text-slate-300">
-          <p className="text-xl font-semibold">Score: {finalScore}</p>
+      <Card className="w-full max-w-3xl overflow-hidden border border-white/10 bg-white/80 dark:bg-slate-900/90 shadow-2xl">
+        <div className="grid md:grid-cols-2 gap-6 p-6 md:p-10">
+          <div className="space-y-4 flex flex-col justify-center items-center text-center">
+            <div className="w-48 h-48 md:w-56 md:h-56">
+              <Lottie
+                animationData={gameOverCelebration}
+                loop
+                autoplay
+                className="w-full h-full"
+                rendererSettings={{ preserveAspectRatio: 'xMidYMid slice' }}
+                aria-hidden="true"
+              />
+            </div>
+            <div>
+              <p className="text-sm uppercase tracking-[0.3em] text-indigo-400 font-semibold">Great Run!</p>
+              <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white drop-shadow-sm">Game Over</h2>
+              <p className="text-slate-600 dark:text-slate-300 mt-2">Here are your final stats.</p>
+            </div>
+          </div>
+
+          <div className="space-y-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <Card className="glass p-4 text-center">
+                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Points</p>
+                <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-300">{finalScore}</p>
+              </Card>
+              <Card className="glass p-4 text-center">
+                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Round</p>
+                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-300">{finalRound}</p>
+              </Card>
+              <Card className="glass p-4 text-center">
+                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Time</p>
+                <p
+                  className="text-2xl font-bold text-orange-500 dark:text-orange-300"
+                  aria-label={`Time ${getDisplayTime()}`}
+                >
+                  {getDisplayTime()}
+                </p>
+              </Card>
+              <Card className="glass p-4 text-center">
+                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Best Combo</p>
+                <p
+                  className="text-2xl font-bold text-fuchsia-500 dark:text-fuchsia-300"
+                  aria-label={`Best combo ${bestCombo}`}
+                >
+                  {bestCombo}
+                  <span aria-hidden="true">🔥</span>
+                </p>
+              </Card>
+              <Card className="glass p-4 text-center">
+                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Coins</p>
+                <p className="text-2xl font-bold text-amber-500 dark:text-amber-300">{sessionCoins}</p>
+              </Card>
+              <Card className="glass p-4 text-center">
+                <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Difficulty</p>
+                <p className="text-lg font-semibold text-slate-800 dark:text-slate-200 capitalize">{difficulty}</p>
+              </Card>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                onClick={restartGame}
+                variant="primary"
+                size="md"
+                fullWidth
+              >
+                Play Again
+              </Button>
+              <Button
+                onClick={() => navigate('/')}
+                variant="secondary"
+                size="md"
+                fullWidth
+              >
+                Home
+              </Button>
+            </div>
+          </div>
         </div>
-        
-        <Button
-          onClick={() => navigate('/')}
-          variant="primary"
-          size="md"
-          className="mt-4"
-        >
-          Play Again
-        </Button>
       </Card>
     </motion.div>
   );
