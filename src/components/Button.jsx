@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import { hapticLight } from '../utils/haptic';
 
 const Button = React.memo(({ 
   children, 
@@ -16,6 +17,9 @@ const Button = React.memo(({
 
   const handleClick = (e) => {
     if (disabled) return;
+
+    // Trigger haptic feedback
+    hapticLight();
 
     // Create ripple effect
     const button = buttonRef.current;

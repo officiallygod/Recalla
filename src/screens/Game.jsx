@@ -5,6 +5,7 @@ import Button from '../components/Button';
 import Card from '../components/Card';
 import { useGame } from '../contexts/GameContext';
 import { selectWordsForSession, estimateDifficulty } from '../utils/aiWordSelector';
+import { hapticSuccess, hapticError } from '../utils/haptic';
 
 // Lazy load Confetti component as it's only used on match success
 const Confetti = lazy(() => import('../components/Confetti'));
@@ -282,6 +283,9 @@ const Game = () => {
     const card2 = gameCards[second];
 
     if (card1.pairId === card2.pairId) {
+      // Trigger success haptic feedback
+      hapticSuccess();
+      
       // Correct match - both cards share the same word ID, update once
       setMatchedPairs(prev => [...prev, card1.pairId]);
       const newCombo = combo + 1;
@@ -343,6 +347,9 @@ const Game = () => {
         }
       }
     } else {
+      // Trigger error haptic feedback
+      hapticError();
+      
       // Wrong match - Update both words' wrong counts since both were attempted
       // This ensures accurate mastery metrics
       setCombo(0);
