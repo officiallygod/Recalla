@@ -557,16 +557,17 @@ const Game = () => {
       </div>
 
       {/* Message - Fixed height to prevent layout shifts */}
-      <div className="min-h-[68px]">
-        <AnimatePresence mode="wait">
+      <div className="relative h-[68px]">
+        <AnimatePresence>
           <motion.div
             key={message}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            className="absolute inset-0"
           >
-            <Card glassEffect className="text-center">
+            <Card glassEffect className="text-center h-full flex items-center justify-center">
               <p className="text-lg font-semibold text-slate-800 dark:text-slate-200">{message}</p>
             </Card>
           </motion.div>
