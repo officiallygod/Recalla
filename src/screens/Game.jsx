@@ -341,7 +341,7 @@ const Game = () => {
            COIN_REWARDS.MATCH.BASE + Math.floor(newCombo / COIN_REWARDS.MATCH.COMBO_DIVISOR),
            COIN_REWARDS.MATCH.MAX
          );
-         const coinsEarnedThisMatch = round >= 50 ? coinReward : 0;
+         const coinsEarnedThisMatch = coinReward;
          setSessionCoins(prev => prev + coinsEarnedThisMatch);
          setScore(prev => prev + points);
          awardPoints(points, coinReward, round);
@@ -380,7 +380,7 @@ const Game = () => {
                  COIN_REWARDS.ROUND.BASE + Math.floor(newCombo / COIN_REWARDS.ROUND.COMBO_DIVISOR),
                  COIN_REWARDS.ROUND.MAX
                );
-               const coinsEarnedThisRound = currentRound >= 50 ? coinBonus : 0;
+               const coinsEarnedThisRound = coinBonus;
                setSessionCoins(prev => prev + coinsEarnedThisRound);
                awardPoints(bonus, coinBonus, currentRound);
                setMessage(`🏆 Round ${currentRound} Complete! Bonus: +${bonus} points!`);
