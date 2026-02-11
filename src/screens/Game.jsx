@@ -62,6 +62,8 @@ const Game = () => {
   const [availableWords, setAvailableWords] = useState([]); // Pool of words not currently shown
   const [activeWordIds, setActiveWordIds] = useState([]); // Words currently on screen
   const [shownWordIds, setShownWordIds] = useState([]); // Track all words shown in this session
+  const pendingReplacementsRef = React.useRef([]); // Batched matched pair IDs awaiting replacement
+  const replacementTimerRef = React.useRef(null); // Timer for batched replacement delay
   const [timer, setTimer] = useState(initialTimerDuration);
   const [timerDuration, setTimerDuration] = useState(initialTimerDuration); // Store the timer duration for resets
   const [isTimerActive, setIsTimerActive] = useState(false);
@@ -92,6 +94,15 @@ const Game = () => {
       setIsTimerActive(true);
     }
   }, [selectedTopic, gameWords.length]);
+
+  // Cleanup replacement timer on unmount
+  useEffect(() => {
+    return () => {
+      if (replacementTimerRef.current) {
+        clearTimeout(replacementTimerRef.current);
+      }
+    };
+  }, []);
 
   // Timer effect - count down from timerDuration seconds, stop game when timer expires
   // Skip timer logic completely in infinite mode
@@ -134,83 +145,82 @@ const Game = () => {
     }, 1000);
   };
 
-  // Replace matched cards with new words from the pool
-  const replaceMatchedCards = (matchedPairId) => {
-    if (availableWords.length === 0) {
-      return; // No more words to add
-    }
-    
-    // Get current shown words and filter for unseen words
+  // Flush all pending matched pairs by replacing them with new words
+  const flushPendingReplacements = useCallback(() => {
+    const pairIds = pendingReplacementsRef.current;
+    if (pairIds.length === 0) return;
+    pendingReplacementsRef.current = [];
+
     setShownWordIds(currentShownIds => {
-      // Filter out words that have already been shown in this session
       const shownSet = new Set(currentShownIds);
       const unseenWords = availableWords.filter(w => !shownSet.has(w.id));
-      
-      if (unseenWords.length === 0) {
-        return currentShownIds; // All available words have been shown
-      }
-      
-      // Use AI selector to choose the next word with highest priority
-      const selectedWords = selectWordsForSession(unseenWords, 1, {
-        balanceChallenge: false, // Just get the highest priority word
+
+      // Select as many new words as there are pending pairs (one word per pair)
+      const needed = Math.min(pairIds.length, unseenWords.length);
+      if (needed === 0) return currentShownIds;
+
+      const selectedWords = selectWordsForSession(unseenWords, needed, {
+        balanceChallenge: false,
         includeNew: true,
       });
-      
-      if (selectedWords.length === 0) {
-        return currentShownIds;
-      }
-      
-      const selectedWord = selectedWords[0];
-      
-      // Add minimal delay (200-600ms) for snappy feel
-      const MIN_DELAY_MS = 200;
-      const MAX_DELAY_MS = 600;
-      const delay = MIN_DELAY_MS + Math.random() * (MAX_DELAY_MS - MIN_DELAY_MS);
-      
-      setTimeout(() => {
-        setGameCards(prev => {
-          // Find indices of matched cards - validate they still exist
+
+      if (selectedWords.length === 0) return currentShownIds;
+
+      setGameCards(prev => {
+        const updated = [...prev];
+        const maxPairId = prev.length > 0 ? Math.max(...prev.map(c => c.pairId)) : 0;
+        let nextPairId = maxPairId + 1;
+        const timestamp = Date.now();
+
+        for (let i = 0; i < selectedWords.length && i < pairIds.length; i++) {
+          const pairId = pairIds[i];
+          const word = selectedWords[i];
+
+          // Find indices of matched cards
           const matchedIndices = [];
-          prev.forEach((card, idx) => {
-            if (card.pairId === matchedPairId) {
-              matchedIndices.push(idx);
-            }
+          updated.forEach((card, idx) => {
+            if (card.pairId === pairId) matchedIndices.push(idx);
           });
-          
-          // If the matched pair no longer exists or has been replaced, abort
-          if (matchedIndices.length !== 2) return prev;
-          
-          // Create new cards for the selected word
-          const newPairId = Math.max(...prev.map(c => c.pairId)) + 1;
-          const timestamp = Date.now();
+          if (matchedIndices.length !== 2) continue;
+
           const newCards = [
-            { type: 'word', value: selectedWord.word, id: selectedWord.id, pairId: newPairId, cardId: `${timestamp}-${newPairId}-word` },
-            { type: 'meaning', value: selectedWord.meaning, id: selectedWord.id, pairId: newPairId, cardId: `${timestamp}-${newPairId}-meaning` }
+            { type: 'word', value: word.word, id: word.id, pairId: nextPairId, cardId: `${timestamp}-${nextPairId}-word` },
+            { type: 'meaning', value: word.meaning, id: word.id, pairId: nextPairId, cardId: `${timestamp}-${nextPairId}-meaning` }
           ];
-          
-          // Shuffle new cards using Fisher-Yates
           const shuffledNewCards = shuffleArray(newCards);
-          
-          // Replace matched cards with new ones
-          const updated = [...prev];
+
           updated[matchedIndices[0]] = shuffledNewCards[0];
           updated[matchedIndices[1]] = shuffledNewCards[1];
-          
-          // Shuffle the entire board to randomize positions
-          // This prevents the new words from appearing at predictable positions
-          const shuffledBoard = shuffleArray(updated);
-          
-          return shuffledBoard;
-        });
-        
-        // Update available words and active words
-        setAvailableWords(prev => prev.filter(w => w.id !== selectedWord.id));
-        setActiveWordIds(prev => [...prev, selectedWord.id]);
-      }, delay);
-      
-      // Immediately mark word as shown to prevent duplicate selection in rapid matches
-      return [...currentShownIds, selectedWord.id];
+          nextPairId++;
+        }
+
+        return updated; // Keep positions stable — no full board shuffle
+      });
+
+      // Update available words and active words
+      const usedIds = selectedWords.map(w => w.id);
+      setAvailableWords(prev => prev.filter(w => !usedIds.includes(w.id)));
+      setActiveWordIds(prev => [...prev, ...usedIds]);
+
+      return [...currentShownIds, ...selectedWords.map(w => w.id)];
     });
+  }, [availableWords, shuffleArray]);
+
+  // Schedule replacement of matched cards with a 1.5s delay
+  // During the delay the user can match more pairs and they will be batched together
+  const replaceMatchedCards = (matchedPairId) => {
+    if (availableWords.length === 0) return;
+
+    pendingReplacementsRef.current = [...pendingReplacementsRef.current, matchedPairId];
+
+    // Clear any existing timer and start a new 1.5s window
+    if (replacementTimerRef.current) {
+      clearTimeout(replacementTimerRef.current);
+    }
+    replacementTimerRef.current = setTimeout(() => {
+      flushPendingReplacements();
+      replacementTimerRef.current = null;
+    }, 1500);
   };
 
   const startNewRound = () => {
@@ -231,6 +241,11 @@ const Game = () => {
     setActiveWordIds(currentWordIds);
     setShownWordIds(currentWordIds); // Initialize shown words for the session
     setAvailableWords(gameWords.filter(w => !currentWordIds.includes(w.id)));
+    pendingReplacementsRef.current = []; // Clear any pending replacements from previous round
+    if (replacementTimerRef.current) {
+      clearTimeout(replacementTimerRef.current);
+      replacementTimerRef.current = null;
+    }
 
     // Create cards
     const cards = [];
@@ -603,14 +618,13 @@ const Game = () => {
                 className={`
                   h-full flex items-center justify-center text-center p-4
                   transition-all duration-200
-                  ${selected ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-2xl scale-105' : ''}
-                  ${matched ? '' : 'cursor-pointer hover:shadow-2xl'}
+                  ${matched ? '' : 'cursor-pointer'}
                 `}
                 pressable={!matched}
                 hoverable={!matched}
               >
                 <p 
-                  className={`font-semibold text-base sm:text-lg px-4 ${selected ? 'text-white' : 'text-slate-800 dark:text-slate-200'}`}
+                  className={`font-semibold text-base sm:text-lg px-4 text-slate-800 dark:text-slate-200`}
                 >
                   {card.value}
                 </p>
