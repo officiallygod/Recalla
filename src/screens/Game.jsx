@@ -463,7 +463,7 @@ const Game = () => {
             </div>
             <div>
               <p className="text-sm uppercase tracking-[0.3em] text-indigo-400 font-semibold">Great Run!</p>
-              <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white drop-shadow-sm">Game Over</h1>
+              <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white drop-shadow-sm">Game Over</h2>
               <p className="text-slate-600 dark:text-slate-300 mt-2">Here are your final stats.</p>
             </div>
           </div>
@@ -480,13 +480,19 @@ const Game = () => {
               </Card>
               <Card className="glass p-4 text-center">
                 <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Time</p>
-                <p className="text-2xl font-bold text-orange-500 dark:text-orange-300">
+                <p
+                  className="text-2xl font-bold text-orange-500 dark:text-orange-300"
+                  aria-label={`Time ${getDisplayTime()}`}
+                >
                   {getDisplayTime()}
                 </p>
               </Card>
               <Card className="glass p-4 text-center">
                 <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">Best Combo</p>
-                <p className="text-2xl font-bold text-fuchsia-500 dark:text-fuchsia-300">
+                <p
+                  className="text-2xl font-bold text-fuchsia-500 dark:text-fuchsia-300"
+                  aria-label={`Best combo ${bestCombo}`}
+                >
                   {bestCombo}
                   <span aria-hidden="true">🔥</span>
                 </p>
