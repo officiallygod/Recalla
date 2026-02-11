@@ -21,12 +21,16 @@ export const triggerHaptic = (duration = 10) => {
 
 /**
  * Predefined haptic patterns for different interactions
+ * 
+ * Single number: Duration of vibration in milliseconds
+ * Array: Alternating pattern of vibration and pause durations
+ *        Example: [10, 50, 10] = vibrate 10ms, pause 50ms, vibrate 10ms
  */
 export const HapticPatterns = {
   LIGHT: 10,      // Light tap for button presses
   MEDIUM: 20,     // Medium feedback for selections
   SUCCESS: 50,    // Success feedback for matches
-  ERROR: [10, 50, 10], // Error pattern for wrong matches
+  ERROR: [10, 50, 10], // Error pattern: short vibration, pause, short vibration
 };
 
 /**

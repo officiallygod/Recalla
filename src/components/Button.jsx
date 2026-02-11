@@ -18,9 +18,6 @@ const Button = React.memo(({
   const handleClick = (e) => {
     if (disabled) return;
 
-    // Trigger haptic feedback
-    hapticLight();
-
     // Create ripple effect
     const button = buttonRef.current;
     const rect = button.getBoundingClientRect();
@@ -42,8 +39,11 @@ const Button = React.memo(({
       setRipples(prev => prev.filter(ripple => ripple.id !== newRipple.id));
     }, 600);
 
-    // Call the actual click handler
-    onClick?.(e);
+    // Trigger haptic feedback and call the actual click handler
+    if (onClick) {
+      hapticLight();
+      onClick(e);
+    }
   };
 
   const variants = {
