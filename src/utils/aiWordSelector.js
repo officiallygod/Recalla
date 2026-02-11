@@ -168,13 +168,51 @@ const shuffleArray = (array) => {
 };
 
 /**
+ * Weighted random sampling across the entire word pool.
+ * Each word's selection probability is proportional to its weight,
+ * ensuring words from beginning, middle, and end of the pool all get a chance.
+ * 
+ * @param {Array} items - Array of items with a 'weight' property
+ * @param {number} count - Number of items to select
+ * @returns {Array} - Selected items
+ */
+const weightedRandomSample = (items, count) => {
+  if (items.length <= count) return [...items];
+  
+  const selected = [];
+  const remaining = [...items];
+  let totalWeight = remaining.reduce((sum, item) => sum + item.weight, 0);
+  
+  for (let i = 0; i < count && remaining.length > 0; i++) {
+    let random = Math.random() * totalWeight;
+    
+    let chosenIndex = 0;
+    for (let j = 0; j < remaining.length; j++) {
+      random -= remaining[j].weight;
+      if (random <= 0) {
+        chosenIndex = j;
+        break;
+      }
+    }
+    
+    totalWeight -= remaining[chosenIndex].weight;
+    selected.push(remaining[chosenIndex]);
+    remaining.splice(chosenIndex, 1);
+  }
+  
+  return selected;
+};
+
+/**
  * Select words intelligently for the next game session
- * Uses AI-inspired algorithms to optimize learning
+ * Uses weighted random sampling across the entire word pool to ensure
+ * words from throughout the topic (beginning, middle, end) are shown,
+ * while still giving higher probability to words that need review.
  * 
  * @param {Array} allWords - Array of all available word objects
  * @param {number} count - Number of words to select
  * @param {Object} options - Additional options
- * @returns {Array} - Selected words sorted by priority
+ * @returns {Array} - Selected words shuffled for display
  */
 export const selectWordsForSession = (allWords, count, options = {}) => {
   const {
@@ -203,25 +241,22 @@ export const selectWordsForSession = (allWords, count, options = {}) => {
     return [];
   }
   
-  // Sort by priority (highest first)
-  const sorted = filtered.sort((a, b) => b.priority - a.priority);
+  const selectedCount = Math.min(count, filtered.length);
   
-  if (!balanceChallenge) {
-    // Just return top priority words
-    return sorted.slice(0, count).map(w => w.word);
-  }
+  // Weighted random sampling across the entire word pool:
+  // Priority acts as weight so higher-priority words are more likely to be picked,
+  // but words from anywhere in the pool can be selected (beginning, middle, end).
+  // A base weight ensures even low-priority words have a chance to appear.
+  const maxPriority = Math.max(...filtered.map(w => w.priority), 1);
+  const baseWeight = maxPriority * 0.15; // Minimum 15% of max priority as base chance
+  const weighted = filtered.map(w => ({
+    ...w,
+    weight: w.priority + baseWeight,
+  }));
   
-  // Balance selection: mix high-priority (difficult) with some easier words
-  const selectedCount = Math.min(count, sorted.length);
-  const highPriorityCount = Math.ceil(selectedCount * 0.7); // 70% difficult
-  const easierCount = selectedCount - highPriorityCount; // 30% easier
+  const selected = weightedRandomSample(weighted, selectedCount);
   
-  const highPriority = sorted.slice(0, highPriorityCount);
-  // Take middle-priority words (not the absolute easiest, but easier than high-priority)
-  const easier = sorted.slice(highPriorityCount, highPriorityCount + easierCount);
-  
-  // Combine and shuffle using Fisher-Yates to avoid predictable patterns
-  const selected = [...highPriority, ...easier];
+  // Shuffle using Fisher-Yates to avoid predictable patterns
   const shuffled = shuffleArray(selected);
   
   return shuffled.map(w => w.word);
