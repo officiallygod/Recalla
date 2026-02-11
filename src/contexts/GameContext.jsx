@@ -16,6 +16,10 @@ const STORAGE_KEYS = {
   TOPICS: 'recalla_topics'
 };
 
+// Constants for time calculations
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
+const DEFAULT_ACTIVE_USER_DAYS = 7; // Assume existing users have been active for 7 days
+
 // Counter to ensure unique IDs even when Date.now() returns the same value
 let idCounter = 0;
 
@@ -36,7 +40,8 @@ export const GameProvider = ({ children }) => {
     level: 1,
     totalGames: 0,
     correctMatches: 0,
-    wrongMatches: 0
+    wrongMatches: 0,
+    firstUsedDate: null
   });
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -46,8 +51,9 @@ export const GameProvider = ({ children }) => {
     const storedUserData = localStorage.getItem(STORAGE_KEYS.USER_DATA);
     const storedTopics = localStorage.getItem(STORAGE_KEYS.TOPICS);
 
+    let parsedWords = [];
     if (storedWords) {
-      const parsedWords = JSON.parse(storedWords);
+      parsedWords = JSON.parse(storedWords);
       // Migrate existing words to include new fields
       const migratedWords = parsedWords.map(word => ({
         ...word,
@@ -57,7 +63,22 @@ export const GameProvider = ({ children }) => {
       setWords(migratedWords);
     }
     if (storedUserData) {
-      setUserData(JSON.parse(storedUserData));
+      const parsedUserData = JSON.parse(storedUserData);
+      // Migrate existing users: set firstUsedDate if not present
+      // If user has activity (games played, words, or correct matches), estimate they've been using the app for DEFAULT_ACTIVE_USER_DAYS
+      // Otherwise, set to now for truly new users
+      let defaultFirstUsedDate = Date.now();
+      const hasActivity = parsedUserData.totalGames > 0 || 
+                         parsedUserData.correctMatches > 0 || 
+                         parsedWords.length > 0;
+      if (hasActivity) {
+        // Existing active user - assume they've been using it for at least DEFAULT_ACTIVE_USER_DAYS
+        defaultFirstUsedDate = Date.now() - (DEFAULT_ACTIVE_USER_DAYS * MS_PER_DAY);
+      }
+      setUserData({
+        ...parsedUserData,
+        firstUsedDate: parsedUserData.firstUsedDate ?? defaultFirstUsedDate
+      });
     }
     if (storedTopics) {
       setTopics(JSON.parse(storedTopics));
@@ -105,7 +126,9 @@ export const GameProvider = ({ children }) => {
     setUserData(prev => ({
       ...prev,
       points: prev.points + 5,
-      coins: prev.coins + 0
+      coins: prev.coins + 0,
+      // Set firstUsedDate on first word addition if not already set
+      firstUsedDate: prev.firstUsedDate ?? Date.now()
     }));
 
     return newWord;
@@ -204,14 +227,18 @@ export const GameProvider = ({ children }) => {
     setUserData(prev => ({
       ...prev,
       correctMatches: isCorrect ? prev.correctMatches + 1 : prev.correctMatches,
-      wrongMatches: !isCorrect ? prev.wrongMatches + 1 : prev.wrongMatches
+      wrongMatches: !isCorrect ? prev.wrongMatches + 1 : prev.wrongMatches,
+      // Set firstUsedDate on first match if not already set
+      firstUsedDate: prev.firstUsedDate ?? Date.now()
     }));
   }, []);
 
   const incrementGamesPlayed = useCallback(() => {
     setUserData(prev => ({
       ...prev,
-      totalGames: prev.totalGames + 1
+      totalGames: prev.totalGames + 1,
+      // Set firstUsedDate on first game if not already set
+      firstUsedDate: prev.firstUsedDate ?? Date.now()
     }));
   }, []);
 
