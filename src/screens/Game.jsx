@@ -193,7 +193,11 @@ const Game = () => {
           updated[matchedIndices[0]] = shuffledNewCards[0];
           updated[matchedIndices[1]] = shuffledNewCards[1];
           
-          return updated;
+          // Shuffle the entire board to randomize positions
+          // This prevents the new words from appearing at predictable positions
+          const shuffledBoard = shuffleArray(updated);
+          
+          return shuffledBoard;
         });
         
         // Update available words and active words
