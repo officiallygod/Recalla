@@ -11,7 +11,14 @@ const Home = () => {
   const navigate = useNavigate();
   const { words } = useGame();
   const [timerDuration, setTimerDuration] = useState(30);
+  const [isInfiniteMode, setIsInfiniteMode] = useState(false);
   const [difficulty, setDifficulty] = useState('easy'); // 'easy' or 'hard'
+
+  // Helper function to check if a timer option is selected
+  const isTimerSelected = (duration) => {
+    return (duration === 'infinite' && isInfiniteMode) || 
+           (duration !== 'infinite' && !isInfiniteMode && timerDuration === duration);
+  };
 
   const menuItems = [
     {
@@ -30,7 +37,7 @@ const Home = () => {
       variant: 'success',
       gradient: 'from-emerald-500 to-teal-600',
       disabled: words.length < 8,
-      state: { timerDuration, difficulty }
+      state: { timerDuration, difficulty, isInfiniteMode }
     },
     {
       title: 'My Words',
@@ -193,24 +200,30 @@ const Home = () => {
                 </div>
               </div>
               <div className="flex gap-2">
-                {[15, 30, 45, 60].map((duration) => (
+                {[15, 30, 45, 60, 'infinite'].map((duration) => (
                   <motion.button
                     key={duration}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => {
                       hapticLight();
-                      setTimerDuration(duration);
+                      if (duration === 'infinite') {
+                        setIsInfiniteMode(true);
+                        setTimerDuration(0);
+                      } else {
+                        setIsInfiniteMode(false);
+                        setTimerDuration(duration);
+                      }
                     }}
                     className={`
                       flex-1 px-3 py-3 rounded-xl text-sm font-bold transition-all duration-300 relative overflow-hidden
-                      ${timerDuration === duration
+                      ${isTimerSelected(duration)
                         ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/50'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                       }
                     `}
                   >
-                    {timerDuration === duration && (
+                    {isTimerSelected(duration) && (
                       <motion.div
                         className="absolute inset-0 bg-white/20"
                         initial={{ x: '-100%' }}
@@ -218,7 +231,7 @@ const Home = () => {
                         transition={{ duration: 1.5, repeat: Infinity }}
                       />
                     )}
-                    <span className="relative z-10">{duration}s</span>
+                    <span className="relative z-10">{duration === 'infinite' ? '∞' : `${duration}s`}</span>
                   </motion.button>
                 ))}
               </div>

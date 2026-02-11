@@ -33,6 +33,7 @@ const Game = () => {
   // Get timer duration and difficulty from location state
   const initialTimerDuration = location.state?.timerDuration || 30;
   const difficulty = location.state?.difficulty || 'easy'; // 'easy' or 'hard'
+  const isInfiniteMode = location.state?.isInfiniteMode || false;
   
   // Calculate cards per round based on difficulty
   // Easy: 2 rows × 4 columns = 8 cards (4 pairs)
@@ -83,13 +84,16 @@ const Game = () => {
     incrementGamesPlayed();
     startNewRound();
     
-    // Start the timer
-    setIsTimerActive(true);
+    // Start the timer only if not in infinite mode
+    if (!isInfiniteMode) {
+      setIsTimerActive(true);
+    }
   }, [selectedTopic, gameWords.length]);
 
   // Timer effect - count down from timerDuration seconds, stop game when timer expires
+  // Skip timer logic completely in infinite mode
   useEffect(() => {
-    if (!isTimerActive || gameOver) return;
+    if (isInfiniteMode || !isTimerActive || gameOver) return;
     
     if (timer <= 0) {
       // Timer expired - end the game
@@ -105,7 +109,7 @@ const Game = () => {
     }, 1000);
     
     return () => clearInterval(interval);
-  }, [timer, isTimerActive, gameOver, score, round]);
+  }, [timer, isTimerActive, gameOver, score, round, isInfiniteMode]);
 
   const createParticles = (x, y, isCorrect) => {
     const colors = isCorrect 
@@ -291,17 +295,24 @@ const Game = () => {
       const newCombo = combo + 1;
       setCombo(newCombo);
       
-      // Harder rewards: Reduced points and coins significantly
-      // Keep coin rewards very small (< 10) as per requirements
-      const points = 50 + (newCombo * 25);
-      const coinReward = Math.min(
-        COIN_REWARDS.MATCH.BASE + Math.floor(newCombo / COIN_REWARDS.MATCH.COMBO_DIVISOR),
-        COIN_REWARDS.MATCH.MAX
-      );
-      setScore(prev => prev + points);
-      awardPoints(points, coinReward, round);
+      // In infinite mode, don't award points or coins
+      if (!isInfiniteMode) {
+        // Harder rewards: Reduced points and coins significantly
+        // Keep coin rewards very small (< 10) as per requirements
+        const points = 50 + (newCombo * 25);
+        const coinReward = Math.min(
+          COIN_REWARDS.MATCH.BASE + Math.floor(newCombo / COIN_REWARDS.MATCH.COMBO_DIVISOR),
+          COIN_REWARDS.MATCH.MAX
+        );
+        setScore(prev => prev + points);
+        awardPoints(points, coinReward, round);
+        
+        setMessage(`🎉 Perfect Match!${newCombo > 1 ? ` 🔥x${newCombo}` : ''}`);
+      } else {
+        // Infinite mode - just show the match message without points
+        setMessage(`🎉 Perfect Match!${newCombo > 1 ? ` 🔥x${newCombo}` : ''}`);
+      }
       
-      setMessage(`🎉 Perfect Match! +${points} points! ${newCombo > 1 ? `🔥x${newCombo}` : ''}`);
       createParticles(x, y, true);
       
       // Update stats once for the matched word
@@ -322,20 +333,28 @@ const Game = () => {
           setIsTimerActive(false); // Pause timer during celebration
           const currentRound = round; // Capture current round before async operations
           setTimeout(() => {
-            // Harder round completion bonus
-            // Keep coin bonus very small (< 10) as per requirements
-            const bonus = newCombo * 50;
-            const coinBonus = Math.min(
-              COIN_REWARDS.ROUND.BASE + Math.floor(newCombo / COIN_REWARDS.ROUND.COMBO_DIVISOR),
-              COIN_REWARDS.ROUND.MAX
-            );
-            awardPoints(bonus, coinBonus, currentRound);
-            setMessage(`🏆 Round ${currentRound} Complete! Bonus: +${bonus} points!`);
+            if (!isInfiniteMode) {
+              // Harder round completion bonus
+              // Keep coin bonus very small (< 10) as per requirements
+              const bonus = newCombo * 50;
+              const coinBonus = Math.min(
+                COIN_REWARDS.ROUND.BASE + Math.floor(newCombo / COIN_REWARDS.ROUND.COMBO_DIVISOR),
+                COIN_REWARDS.ROUND.MAX
+              );
+              awardPoints(bonus, coinBonus, currentRound);
+              setMessage(`🏆 Round ${currentRound} Complete! Bonus: +${bonus} points!`);
+            } else {
+              setMessage(`🏆 Round ${currentRound} Complete!${newCombo > 1 ? ` 🔥x${newCombo}` : ''}`);
+            }
             setRound(prev => prev + 1);
-            setTimer(timerDuration); // Reset timer for next round
+            if (!isInfiniteMode) {
+              setTimer(timerDuration); // Reset timer for next round only in timed mode
+            }
             setTimeout(() => {
               setShowConfetti(false);
-              setIsTimerActive(true); // Resume timer for next round
+              if (!isInfiniteMode) {
+                setIsTimerActive(true); // Resume timer for next round only if not infinite mode
+              }
               startNewRound();
             }, 1000); // Faster transition (was 2000ms)
           }, 500); // Faster confetti (was 1000ms)
@@ -487,18 +506,20 @@ const Game = () => {
               </div>
             </Card>
           </motion.div>
-          <motion.div
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ duration: 0.3 }}
-            key={score}
-          >
-            <Card className="px-4 py-2">
-              <div className="text-center">
-                <div className="text-xs text-slate-500 dark:text-slate-400">Score</div>
-                <div className="text-lg font-bold text-primary-600 dark:text-primary-400">{score}</div>
-              </div>
-            </Card>
-          </motion.div>
+          {!isInfiniteMode && (
+            <motion.div
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ duration: 0.3 }}
+              key={score}
+            >
+              <Card className="px-4 py-2">
+                <div className="text-center">
+                  <div className="text-xs text-slate-500 dark:text-slate-400">Score</div>
+                  <div className="text-lg font-bold text-primary-600 dark:text-primary-400">{score}</div>
+                </div>
+              </Card>
+            </motion.div>
+          )}
           <motion.div
             animate={{ 
               scale: combo > 0 ? [1, 1.1, 1] : 1,
@@ -515,15 +536,15 @@ const Game = () => {
           </motion.div>
           <motion.div
             animate={{ 
-              scale: timer <= 5 ? [1, 1.1, 1] : 1,
+              scale: timer <= 5 && !isInfiniteMode ? [1, 1.1, 1] : 1,
             }}
-            transition={{ duration: 0.5, repeat: timer <= 5 ? Infinity : 0 }}
+            transition={{ duration: 0.5, repeat: timer <= 5 && !isInfiniteMode ? Infinity : 0 }}
           >
             <Card className="px-4 py-2">
               <div className="text-center">
                 <div className="text-xs text-slate-500 dark:text-slate-400">Timer</div>
-                <div className={`text-lg font-bold ${timer <= 5 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
-                  {timer}s
+                <div className={`text-lg font-bold ${!isInfiniteMode && timer <= 5 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                  {isInfiniteMode ? '∞' : `${timer}s`}
                 </div>
               </div>
             </Card>
