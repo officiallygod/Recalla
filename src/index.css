@@ -126,8 +126,18 @@
     }
   }
 
-  .border-shine {
+  .border-shine-reserved {
     position: relative;
+    padding: 3px;
+    border-radius: 1rem;
+    background: transparent;
+  }
+
+  .border-shine-reserved > * {
+    border-radius: 0.875rem;
+  }
+
+  .border-shine-reserved.border-shine-active {
     background: linear-gradient(90deg, 
       rgba(79, 70, 229, 0.8) 0%, 
       rgba(99, 102, 241, 1) 25%, 
@@ -137,12 +147,6 @@
     );
     background-size: 200% 100%;
     animation: border-shine 2s linear infinite;
-    padding: 3px;
-    border-radius: 1rem;
-  }
-
-  .border-shine > * {
-    border-radius: 0.875rem;
   }
   
   /* Hover lift effect */
