@@ -192,14 +192,14 @@ const Welcome = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: 0.2 }}
       className="space-y-8 max-w-7xl mx-auto pb-8"
     >
       {/* Header with Modern Design */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.3 }}
         className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-700 dark:via-purple-700 dark:to-pink-700 p-8 sm:p-12"
       >
         {/* Animated Background Pattern */}
@@ -456,7 +456,7 @@ const Welcome = () => {
                 key={topic.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
+                transition={{ delay: index * 0.03 }}
               >
                 <Card className="h-full card-glass border-0 hover-lift group">
                   <div className="space-y-5 p-6">
@@ -583,7 +583,7 @@ const Welcome = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: topics.length * 0.05 + 0.2 }}
+          transition={{ delay: topics.length * 0.03 + 0.1 }}
         >
           <Card className="card-glass border-0">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 p-6">

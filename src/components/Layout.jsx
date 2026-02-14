@@ -28,7 +28,7 @@ const Layout = React.memo(({ children }) => {
       <motion.header 
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
         className="sticky top-0 z-50 safe-area-top backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border-b border-slate-200/50 dark:border-slate-700/50 overflow-x-hidden"
         style={{
           boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04)',
@@ -44,7 +44,7 @@ const Layout = React.memo(({ children }) => {
             >
               <motion.div
                 whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.6 }}
+                transition={{ duration: 0.4 }}
                 className="relative"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-xl blur-lg opacity-30 dark:opacity-40"></div>
@@ -74,7 +74,7 @@ const Layout = React.memo(({ children }) => {
                 <motion.div
                   initial={false}
                   animate={{ rotate: isDark ? 180 : 0 }}
-                  transition={{ duration: 0.4 }}
+                  transition={{ duration: 0.2 }}
                 >
                   {isDark ? (
                     <Moon className="w-5 h-5 text-indigo-400" />

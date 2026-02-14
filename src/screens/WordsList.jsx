@@ -7,6 +7,85 @@ import Card from '../components/Card';
 import { useGame } from '../contexts/GameContext';
 import { getWordInsights } from '../utils/aiWordSelector';
 
+// Memoized Word Item Component
+const WordItem = React.memo(({ word, index, onDelete }) => {
+  const insights = useMemo(() => getWordInsights(word), [word]);
+
+  const handleDelete = useCallback(() => {
+    onDelete(word.id);
+  }, [onDelete, word.id]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{
+        opacity: 0,
+        x: 100,
+        scale: 0.8,
+        transition: { duration: 0.2, ease: "easeInOut" }
+      }}
+      transition={{ delay: index * 0.03 }}
+      whileHover={{ y: -4 }}
+      layout // Enable layout animations for smoother list reordering
+    >
+      <Card className="card-glass border-0 group hover:shadow-xl transition-shadow duration-300">
+        <div className="flex items-center justify-between gap-6">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-2xl">{insights.emoji}</span>
+              <h3 className="text-2xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent truncate">
+                {word.word}
+              </h3>
+              <motion.span
+                whileHover={{ scale: 1.1 }}
+                className="px-3 py-1 text-xs font-black rounded-full bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/40 dark:to-purple-900/40 text-indigo-700 dark:text-indigo-300"
+              >
+                {insights.status}
+              </motion.span>
+            </div>
+            <p className="text-slate-700 dark:text-slate-300 text-base font-medium mb-4">
+              {word.meaning}
+            </p>
+            <div className="flex gap-6 items-center text-sm">
+              <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                <span className="font-bold">Mastery:</span>
+                <div className="w-16 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${word.masteryScore || 0}%` }}
+                    transition={{ duration: 0.8, delay: index * 0.05 }}
+                    className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full"
+                  />
+                </div>
+                <span className="font-black bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
+                  {word.masteryScore || 0}%
+                </span>
+              </div>
+              <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+                ✅ <span className="font-black text-emerald-600 dark:text-emerald-400">{word.correct}</span>
+              </span>
+              <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
+                ❌ <span className="font-black text-rose-600 dark:text-rose-400">{word.wrong}</span>
+              </span>
+            </div>
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.1, rotate: 5 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={handleDelete}
+            className="px-5 py-3 bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 rounded-xl transition-all font-black opacity-0 group-hover:opacity-100 text-lg"
+          >
+            🗑️
+          </motion.button>
+        </div>
+      </Card>
+    </motion.div>
+  );
+});
+
+WordItem.displayName = 'WordItem';
+
 const WordsList = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -73,7 +152,7 @@ const WordsList = () => {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.3 }}
         className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-cyan-600 dark:from-blue-700 dark:via-indigo-700 dark:to-cyan-700 p-8 sm:p-12"
       >
         {/* Animated Background */}
@@ -121,7 +200,7 @@ const WordsList = () => {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.1 }}
         >
           <Card className="card-glass border-0">
             <div className="relative">
@@ -195,77 +274,15 @@ const WordsList = () => {
         </Card>
       ) : (
         <div className="space-y-4">
-          <AnimatePresence mode="sync">
-            {filteredWords.map((word, index) => {
-              const insights = getWordInsights(word);
-              return (
-                <motion.div
-                  key={word.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ 
-                    opacity: 0, 
-                    x: 100,
-                    scale: 0.8,
-                    transition: { duration: 0.4, ease: "easeInOut" }
-                  }}
-                  transition={{ delay: index * 0.05 }}
-                  whileHover={{ y: -4 }}
-                >
-                  <Card className="card-glass border-0 group hover:shadow-xl transition-shadow duration-300">
-                    <div className="flex items-center justify-between gap-6">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="text-2xl">{insights.emoji}</span>
-                          <h3 className="text-2xl font-black bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent truncate">
-                            {word.word}
-                          </h3>
-                          <motion.span 
-                            whileHover={{ scale: 1.1 }}
-                            className="px-3 py-1 text-xs font-black rounded-full bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/40 dark:to-purple-900/40 text-indigo-700 dark:text-indigo-300"
-                          >
-                            {insights.status}
-                          </motion.span>
-                        </div>
-                        <p className="text-slate-700 dark:text-slate-300 text-base font-medium mb-4">
-                          {word.meaning}
-                        </p>
-                        <div className="flex gap-6 items-center text-sm">
-                          <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-                            <span className="font-bold">Mastery:</span>
-                            <div className="w-16 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                              <motion.div 
-                                initial={{ width: 0 }}
-                                animate={{ width: `${word.masteryScore || 0}%` }}
-                                transition={{ duration: 0.8, delay: index * 0.05 }}
-                                className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full"
-                              />
-                            </div>
-                            <span className="font-black bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
-                              {word.masteryScore || 0}%
-                            </span>
-                          </div>
-                          <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
-                            ✅ <span className="font-black text-emerald-600 dark:text-emerald-400">{word.correct}</span>
-                          </span>
-                          <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
-                            ❌ <span className="font-black text-rose-600 dark:text-rose-400">{word.wrong}</span>
-                          </span>
-                        </div>
-                      </div>
-                      <motion.button
-                        whileHover={{ scale: 1.1, rotate: 5 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => handleDelete(word.id)}
-                        className="px-5 py-3 bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 rounded-xl transition-all font-black opacity-0 group-hover:opacity-100 text-lg"
-                      >
-                        🗑️
-                      </motion.button>
-                    </div>
-                  </Card>
-                </motion.div>
-              );
-            })}
+          <AnimatePresence mode="popLayout">
+            {filteredWords.map((word, index) => (
+              <WordItem
+                key={word.id}
+                word={word}
+                index={index}
+                onDelete={handleDelete}
+              />
+            ))}
           </AnimatePresence>
         </div>
       )}
