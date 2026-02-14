@@ -212,7 +212,7 @@ const Statistics = () => {
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
         className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-pink-600 via-rose-600 to-pink-700 dark:from-pink-700 dark:via-rose-700 dark:to-pink-800 p-8 sm:p-12 lg:p-16"
       >
         {/* Animated Background Pattern */}
@@ -253,7 +253,7 @@ const Statistics = () => {
             key={stat.label}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
+            transition={{ delay: index * 0.05 }}
             whileHover={{ scale: 1.05 }}
           >
             <Card className="text-center card-glass border-0 hover-lift">
@@ -277,7 +277,7 @@ const Statistics = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
+        transition={{ delay: 0.2 }}
       >
         <Card className="p-6 card-glass border-0">
           <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2 text-center">
@@ -300,7 +300,7 @@ const Statistics = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
+        transition={{ delay: 0.25 }}
       >
         <Card className="card-glass border-0">
           <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6">
@@ -385,7 +385,7 @@ const Statistics = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
+        transition={{ delay: 0.3 }}
       >
         <Card className="card-glass border-0">
           <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-6">
@@ -436,7 +436,7 @@ const Statistics = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
+        transition={{ delay: 0.35 }}
       >
         <Card className="card-glass border-0">
           <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-6">
@@ -504,7 +504,7 @@ const Statistics = () => {
         className="text-center"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8 }}
+        transition={{ delay: 0.4 }}
       >
         <motion.div
           whileHover={{ scale: 1.05 }}

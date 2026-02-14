@@ -38,7 +38,7 @@ const Button = React.memo(({
     // Remove ripple after animation
     setTimeout(() => {
       setRipples(prev => prev.filter(ripple => ripple.id !== newRipple.id));
-    }, 600);
+    }, 300);
 
     // Trigger haptic feedback and call the actual click handler
     if (onClick) {

@@ -73,7 +73,7 @@ const WordsList = () => {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.3 }}
         className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-cyan-600 dark:from-blue-700 dark:via-indigo-700 dark:to-cyan-700 p-8 sm:p-12"
       >
         {/* Animated Background */}
@@ -121,7 +121,7 @@ const WordsList = () => {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.1 }}
         >
           <Card className="card-glass border-0">
             <div className="relative">
@@ -207,9 +207,9 @@ const WordsList = () => {
                     opacity: 0, 
                     x: 100,
                     scale: 0.8,
-                    transition: { duration: 0.4, ease: "easeInOut" }
+                    transition: { duration: 0.2, ease: "easeInOut" }
                   }}
-                  transition={{ delay: index * 0.05 }}
+                  transition={{ delay: index * 0.03 }}
                   whileHover={{ y: -4 }}
                 >
                   <Card className="card-glass border-0 group hover:shadow-xl transition-shadow duration-300">

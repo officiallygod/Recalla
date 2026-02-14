@@ -183,7 +183,7 @@ const Game = () => {
       const selectedWord = selectedWords[0];
 
       // Add longer delay (≈2.5s) before showing new words
-      const delay = 2500;
+      const delay = 800;
 
       setTimeout(() => {
         setGameCards(prev => {
@@ -291,7 +291,7 @@ const Game = () => {
 
     if (newSelected.length === 2) {
       setIsChecking(true);
-      setTimeout(() => checkMatch(newSelected, x, y), 300); // Faster check (was 500ms)
+      setTimeout(() => checkMatch(newSelected, x, y), 150); // Faster check (was 500ms)
     }
   };
 
@@ -373,8 +373,8 @@ const Game = () => {
                 setIsTimerActive(true); // Resume timer for next round only if not infinite mode
               }
               startNewRound();
-            }, 1000); // Faster transition (was 2000ms)
-          }, 500); // Faster confetti (was 1000ms)
+            }, 500); // Faster transition (was 2000ms)
+          }, 300); // Faster confetti (was 1000ms)
         }
       } else {
         // Not all pairs matched yet, replace this pair if words available
@@ -402,7 +402,7 @@ const Game = () => {
     setTimeout(() => {
       setSelectedCards([]);
       setIsChecking(false);
-    }, 600); // Faster reset (was 1000ms)
+    }, 300); // Faster reset (was 1000ms)
   };
 
   const isCardSelected = useCallback((index) => selectedCards.includes(index), [selectedCards]);
