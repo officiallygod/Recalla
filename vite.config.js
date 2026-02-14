@@ -9,8 +9,13 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      includeAssets: ['icon-192.png', 'icon-512.png', '404.html'],
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,json,woff2}'],
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
+        navigateFallback: 'index.html',
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -19,7 +24,7 @@ export default defineConfig({
               cacheName: 'google-fonts-cache',
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 365 * 24 * 60 * 60 // 1 year
+                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
               },
               cacheableResponse: {
                 statuses: [0, 200]
@@ -33,7 +38,7 @@ export default defineConfig({
               cacheName: 'gstatic-fonts-cache',
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 365 * 24 * 60 * 60 // 1 year
+                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
               },
               cacheableResponse: {
                 statuses: [0, 200]
@@ -42,7 +47,6 @@ export default defineConfig({
           }
         ]
       },
-      includeAssets: ['icon-192.png', 'icon-512.png'],
       manifest: {
         name: 'Recalla - Word Recall Game',
         short_name: 'Recalla',
@@ -52,6 +56,7 @@ export default defineConfig({
         theme_color: '#6366f1',
         background_color: '#ffffff',
         display: 'standalone',
+        orientation: 'portrait',
         icons: [
           {
             src: 'icon-192.png',
@@ -76,7 +81,14 @@ export default defineConfig({
     terserOptions: {
       compress: {
         drop_console: true, // Remove console.logs in production
-        drop_debugger: true
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.trace']
+      },
+      mangle: {
+        toplevel: true
+      },
+      format: {
+        comments: false
       }
     },
     rollupOptions: {
@@ -84,13 +96,12 @@ export default defineConfig({
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'framer-motion': ['framer-motion'],
-          'chart-vendor': ['recharts'],
-          'icons': ['lucide-react']
+          'ui-libs': ['lottie-react', 'lucide-react'],
+          'chart-vendor': ['recharts']
         }
       }
     },
-    // Set higher chunk size limit to accommodate chart library (517KB)
-    // The recharts library is large but only loaded when viewing statistics
+    // Set higher chunk size limit to accommodate chart library
     chunkSizeWarningLimit: 1000,
   }
 })
