@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Button from '../components/Button';
 import Card from '../components/Card';
-import { useGame } from '../contexts/GameContext';
-import { useTheme } from '../contexts/ThemeContext';
+import useContentStore from '../store/contentStore';
+import useUserStore from '../store/userStore';
 import { getWordInsights, estimateDifficulty } from '../utils/aiWordSelector';
 
 // Lazy load the chart component to reduce initial bundle size
@@ -19,8 +19,10 @@ const MS_PER_DAY = 1000 * 60 * 60 * 24; // Milliseconds in a day
 
 const Statistics = () => {
   const navigate = useNavigate();
-  const { words, topics, userData } = useGame();
-  const { isDark } = useTheme();
+  const words = useContentStore(state => state.words);
+  const topics = useContentStore(state => state.topics);
+  const userData = useUserStore(state => state.userData);
+  const isDark = useUserStore(state => state.isDark);
 
   const total = userData.correctMatches + userData.wrongMatches;
   const accuracy = total > 0 ? Math.round((userData.correctMatches / total) * 100) : 0;

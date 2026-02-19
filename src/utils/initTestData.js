@@ -1,11 +1,27 @@
 // Initialize test data for the game
 // This script should be loaded before React app initializes
 (function() {
-  // Only load test data if running in dev mode and no words exist
-  const existingWords = localStorage.getItem('recalla_words');
+  // Only load test data if running in dev mode
   const isDevMode = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   
-  if (isDevMode && (!existingWords || existingWords === '[]')) {
+  if (!isDevMode) return;
+
+  const STORAGE_KEY = 'recalla-content-storage';
+  const existingStorage = localStorage.getItem(STORAGE_KEY);
+
+  let hasWords = false;
+  if (existingStorage) {
+    try {
+      const parsed = JSON.parse(existingStorage);
+      if (parsed.state && parsed.state.words && parsed.state.words.length > 0) {
+        hasWords = true;
+      }
+    } catch (e) {
+      console.error('Error parsing storage for test data check', e);
+    }
+  }
+
+  if (!hasWords) {
     const germanWords = [
       { word: "bereits", meaning: "already" },
       { word: "besonders", meaning: "especially" },
@@ -40,16 +56,23 @@
       consecutiveCorrect: 0
     }));
     
-    localStorage.setItem('recalla_words', JSON.stringify(newWords));
-    
     const topics = [{
       id: topicId,
       name: "German Words",
       emoji: "🇩🇪",
       createdAt: topicId
     }];
-    localStorage.setItem('recalla_topics', JSON.stringify(topics));
     
-    console.log('[TEST DATA] Loaded', newWords.length, 'test words');
+    const newState = {
+      state: {
+        words: newWords,
+        topics: topics
+      },
+      version: 0
+    };
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
+
+    console.log('[TEST DATA] Loaded', newWords.length, 'test words into Zustand storage');
   }
 })();

@@ -1,8 +1,8 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { GameProvider } from './contexts/GameContext';
-import { ThemeProvider } from './contexts/ThemeContext';
 import Layout from './components/Layout';
+import { migrateToZustand } from './utils/migrateData';
+import useUserStore from './store/userStore';
 
 // Lazy load route components for code splitting
 const Home = lazy(() => import('./screens/Home'));
@@ -21,26 +21,37 @@ const LoadingFallback = () => (
 );
 
 function App() {
+  const isDark = useUserStore(state => state.isDark);
+
+  useEffect(() => {
+    // Run migration on mount
+    migrateToZustand();
+  }, []);
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDark]);
+
   return (
-    <ThemeProvider>
-      <GameProvider>
-        <Router basename="/Recalla">
-          <Layout>
-            <Suspense fallback={<LoadingFallback />}>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/welcome" element={<Welcome />} />
-                <Route path="/add-word" element={<AddWord />} />
-                <Route path="/words" element={<WordsList />} />
-                <Route path="/game" element={<Game />} />
-                <Route path="/stats" element={<Statistics />} />
-                <Route path="/stats/topic/:topicId" element={<TopicDetails />} />
-              </Routes>
-            </Suspense>
-          </Layout>
-        </Router>
-      </GameProvider>
-    </ThemeProvider>
+    <Router basename="/Recalla">
+      <Layout>
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/welcome" element={<Welcome />} />
+            <Route path="/add-word" element={<AddWord />} />
+            <Route path="/words" element={<WordsList />} />
+            <Route path="/game" element={<Game />} />
+            <Route path="/stats" element={<Statistics />} />
+            <Route path="/stats/topic/:topicId" element={<TopicDetails />} />
+          </Routes>
+        </Suspense>
+      </Layout>
+    </Router>
   );
 }
 
