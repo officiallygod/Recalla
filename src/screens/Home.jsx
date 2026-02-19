@@ -4,12 +4,12 @@ import { Target, Gamepad2, BookOpen, BarChart3, GraduationCap, Lightbulb, Clock,
 import { motion } from 'framer-motion';
 import Button from '../components/Button';
 import Card from '../components/Card';
-import { useGame } from '../contexts/GameContext';
+import useContentStore from '../store/contentStore';
 import { hapticLight } from '../utils/haptic';
 
 const Home = () => {
   const navigate = useNavigate();
-  const { words } = useGame();
+  const words = useContentStore(state => state.words);
   const [timerDuration, setTimerDuration] = useState(30);
   const [isInfiniteMode, setIsInfiniteMode] = useState(false);
   const [difficulty, setDifficulty] = useState('easy'); // 'easy' or 'hard'

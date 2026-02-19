@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../components/Button';
 import Card from '../components/Card';
-import { useGame } from '../contexts/GameContext';
+import useContentStore from '../store/contentStore';
 import germanVocabulary from '../data/germanVocabulary';
 
 // Lazy load EmojiPicker component
@@ -11,17 +11,19 @@ const EmojiPicker = lazy(() => import('../components/EmojiPicker'));
 
 const Welcome = () => {
   const navigate = useNavigate();
-  const {
-    topics,
-    words,
-    addWord,
-    addTopic,
-    updateTopic,
-    deleteTopic,
-    exportTopic,
-    importTopic,
-    getWordsByTopic
-  } = useGame();
+
+  const topics = useContentStore(state => state.topics);
+  const words = useContentStore(state => state.words);
+  const addWord = useContentStore(state => state.addWord);
+  const addTopic = useContentStore(state => state.addTopic);
+  const updateTopic = useContentStore(state => state.updateTopic);
+  const deleteTopic = useContentStore(state => state.deleteTopic);
+  const exportTopic = useContentStore(state => state.exportTopic);
+  const importTopic = useContentStore(state => state.importTopic);
+
+  const getWordsByTopic = useCallback((topicId) => {
+    return words.filter(w => w.topicId === topicId);
+  }, [words]);
 
   const [showAddTopic, setShowAddTopic] = useState(false);
   const [newTopicName, setNewTopicName] = useState('');

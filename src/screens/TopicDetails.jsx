@@ -4,7 +4,8 @@ import { motion } from 'framer-motion';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import Button from '../components/Button';
 import Card from '../components/Card';
-import { useGame } from '../contexts/GameContext';
+import useContentStore from '../store/contentStore';
+import useUserStore from '../store/userStore';
 import { getWordInsights, estimateDifficulty } from '../utils/aiWordSelector';
 
 // Custom tooltip to format percentages to 2 decimal places
@@ -42,7 +43,10 @@ const MINIMUM_PRACTICE_WORDS = 8; // Minimum words required to practice a topic
 const TopicDetails = () => {
   const navigate = useNavigate();
   const { topicId } = useParams();
-  const { words, topics, userData } = useGame();
+
+  const words = useContentStore(state => state.words);
+  const topics = useContentStore(state => state.topics);
+  const userData = useUserStore(state => state.userData);
 
   // Find the topic
   const topic = topics.find(t => t.id === parseInt(topicId));
@@ -198,8 +202,8 @@ const TopicDetails = () => {
         Back to Dashboard
       </Button>
 
-      <Card glassEffect>
-        <div className="flex items-center gap-3">
+      <Card className="card-glass border-0">
+        <div className="flex items-center gap-3 p-6">
           <span className="text-4xl">{topic.emoji}</span>
           <div>
             <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100">{topic.name}</h2>
@@ -217,7 +221,7 @@ const TopicDetails = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
           >
-            <Card hoverable className="text-center">
+            <Card className="text-center card-glass border-0 hover-lift">
               <motion.div 
                 className="text-4xl mb-2"
                 animate={{ scale: [1, 1.2, 1] }}
@@ -235,7 +239,7 @@ const TopicDetails = () => {
       </div>
 
       {/* Progress Chart */}
-      <Card>
+      <Card className="card-glass border-0 p-6">
         <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-4">
           📈 Progress Trend
         </h3>
@@ -277,7 +281,7 @@ const TopicDetails = () => {
       </Card>
 
       {/* Mastery Distribution */}
-      <Card>
+      <Card className="card-glass border-0 p-6">
         <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-4">
           🎓 Mastery Level Distribution
         </h3>
@@ -301,7 +305,7 @@ const TopicDetails = () => {
       </Card>
 
       {/* Topic Stats */}
-      <Card>
+      <Card className="card-glass border-0 p-6">
         <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-4">
           📊 Detailed Stats
         </h3>

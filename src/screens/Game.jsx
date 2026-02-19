@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Lottie from 'lottie-react';
 import Button from '../components/Button';
 import Card from '../components/Card';
-import { useGame } from '../contexts/GameContext';
+import useContentStore from '../store/contentStore';
+import useUserStore from '../store/userStore';
 import { selectWordsForSession, estimateDifficulty } from '../utils/aiWordSelector';
 import { hapticSuccess, hapticError } from '../utils/haptic';
 import gameOverCelebration from '../assets/gameOverCelebration.json';
@@ -70,7 +71,18 @@ GameCard.displayName = 'GameCard';
 const Game = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { words, topics, updateWordStats, awardPoints, recordMatch, incrementGamesPlayed, getWordsByTopic } = useGame();
+
+  const words = useContentStore(state => state.words);
+  const topics = useContentStore(state => state.topics);
+  const updateWordStats = useContentStore(state => state.updateWordStats);
+  const awardPoints = useUserStore(state => state.awardPoints);
+  const recordMatch = useUserStore(state => state.recordMatch);
+  const incrementGamesPlayed = useUserStore(state => state.incrementGamesPlayed);
+
+  const getWordsByTopic = useCallback((topicId) => {
+    return words.filter(w => w.topicId === topicId);
+  }, [words]);
+
   const [selectedTopic, setSelectedTopic] = useState(location.state?.topicId || null);
   
   // Get timer duration and difficulty from location state
@@ -124,9 +136,7 @@ const Game = () => {
     if (!gameOver) {
       comboRef.current = 0;
     }
-  }, [gameOver, round]); // Reset on new round too? usually combo resets on miss, not round?
-  // Actually, keeping combo across rounds is fun. Let's keep it if logic allows.
-  // But setCombo(0) is called in restartGame.
+  }, [gameOver, round]);
 
   // Fisher-Yates shuffle for proper randomization
   const shuffleArray = useCallback((array) => {
@@ -152,13 +162,11 @@ const Game = () => {
     }
   }, [selectedTopic, gameWords.length]);
 
-  // Timer effect - count down from timerDuration seconds, stop game when timer expires
-  // Skip timer logic completely in infinite mode
+  // Timer effect
   useEffect(() => {
     if (isInfiniteMode || !isTimerActive || gameOver) return;
     
     if (timer <= 0) {
-      // Timer expired - end the game
       setGameOver(true);
       setIsTimerActive(false);
       setFinalScore(score);
@@ -216,8 +224,6 @@ const Game = () => {
     }
   };
 
-  // Replace matched cards with new words from the pool
-  // Keeps board positions stable (no full shuffle) and fills vacancies quickly
   const replaceMatchedCards = useCallback((matchedPairId) => {
     if (availableWords.length === 0) return;
 
@@ -225,7 +231,7 @@ const Game = () => {
       const shownSet = new Set(currentShownIds);
       const unseenWords = availableWords.filter(w => !shownSet.has(w.id));
 
-      if (unseenWords.length === 0) return currentShownIds; // Nothing new to show
+      if (unseenWords.length === 0) return currentShownIds;
 
       const selectedWords = selectWordsForSession(unseenWords, 1, {
         balanceChallenge: false,
@@ -236,7 +242,6 @@ const Game = () => {
 
       const selectedWord = selectedWords[0];
 
-      // Add longer delay (≈2.5s) before showing new words
       const delay = 800;
 
       setTimeout(() => {
@@ -246,7 +251,7 @@ const Game = () => {
             if (card.pairId === matchedPairId) matchedIndices.push(idx);
           });
 
-          if (matchedIndices.length !== 2) return prev; // Pair no longer present
+          if (matchedIndices.length !== 2) return prev;
 
           const maxPairId = prev.length > 0 ? Math.max(...prev.map(c => c.pairId)) : 0;
           const newPairId = maxPairId + 1;
@@ -256,7 +261,6 @@ const Game = () => {
             { type: 'meaning', value: selectedWord.meaning, id: selectedWord.id, pairId: newPairId, cardId: `${timestamp}-${newPairId}-meaning` }
           ];
 
-          // Shuffle only the pair, keep board layout stable
           const shuffledNewCards = shuffleArray(newCards);
           const updated = [...prev];
           updated[matchedIndices[0]] = shuffledNewCards[0];
@@ -264,21 +268,18 @@ const Game = () => {
           return updated;
         });
 
-        // Update pools to avoid reusing this word
         setAvailableWords(prev => prev.filter(w => w.id !== selectedWord.id));
         setActiveWordIds(prev => [...prev, selectedWord.id]);
       }, delay);
 
-      // Track that this word has been shown
       return [...currentShownIds, selectedWord.id];
     });
   }, [availableWords, shuffleArray]);
 
   const startNewRound = () => {
-    // Use AI-powered word selection
     const selectedWords = selectWordsForSession(gameWords, CARDS_PER_ROUND, {
       includeNew: true,
-      balanceChallenge: true, // Mix difficult and easier words for better learning
+      balanceChallenge: true,
       maxDifficulty: 100,
     });
     
@@ -287,20 +288,17 @@ const Game = () => {
       return;
     }
     
-    // Store available words (those not currently shown)
     const currentWordIds = selectedWords.map(w => w.id);
     setActiveWordIds(currentWordIds);
-    setShownWordIds(currentWordIds); // Initialize shown words for the session
+    setShownWordIds(currentWordIds);
     setAvailableWords(gameWords.filter(w => !currentWordIds.includes(w.id)));
 
-    // Create cards
     const cards = [];
     selectedWords.forEach((word, index) => {
       cards.push({ type: 'word', value: word.word, id: word.id, pairId: index, cardId: `${Date.now()}-${index}-word` });
       cards.push({ type: 'meaning', value: word.meaning, id: word.id, pairId: index, cardId: `${Date.now()}-${index}-meaning` });
     });
 
-    // Shuffle cards using Fisher-Yates
     const shuffled = shuffleArray(cards);
     setGameCards(shuffled);
     setSelectedCards([]);
@@ -308,41 +306,7 @@ const Game = () => {
     setMessage('Match words with their meanings! ✨');
   };
 
-  // We need a stable handleCardClick that accesses the latest state without causing re-renders of children
-  // The problem is `checkMatch` needs `gameCards` and other state.
-  // We can use a ref for `gameCards` if we want to avoid re-creating the callback,
-  // or just accept that `handleCardClick` changes when `gameCards` changes.
-  // Crucially, `gameCards` DOES NOT change on timer tick.
-
   const handleCardClick = useCallback((index, event) => {
-    // Don't allow any interactions if game is over
-    // We can't access `gameOver` state directly if we want this stable across timer ticks?
-    // Actually, `gameOver` only changes when game ends. Timer tick updates `timer` state.
-    // Does `timer` state update cause `handleCardClick` to be recreated?
-    // Only if `timer` is in the dependency array.
-    // It is NOT in the dependency array here.
-    
-    // However, we need to access `selectedCards` and `matchedPairs` and `isChecking`.
-    // These do not change on timer tick.
-    // So this callback is stable during timer ticks!
-
-    // But we need to check constraints.
-    // We can use functional state updates or refs for latest values if needed,
-    // but standard closure capture is fine as long as we include dependencies.
-
-    // Wait, `checkMatch` uses `combo` and `score`?
-    // If we include `combo` in dependencies, it updates on combo change.
-    // But NOT on timer tick.
-
-    // So standard useCallback is fine here!
-
-    // Re-implement logic with closure variables:
-
-    // We need to check if we can select.
-    // We need `selectedCards`, `matchedPairs`, `isChecking`, `gameCards`.
-
-    // Using a ref for the checking status to prevent race conditions might be good, but state is okay.
-
     const isSelected = selectedCards.includes(index);
     if (isSelected) {
       setSelectedCards(prev => prev.filter(i => i !== index));
@@ -369,14 +333,8 @@ const Game = () => {
 
     if (newSelected.length === 2) {
       setIsChecking(true);
-      // We pass `gameCards` to checkMatch so it doesn't need to depend on it?
-      // Actually `checkMatch` needs to be defined inside component to access setters.
-      
-      // Let's define checkMatch logic right here or call a ref.
-      // Calling the existing checkMatch function (which we need to wrap or move).
       
       setTimeout(() => {
-          // We need the *current* gameCards in the timeout? They are stable for the round.
           const [first, second] = newSelected;
           const c1 = gameCards[first];
           const c2 = gameCards[second];
@@ -385,12 +343,9 @@ const Game = () => {
              hapticSuccess();
              setMatchedPairs(prev => {
                  const newPairs = [...prev, c1.pairId];
-                 // Check round completion inside the setter to get latest state?
-                 // Or just use an effect on matchedPairs.
                  return newPairs;
              });
 
-             // ... other success logic ...
              comboRef.current += 1;
              const newCombo = comboRef.current;
              setCombo(newCombo);
@@ -407,11 +362,6 @@ const Game = () => {
              createParticles(x, y, true);
              updateWordStats(c1.id, true);
              recordMatch(true);
-
-             // Round completion check:
-             // We can't see the *new* matchedPairs here easily.
-             // But we know we just added one.
-             // (matchedPairs.length + 1) === (gameCards.length / 2)
 
              if (matchedPairs.length + 1 === gameCards.length / 2) {
                  if (availableWords.length > 0) {
@@ -455,7 +405,6 @@ const Game = () => {
   }, [gameCards, selectedCards, matchedPairs, isChecking, isInfiniteMode, round, availableWords.length,
       timerDuration, updateWordStats, recordMatch, awardPoints, replaceMatchedCards,
       startNewRound, shuffleArray]);
-      // Note: `timer` is NOT in dependencies.
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -469,7 +418,6 @@ const Game = () => {
     return `${timerDuration}s`;
   };
 
-  // Memoize the grid to prevent re-renders on timer tick
   const gameGrid = useMemo(() => (
     <div className={`grid ${difficulty === 'easy' ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'} gap-4 sm:gap-6`}>
       {gameCards.map((card, index) => (
@@ -485,7 +433,6 @@ const Game = () => {
     </div>
   ), [gameCards, selectedCards, matchedPairs, handleCardClick, difficulty]);
 
-  // Game Over Component - Enhanced overlay
   const GameOverScreen = () => (
     <motion.div
       initial={{ opacity: 0 }}
@@ -575,7 +522,6 @@ const Game = () => {
     </motion.div>
   );
 
-  // If game is over, show game over screen
   if (gameOver) {
     return <GameOverScreen />;
   }
@@ -590,7 +536,6 @@ const Game = () => {
         <Confetti trigger={showConfetti} />
       </Suspense>
       
-      {/* Particles */}
       <AnimatePresence>
         {particles.map(particle => (
           <motion.div
@@ -615,7 +560,6 @@ const Game = () => {
         ))}
       </AnimatePresence>
 
-      {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-2">
           <Button
@@ -648,7 +592,6 @@ const Game = () => {
           )}
         </div>
 
-        {/* Game Stats */}
         <div className="flex gap-2 sm:gap-4">
           <motion.div
             animate={{ scale: [1, 1.05, 1] }}
@@ -708,7 +651,6 @@ const Game = () => {
         </div>
       </div>
 
-      {/* Message - Fixed height to prevent layout shifts */}
       <div className="relative h-[68px]">
         <AnimatePresence>
           <motion.div
@@ -726,7 +668,6 @@ const Game = () => {
         </AnimatePresence>
       </div>
 
-      {/* Game Board - Memoized Grid */}
       {gameGrid}
     </motion.div>
   );

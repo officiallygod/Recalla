@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X } from 'lucide-react';
 import Button from '../components/Button';
 import Card from '../components/Card';
-import { useGame } from '../contexts/GameContext';
+import useContentStore from '../store/contentStore';
 import { getWordInsights } from '../utils/aiWordSelector';
 
 // Memoized Word Item Component
@@ -89,7 +89,14 @@ WordItem.displayName = 'WordItem';
 const WordsList = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { words, topics, deleteWord, getWordsByTopic } = useGame();
+  const words = useContentStore(state => state.words);
+  const topics = useContentStore(state => state.topics);
+  const deleteWord = useContentStore(state => state.deleteWord);
+
+  const getWordsByTopic = useCallback((topicId) => {
+     return words.filter(w => w.topicId === topicId);
+  }, [words]);
+
   const [selectedTopic, setSelectedTopic] = useState(location.state?.topicId || null);
   const [searchQuery, setSearchQuery] = useState('');
 

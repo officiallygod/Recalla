@@ -1,16 +1,16 @@
 import React, { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Gamepad2, Star, Coins, Trophy, Sun, Moon } from 'lucide-react';
-import { useGame } from '../contexts/GameContext';
-import { useTheme } from '../contexts/ThemeContext';
+import useUserStore from '../store/userStore';
 import { formatNumber } from '../utils/numberFormatter';
 import { motion } from 'framer-motion';
 import { hapticLight } from '../utils/haptic';
 
 const Layout = React.memo(({ children }) => {
   const navigate = useNavigate();
-  const { userData } = useGame();
-  const { isDark, toggleTheme } = useTheme();
+  const userData = useUserStore(state => state.userData);
+  const isDark = useUserStore(state => state.isDark);
+  const toggleTheme = useUserStore(state => state.toggleTheme);
 
   const handleThemeToggle = useCallback(() => {
     hapticLight();
